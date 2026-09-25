@@ -1,0 +1,301 @@
+<title>나답 데일리 질문 진단</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f6f7f5; --surface:#ffffff; --ink:#18201d; --ink-2:#4d5853; --muted:#7a847f;
+  --line:#dde2df; --line-2:#eceff0; --accent:#1f6f66; --accent-soft:#e3efec;
+  --ans:#2a78d6; --rep:#eb6834; --nr:#a3aaa6; --worse:#d95926; --better:#2a78d6; --neutral:#9aa39e;
+  --tag-a:#fbe7df; --tag-a-ink:#9a3412; --tag-b:#fdf1d6; --tag-b-ink:#8a5a00; --tag-d:#e1ecfa; --tag-d-ink:#1d4f91;
+  --serif:"Gowun Batang","Noto Serif KR",serif;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#121715; --surface:#1a201e; --ink:#eef2f0; --ink-2:#b9c3be; --muted:#8c9691;
+    --line:#2d3532; --line-2:#232a28; --accent:#5fb8ab; --accent-soft:#1f302c;
+    --ans:#3987e5; --rep:#d95926; --nr:#6b7470; --worse:#e0703f; --better:#4a95ec; --neutral:#6b7470;
+    --tag-a:#3a2219; --tag-a-ink:#f5a784; --tag-b:#352a12; --tag-b-ink:#f0c46a; --tag-d:#172a42; --tag-d-ink:#9cc3f5;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#121715; --surface:#1a201e; --ink:#eef2f0; --ink-2:#b9c3be; --muted:#8c9691;
+  --line:#2d3532; --line-2:#232a28; --accent:#5fb8ab; --accent-soft:#1f302c;
+  --ans:#3987e5; --rep:#d95926; --nr:#6b7470; --worse:#e0703f; --better:#4a95ec; --neutral:#6b7470;
+  --tag-a:#3a2219; --tag-a-ink:#f5a784; --tag-b:#352a12; --tag-b-ink:#f0c46a; --tag-d:#172a42; --tag-d-ink:#9cc3f5;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.7;margin:0}
+.wrap{max-width:820px;margin:0 auto;padding-inline:20px;padding-block:48px 80px;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--serif);font-weight:700;text-wrap:balance;margin:0;line-height:1.35}
+h1{font-size:2.1rem}
+h2{font-size:1.45rem}
+h3{font-size:1.05rem;font-family:var(--sans);font-weight:600}
+p{margin:0;max-width:66ch}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;color:var(--accent);font-weight:600}
+.meta{color:var(--muted);font-size:.85rem;font-family:var(--mono)}
+section{display:flex;flex-direction:column;gap:18px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+header{display:flex;flex-direction:column;gap:14px;border-bottom:1px solid var(--line);padding-bottom:28px}
+.lede{font-size:1.05rem;color:var(--ink-2)}
+.findings{display:grid;gap:12px;counter-reset:f;padding:0;margin:0;list-style:none}
+.findings li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
+.findings li::before{counter-increment:f;content:counter(f);font-family:var(--mono);font-size:.8rem;color:var(--accent);border:1px solid var(--accent);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;margin-top:3px}
+.findings b{font-weight:600}
+.callout{background:var(--accent-soft);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.callout p{color:var(--ink-2);font-size:.93rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.stat{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.stat .v{font-family:var(--mono);font-size:1.45rem;font-variant-numeric:tabular-nums}
+.stat .l{font-size:.8rem;color:var(--muted)}
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.fig figcaption{font-size:.82rem;color:var(--muted)}
+.chart{overflow-x:auto}
+.chart svg{display:block;width:100%;height:auto;min-width:520px}
+.chart svg text{font-family:var(--sans);fill:var(--ink-2);font-size:12px}
+.chart svg .v{font-family:var(--mono);fill:var(--ink);font-size:11.5px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.8rem;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line-2);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:.76rem;letter-spacing:.03em;background:var(--surface);position:sticky;top:0}
+tbody tr:last-child td{border-bottom:0}
+td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.old{color:var(--muted)}
+.new{color:var(--ink);font-weight:500}
+.why{color:var(--ink-2);font-size:.8rem}
+.chip{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:999px;white-space:nowrap;font-weight:500}
+.chip.a{background:var(--tag-a);color:var(--tag-a-ink)}
+.chip.b{background:var(--tag-b);color:var(--tag-b-ink)}
+.chip.d{background:var(--tag-d);color:var(--tag-d-ink)}
+.chip.c{background:var(--line-2);color:var(--ink-2)}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.filters button{font:inherit;font-size:.82rem;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:4px 12px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.filters button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rules{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.rule .ex{font-size:.84rem;display:grid;gap:2px}
+.rule .ex s{color:var(--muted);text-decoration-color:var(--worse)}
+.rule p{font-size:.88rem;color:var(--ink-2)}
+ol.steps{margin:0;padding-left:1.2em;display:grid;gap:10px}
+ol.steps li{padding-left:4px}
+ol.steps b{font-weight:600}
+.note{font-size:.82rem;color:var(--muted)}
+#tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:.78rem;padding:6px 9px;border-radius:6px;line-height:1.45;max-width:260px;z-index:10}
+@media (max-width:520px){h1{font-size:1.7rem}.wrap{gap:44px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">나답 · 데일리 질문 성과 리뷰</span>
+  <h1>질문 875개를 다시 읽다</h1>
+  <p class="lede">노출된 질문의 절반 가까이가 교체됩니다. 어떤 질문이 왜 넘겨지는지 확인하고, 질문을 고치는 기준과 실제 수정안을 정리했습니다.</p>
+  <span class="meta">데이터: nadab_daily_question_stats.csv · Revision 1 (2026-08-27 적용) ~ 2026-09-25 · 노출 <span id="m-exp"></span>회</span>
+</header>
+
+<section>
+  <h2>핵심 결론</h2>
+  <ol class="findings">
+    <li><div><b>'오늘' 기반 질문은 답변 가능성이 절반 이하로 떨어집니다.</b> 관심사·레벨·다른 문구 특성을 모두 통제해도 답변 오즈가 <span class="num" id="f-today"></span>배입니다. 노출 시점(아침·낮)에는 '오늘'의 재료가 아직 없다는 것이 가장 유력한 설명입니다.</div></li>
+    <li><div><b>'~한 적이 있다면' 같은 경험 전제형은 답변 오즈가 <span class="num" id="f-exp"></span>배입니다.</b> 해당 경험이 없는 사람은 답할 길이 없어 교체를 누릅니다. 전체 질문의 <span class="num" id="f-exp-n"></span>개가 이 형태입니다.</div></li>
+    <li><div><b>관계 카테고리는 다른 카테고리보다 뚜렷하게 약합니다</b> (오즈 <span class="num" id="f-rel"></span>배). 특정 인물을 떠올리게 하는 '누구인가요' 질문이 특히 낮습니다.</div></li>
+    <li><div><b>잘 되는 질문은 지금의 나를 묻습니다.</b> '가장 좋아하는 ~', '~하는 편인가요', 양자택일처럼 기억을 뒤지지 않아도 바로 답할 수 있는 질문이 상위권입니다.</div></li>
+    <li><div><b>수정 대상은 273개입니다.</b> 관측 데이터와 문구 패턴이 모두 나쁜 <span class="chip a">A</span> 50개는 수정안을 작성했고, 패턴 위험이 있는 <span class="chip b">B</span> 223개는 규칙 기반으로 일괄 수정할 수 있습니다.</div></li>
+  </ol>
+  <div class="callout">
+    <h3>먼저 알아둘 한계</h3>
+    <p>질문당 평균 노출은 <span class="num" id="m-epq"></span>회뿐이고, <span class="num" id="m-zero"></span>개는 한 번도 노출되지 않았습니다. 3회 노출에 0회 답변은 우연일 수 있습니다. 그래서 개별 질문의 답변율을 그대로 쓰지 않고, 비슷한 문구의 질문들이 보여준 경향으로 보정한 추정치(베이지안 축소)로 판단했습니다.</p>
+  </div>
+</section>
+
+<section>
+  <h2>노출 이후 무슨 일이 일어나나</h2>
+  <div class="stats" id="stats"></div>
+  <p>노출 = 답변 + 교체 + 미응답으로 정확히 맞아떨어집니다. 교체율이 답변율과 거의 같아서, 질문 품질을 개선할 여지가 가장 큰 지점은 교체입니다.</p>
+</section>
+
+<section>
+  <h2>무엇이 답변을 막는가</h2>
+  <p>질문 문구에서 15가지 특성을 뽑아 관심사·레벨과 함께 이항 회귀모델에 넣었습니다. 막대는 해당 특성이 있을 때 답변 오즈가 몇 배가 되는지, 가는 선은 95% 신뢰구간입니다. 1보다 왼쪽이면 답변을 줄이는 특성입니다.</p>
+  <figure class="fig" style="margin:0">
+    <div class="legend"><span><i style="background:var(--worse)"></i>유의하게 낮춤 (p&lt;0.05)</span><span><i style="background:var(--better)"></i>유의하게 높임</span><span><i style="background:var(--neutral)"></i>유의하지 않음</span></div>
+    <div class="chart" id="forest"></div>
+    <figcaption>이항 GLM, 노출 1회 이상 질문 748개. 관심사 기준값은 가치관, 레벨 기준값은 1.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>관심사별 성과와 노출 쏠림</h2>
+  <figure class="fig" style="margin:0">
+    <div class="legend"><span><i style="background:var(--ans)"></i>답변율 (95% CI)</span><span style="color:var(--muted)">오른쪽 숫자: 질문 1개당 평균 노출</span></div>
+    <div class="chart" id="cats"></div>
+    <figcaption>점선은 전체 평균 답변율. 취향 질문은 1개당 6회 넘게 노출되지만 관계 질문은 1.4회에 그쳐, 관계 질문은 데이터가 쌓이는 속도도 느립니다.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>질문 분류</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>분류</th><th>기준</th><th style="text-align:right">질문 수</th><th>조치</th></tr></thead>
+    <tbody id="classes"></tbody>
+  </table></div>
+  <p class="note">P(평균 미만)은 해당 질문의 실제 답변율이 전체 평균(<span class="num" id="m-base"></span>)보다 낮을 확률입니다. 'A'는 문구 모델과 관측 데이터가 모두 평균 미만을 가리키는 경우에만 부여했습니다.</p>
+</section>
+
+<section>
+  <h2>수정안: 교체·재작성 우선 질문 50개</h2>
+  <div class="filters" id="catf" role="group" aria-label="관심사 필터"></div>
+  <div class="tbl-wrap" style="max-height:640px;overflow:auto"><table>
+    <thead><tr><th>기존 질문 → 수정안</th><th>진단</th><th style="text-align:right">노출/답변</th></tr></thead>
+    <tbody id="rw"></tbody>
+  </table></div>
+  <p class="note">대안 수정안과 B그룹 223개의 패턴별 수정 방향은 첨부한 엑셀(question_review.xlsx)에 있습니다.</p>
+</section>
+
+<section>
+  <h2>질문 작성 가이드</h2>
+  <p>데이터에서 확인한 패턴을 새 질문을 쓰거나 검수할 때 쓰는 규칙으로 옮겼습니다.</p>
+  <div class="rules">
+    <div class="rule"><h3>시점을 비워둔다</h3><p>'오늘'은 저녁에만 유효합니다. '요즘', '평소'로 쓰거나, 오늘 질문은 저녁 시간대 전용으로 분리합니다.</p><div class="ex"><s>오늘 나를 기운 나게 한 말은?</s><span>들으면 기운이 나는 말은 무엇인가요?</span></div></div>
+    <div class="rule"><h3>경험을 전제하지 않는다</h3><p>'~한 적이 있다면'은 없는 사람을 내보냅니다. 성향형으로 바꾸거나 '없다면 ~'이라는 출구를 둡니다.</p><div class="ex"><s>잠들기 전 꼭 하는 일이 있다면?</s><span>잠들기 전 주로 무엇을 하나요?</span></div></div>
+    <div class="rule"><h3>활동의 문을 넓힌다</h3><p>책·전시·요리처럼 특정 활동을 전제하면 비경험자는 답할 수 없습니다. 대상을 넓혀 누구나 들어올 수 있게 합니다.</p><div class="ex"><s>좋아하는 시의 제목이나 글귀가 있다면?</s><span>마음에 오래 남은 문장이 있나요? 책·노래·대사 무엇이든 좋아요.</span></div></div>
+    <div class="rule"><h3>사람 대신 특성을 묻는다</h3><p>'누구인가요'는 특정인을 지목하게 해 부담을 줍니다. 그 사람의 특징이나 관계의 모습을 묻습니다.</p><div class="ex"><s>나를 가장 힘들게 했던 인연은 누구였나요?</s><span>나를 지치게 하는 관계는 어떤 특징이 있나요?</span></div></div>
+    <div class="rule"><h3>한 번에 하나만 묻는다</h3><p>조건이 겹치거나(~한 것 중 ~한 것) 질문이 두 개면 답의 문턱이 올라갑니다.</p><div class="ex"><s>오늘 새롭게 알게 된 것 중 더 궁금해진 건?</s><span>요즘 가장 궁금한 건 무엇인가요?</span></div></div>
+    <div class="rule"><h3>은유는 쉬운 말로 푼다</h3><p>'감정의 온도', '단골손님처럼 찾아온 감정'은 해석부터 해야 합니다. 뜻을 직접 말합니다.</p><div class="ex"><s>오늘 하루 중 단골손님처럼 찾아온 감정은?</s><span>요즘 가장 자주 느끼는 감정은 무엇인가요?</span></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>다음 단계</h2>
+  <ol class="steps">
+    <li><b>A그룹 50개 교체 (1주 차).</b> 수정안 1을 새 Revision으로 배포합니다. Revision 단위로 지표가 분리되므로 전후 비교가 가능합니다.</li>
+    <li><b>'오늘' 질문 노출 시간 테스트 (2~3주 차).</b> '오늘' 질문 54개를 저녁 시간대 노출과 수정 문구로 나눠 비교합니다. 29% → 45% 수준의 개선을 확인하려면 그룹당 약 <span class="num">140</span>회 노출이 필요하며, 현재 트래픽으로 2~3주면 채워집니다.</li>
+    <li><b>B그룹 패턴 일괄 수정 (3~4주 차).</b> 가이드 규칙대로 223개를 고칩니다. 개별 질문 단위 A/B는 표본이 부족하므로(평균 대비 +10%p를 보려면 그룹당 약 <span class="num">390</span>회), 패턴 묶음 단위로 전후를 비교합니다.</li>
+    <li><b>미노출 질문 점검.</b> 한 번도 노출되지 않은 질문 <span class="num" id="m-zero2"></span>개가 배포 로직 문제인지(관심사 선택 편중 등) 확인합니다.</li>
+    <li><b>지표 추가 요청.</b> 노출 시각, 답변 길이, 교체 후 다음 질문 답변 여부, 사용자 ID가 있으면 원인을 훨씬 정확히 가를 수 있습니다. 특히 노출 시각이 있으면 '오늘' 가설을 바로 검증할 수 있습니다.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>분석 방법</h2>
+  <p class="note" style="max-width:none">① 합계 검증(노출 = 답변 + 교체 + 미응답, 875개 전부 일치) → ② 관심사·레벨·문구 특성별 합산 답변율과 Wilson 95% CI → ③ 이항 GLM으로 교란을 통제한 오즈비 추정 → ④ GLM 예측값을 질문별 사전평균으로 쓰는 Beta-Binomial 축소(집중도 k=<span id="m-k"></span>, 주변우도 최대화)로 질문별 답변율과 P(평균 미만) 추정 → ⑤ 문구 정보 없이 관측 데이터만 쓴 축소 추정과 교차 확인해 분류. 스크립트는 저장소의 analysis/ 폴더에 있습니다.</p>
+</section>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"base_answer_rate": 0.450313339301701, "totals": {"exp": 2234, "ans": 1006, "rep": 1014, "nr": 214}, "n_questions": 875, "exposure_hist": {"0": 127, "1": 215, "2": 188, "3": 127, "4": 74, "5": 50, "6": 31, "7": 26, "8": 12, "9": 12, "10": 6, "11": 2, "12": 4, "14": 1}, "prior_concentration_k": 35.14202427241136, "segments": [{"group": "전체", "value": "전체", "questions": 875, "exposures": 2234, "answer_rate": 0.450313339301701, "ci_lo": 0.42978511112844336, "ci_hi": 0.4710121508380097, "replace_rate": 0.4538943598925694, "no_response_rate": 0.09579230080572963, "exp_per_q": 2.553142857142857, "zero_exposure": 127}, {"group": "관심사", "value": "가치관", "questions": 270, "exposures": 456, "answer_rate": 0.48026315789473684, "ci_lo": 0.4347635853137719, "ci_hi": 0.5260924887641011, "replace_rate": 0.4100877192982456, "no_response_rate": 0.10964912280701754, "exp_per_q": 1.6888888888888889, "zero_exposure": 47}, {"group": "관심사", "value": "감정", "questions": 130, "exposures": 508, "answer_rate": 0.45866141732283466, "ci_lo": 0.4158026522716073, "ci_hi": 0.5021406888231724, "replace_rate": 0.4566929133858268, "no_response_rate": 0.08464566929133858, "exp_per_q": 3.9076923076923076, "zero_exposure": 2}, {"group": "관심사", "value": "관계", "questions": 150, "exposures": 212, "answer_rate": 0.33490566037735847, "ci_lo": 0.2748126927881866, "ci_hi": 0.4008751922804968, "replace_rate": 0.5283018867924528, "no_response_rate": 0.13679245283018868, "exp_per_q": 1.4133333333333333, "zero_exposure": 35}, {"group": "관심사", "value": "루틴", "questions": 137, "exposures": 228, "answer_rate": 0.40789473684210525, "ci_lo": 0.34614291050874535, "ci_hi": 0.4726988091144789, "replace_rate": 0.5175438596491229, "no_response_rate": 0.07456140350877193, "exp_per_q": 1.6642335766423357, "zero_exposure": 28}, {"group": "관심사", "value": "사랑", "questions": 85, "exposures": 158, "answer_rate": 0.5253164556962026, "ci_lo": 0.4477796461425828, "ci_hi": 0.6016514456079142, "replace_rate": 0.4240506329113924, "no_response_rate": 0.05063291139240506, "exp_per_q": 1.8588235294117648, "zero_exposure": 14}, {"group": "관심사", "value": "취향", "questions": 103, "exposures": 672, "answer_rate": 0.4568452380952381, "ci_lo": 0.41953435908548925, "ci_hi": 0.4946466973693682, "replace_rate": 0.44345238095238093, "no_response_rate": 0.09970238095238096, "exp_per_q": 6.524271844660194, "zero_exposure": 1}, {"group": "레벨", "value": "1", "questions": 115, "exposures": 377, "answer_rate": 0.5013262599469496, "ci_lo": 0.4510966097088067, "ci_hi": 0.5515291548366201, "replace_rate": 0.38461538461538464, "no_response_rate": 0.11405835543766578, "exp_per_q": 3.2782608695652176, "zero_exposure": 12}, {"group": "레벨", "value": "2", "questions": 760, "exposures": 1857, "answer_rate": 0.4399569197630587, "ci_lo": 0.41752727673094836, "ci_hi": 0.46263446464527513, "replace_rate": 0.46795907377490575, "no_response_rate": 0.09208400646203554, "exp_per_q": 2.443421052631579, "zero_exposure": 115}, {"group": "문구 특성", "value": "양자택일형", "questions": 203, "exposures": 435, "answer_rate": 0.496551724137931, "ci_lo": 0.44980257531013923, "ci_hi": 0.5433612428759046, "replace_rate": 0.4091954022988506, "no_response_rate": 0.09425287356321839, "exp_per_q": 2.142857142857143, "zero_exposure": 29}, {"group": "문구 특성(해당 없음)", "value": "양자택일형", "questions": 672, "exposures": 1799, "answer_rate": 0.43913285158421345, "ci_lo": 0.41635364549636456, "ci_hi": 0.4621714466971243, "replace_rate": 0.46470261256253476, "no_response_rate": 0.09616453585325181, "exp_per_q": 2.6770833333333335, "zero_exposure": 98}, {"group": "문구 특성", "value": "경험 전제형(~있다면/~적 있)", "questions": 194, "exposures": 495, "answer_rate": 0.3797979797979798, "ci_lo": 0.33812336373319896, "ci_hi": 0.4233238899066114, "replace_rate": 0.5434343434343434, "no_response_rate": 0.07676767676767676, "exp_per_q": 2.551546391752577, "zero_exposure": 31}, {"group": "문구 특성(해당 없음)", "value": "경험 전제형(~있다면/~적 있)", "questions": 681, "exposures": 1739, "answer_rate": 0.4703852788959172, "ci_lo": 0.4470175630796739, "ci_hi": 0.49388354443145, "replace_rate": 0.4284071305347901, "no_response_rate": 0.1012075905692927, "exp_per_q": 2.55359765051395, "zero_exposure": 96}, {"group": "문구 특성", "value": "가정·상상형(~한다면)", "questions": 33, "exposures": 92, "answer_rate": 0.391304347826087, "ci_lo": 0.29785623268996947, "ci_hi": 0.49346580845907867, "replace_rate": 0.532608695652174, "no_response_rate": 0.07608695652173914, "exp_per_q": 2.787878787878788, "zero_exposure": 6}, {"group": "문구 특성(해당 없음)", "value": "가정·상상형(~한다면)", "questions": 842, "exposures": 2142, "answer_rate": 0.45284780578898226, "ci_lo": 0.4318710239769336, "ci_hi": 0.473993410149987, "replace_rate": 0.4505135387488329, "no_response_rate": 0.09663865546218488, "exp_per_q": 2.543942992874109, "zero_exposure": 121}, {"group": "문구 특성", "value": "정의·개념형", "questions": 28, "exposures": 43, "answer_rate": 0.4186046511627907, "ci_lo": 0.2838455092784919, "ci_hi": 0.5667142261303579, "replace_rate": 0.5348837209302325, "no_response_rate": 0.046511627906976744, "exp_per_q": 1.5357142857142858, "zero_exposure": 8}, {"group": "문구 특성(해당 없음)", "value": "정의·개념형", "questions": 847, "exposures": 2191, "answer_rate": 0.4509356458238247, "ci_lo": 0.4302044725852919, "ci_hi": 0.47183856604241786, "replace_rate": 0.45230488361478777, "no_response_rate": 0.09675947056138749, "exp_per_q": 2.5867768595041323, "zero_exposure": 119}, {"group": "문구 특성", "value": "복문(쉼표·두 질문)", "questions": 198, "exposures": 478, "answer_rate": 0.40376569037656906, "ci_lo": 0.3607166056470533, "ci_hi": 0.4483492223014802, "replace_rate": 0.5188284518828452, "no_response_rate": 0.07740585774058577, "exp_per_q": 2.414141414141414, "zero_exposure": 31}, {"group": "문구 특성(해당 없음)", "value": "복문(쉼표·두 질문)", "questions": 677, "exposures": 1756, "answer_rate": 0.4629840546697039, "ci_lo": 0.4397683622206327, "ci_hi": 0.4863613471640322, "replace_rate": 0.43621867881548976, "no_response_rate": 0.10079726651480637, "exp_per_q": 2.5937961595273262, "zero_exposure": 96}, {"group": "문구 특성", "value": "오늘 기반", "questions": 54, "exposures": 171, "answer_rate": 0.29239766081871343, "ci_lo": 0.22938189638724238, "ci_hi": 0.3645359279154424, "replace_rate": 0.6198830409356725, "no_response_rate": 0.08771929824561403, "exp_per_q": 3.1666666666666665, "zero_exposure": 9}, {"group": "문구 특성(해당 없음)", "value": "오늘 기반", "questions": 821, "exposures": 2063, "answer_rate": 0.463402811439651, "ci_lo": 0.44197272489730105, "ci_hi": 0.4849689380175903, "replace_rate": 0.4401357246728066, "no_response_rate": 0.09646146388754241, "exp_per_q": 2.51278928136419, "zero_exposure": 118}, {"group": "문구 특성", "value": "최근·이번 주 회상", "questions": 39, "exposures": 127, "answer_rate": 0.4015748031496063, "ci_lo": 0.320417879949689, "ci_hi": 0.48851118408451627, "replace_rate": 0.49606299212598426, "no_response_rate": 0.10236220472440945, "exp_per_q": 3.2564102564102564, "zero_exposure": 4}, {"group": "문구 특성(해당 없음)", "value": "최근·이번 주 회상", "questions": 836, "exposures": 2107, "answer_rate": 0.4532510678690081, "ci_lo": 0.4320994387264898, "ci_hi": 0.4745728510483841, "replace_rate": 0.4513526340768866, "no_response_rate": 0.09539629805410536, "exp_per_q": 2.520334928229665, "zero_exposure": 123}, {"group": "문구 특성", "value": "과거 기억 회상", "questions": 36, "exposures": 91, "answer_rate": 0.4175824175824176, "ci_lo": 0.3216129812076077, "ci_hi": 0.5202283381213286, "replace_rate": 0.5164835164835165, "no_response_rate": 0.06593406593406594, "exp_per_q": 2.5277777777777777, "zero_exposure": 9}, {"group": "문구 특성(해당 없음)", "value": "과거 기억 회상", "questions": 839, "exposures": 2143, "answer_rate": 0.45170321978534766, "ci_lo": 0.4307379867247098, "ci_hi": 0.47284129289582194, "replace_rate": 0.4512365842277182, "no_response_rate": 0.0970601959869342, "exp_per_q": 2.5542312276519668, "zero_exposure": 118}, {"group": "문구 특성", "value": "미래·상상", "questions": 17, "exposures": 47, "answer_rate": 0.425531914893617, "ci_lo": 0.29513628343679965, "ci_hi": 0.5671808065450722, "replace_rate": 0.44680851063829785, "no_response_rate": 0.1276595744680851, "exp_per_q": 2.764705882352941, "zero_exposure": 2}, {"group": "문구 특성(해당 없음)", "value": "미래·상상", "questions": 858, "exposures": 2187, "answer_rate": 0.4508459076360311, "ci_lo": 0.43009642338835574, "ci_hi": 0.471767767133339, "replace_rate": 0.4540466392318244, "no_response_rate": 0.09510745313214448, "exp_per_q": 2.5489510489510487, "zero_exposure": 125}, {"group": "문구 특성", "value": "부정·무거운 감정", "questions": 60, "exposures": 145, "answer_rate": 0.4896551724137931, "ci_lo": 0.40961291385299775, "ci_hi": 0.5702314116207667, "replace_rate": 0.4482758620689655, "no_response_rate": 0.06206896551724138, "exp_per_q": 2.4166666666666665, "zero_exposure": 5}, {"group": "문구 특성(해당 없음)", "value": "부정·무거운 감정", "questions": 815, "exposures": 2089, "answer_rate": 0.4475825753949258, "ci_lo": 0.42637510903191694, "ci_hi": 0.46898246854426234, "replace_rate": 0.4542843465773097, "no_response_rate": 0.09813307802776448, "exp_per_q": 2.5631901840490796, "zero_exposure": 122}, {"group": "문구 특성", "value": "연애 대상 전제", "questions": 24, "exposures": 35, "answer_rate": 0.5428571428571428, "ci_lo": 0.3818972506848375, "ci_hi": 0.6953398071159278, "replace_rate": 0.34285714285714286, "no_response_rate": 0.11428571428571428, "exp_per_q": 1.4583333333333333, "zero_exposure": 6}, {"group": "문구 특성(해당 없음)", "value": "연애 대상 전제", "questions": 851, "exposures": 2199, "answer_rate": 0.4488403819918145, "ci_lo": 0.4281591844125059, "ci_hi": 0.4697000105381579, "replace_rate": 0.45566166439290584, "no_response_rate": 0.09549795361527967, "exp_per_q": 2.5840188014101058, "zero_exposure": 121}, {"group": "문구 특성", "value": "특정 활동 전제", "questions": 63, "exposures": 178, "answer_rate": 0.38202247191011235, "ci_lo": 0.31385005209854044, "ci_hi": 0.4551795175475414, "replace_rate": 0.5337078651685393, "no_response_rate": 0.08426966292134831, "exp_per_q": 2.8253968253968256, "zero_exposure": 16}, {"group": "문구 특성(해당 없음)", "value": "특정 활동 전제", "questions": 812, "exposures": 2056, "answer_rate": 0.45622568093385213, "ci_lo": 0.43479765761826233, "ci_hi": 0.4778169762754287, "replace_rate": 0.4469844357976654, "no_response_rate": 0.0967898832684825, "exp_per_q": 2.5320197044334973, "zero_exposure": 111}, {"group": "문구 특성", "value": "자기 수용·칭찬", "questions": 16, "exposures": 44, "answer_rate": 0.36363636363636365, "ci_lo": 0.2378352970882018, "ci_hi": 0.5113362312095656, "replace_rate": 0.5227272727272727, "no_response_rate": 0.11363636363636363, "exp_per_q": 2.75, "zero_exposure": 3}, {"group": "문구 특성(해당 없음)", "value": "자기 수용·칭찬", "questions": 859, "exposures": 2190, "answer_rate": 0.4520547945205479, "ci_lo": 0.43131240025116774, "ci_hi": 0.4729650947539244, "replace_rate": 0.45251141552511415, "no_response_rate": 0.0954337899543379, "exp_per_q": 2.549476135040745, "zero_exposure": 124}, {"group": "문구 길이", "value": "~20자", "questions": 84, "exposures": 272, "answer_rate": 0.4963235294117647, "ci_lo": 0.43737136857985665, "ci_hi": 0.5553780897193032, "replace_rate": 0.3860294117647059, "no_response_rate": 0.11764705882352941, "exp_per_q": 3.238095238095238, "zero_exposure": 10}, {"group": "문구 길이", "value": "21~30자", "questions": 408, "exposures": 1126, "answer_rate": 0.44404973357015987, "ci_lo": 0.4152676974505545, "ci_hi": 0.4732122312896103, "replace_rate": 0.4564831261101243, "no_response_rate": 0.0994671403197158, "exp_per_q": 2.7598039215686274, "zero_exposure": 61}, {"group": "문구 길이", "value": "31~40자", "questions": 305, "exposures": 684, "answer_rate": 0.4371345029239766, "ci_lo": 0.4004146839011206, "ci_hi": 0.47455650473957683, "replace_rate": 0.47514619883040937, "no_response_rate": 0.08771929824561403, "exp_per_q": 2.2426229508196722, "zero_exposure": 44}, {"group": "문구 길이", "value": "41자~", "questions": 78, "exposures": 152, "answer_rate": 0.47368421052631576, "ci_lo": 0.3959377545194448, "ci_hi": 0.5527280237622861, "replace_rate": 0.4605263157894737, "no_response_rate": 0.06578947368421052, "exp_per_q": 1.9487179487179487, "zero_exposure": 12}], "glm": [{"term": "관심사_감정", "odds_ratio": 1.1196994673447715, "or_lo": 0.8393911952626543, "or_hi": 1.4936145437883237, "p_value": 0.44186145497213714}, {"term": "관심사_관계", "odds_ratio": 0.5564615644607769, "or_lo": 0.3917222032715528, "or_hi": 0.7904823115361619, "p_value": 0.0010654544503804417}, {"term": "관심사_루틴", "odds_ratio": 0.8637816386888926, "or_lo": 0.6104350938487293, "or_hi": 1.222273632126666, "p_value": 0.4083735010870282}, {"term": "관심사_사랑", "odds_ratio": 1.086763508665423, "or_lo": 0.7254102714972461, "or_hi": 1.6281199345703843, "p_value": 0.6866289399488639}, {"term": "관심사_취향", "odds_ratio": 0.9969481246277062, "or_lo": 0.7601797808557507, "or_hi": 1.3074611930349418, "p_value": 0.9823727922977202}, {"term": "레벨2", "odds_ratio": 0.8356760822094069, "or_lo": 0.6564237315255784, "or_hi": 1.0638776156886263, "p_value": 0.14503497933725798}, {"term": "양자택일형", "odds_ratio": 1.0891095891844151, "or_lo": 0.7986265314475284, "or_hi": 1.4852495510054051, "p_value": 0.5896786557362333}, {"term": "경험 전제형(~있다면/~적 있)", "odds_ratio": 0.676268170939564, "or_lo": 0.5059339649939072, "or_hi": 0.9039492713865356, "p_value": 0.00824134220782764}, {"term": "가정·상상형(~한다면)", "odds_ratio": 0.7429803187268772, "or_lo": 0.475488669946875, "or_hi": 1.1609524872110362, "p_value": 0.19202926786395014}, {"term": "정의·개념형", "odds_ratio": 0.8553315291516532, "or_lo": 0.45511661151083266, "or_hi": 1.6074825797552592, "p_value": 0.6273702498551146}, {"term": "복문(쉼표·두 질문)", "odds_ratio": 1.166149007578583, "or_lo": 0.858779739259059, "or_hi": 1.5835300318680272, "p_value": 0.32478544458837444}, {"term": "오늘 기반", "odds_ratio": 0.4529924696585467, "or_lo": 0.3137924148462488, "or_hi": 0.6539424404757961, "p_value": 2.3643007500072195e-05}, {"term": "최근·이번 주 회상", "odds_ratio": 0.6884053543861024, "or_lo": 0.4699775500302181, "or_hi": 1.0083501476123375, "p_value": 0.055204319761460945}, {"term": "과거 기억 회상", "odds_ratio": 1.0051140872391342, "or_lo": 0.6412844596706236, "or_hi": 1.5753606892102832, "p_value": 0.982250117812667}, {"term": "미래·상상", "odds_ratio": 0.7745899197182164, "or_lo": 0.42718079236083367, "or_hi": 1.4045330559297953, "p_value": 0.40023906364786155}, {"term": "부정·무거운 감정", "odds_ratio": 1.117368824370087, "or_lo": 0.7854277960186868, "or_hi": 1.5895962633393812, "p_value": 0.5372054396006729}, {"term": "연애 대상 전제", "odds_ratio": 1.14895415610916, "or_lo": 0.5416626720549481, "or_hi": 2.4371176397154373, "p_value": 0.7174174567709082}, {"term": "특정 활동 전제", "odds_ratio": 0.7315901623145784, "or_lo": 0.5235274962334309, "or_hi": 1.0223420344608318, "p_value": 0.06716847593870892}, {"term": "자기 수용·칭찬", "odds_ratio": 0.8447963216816229, "or_lo": 0.4408463504148163, "or_hi": 1.618887906081697, "p_value": 0.6112762984786038}, {"term": "문구 길이(10자)", "odds_ratio": 0.9389012577950955, "or_lo": 0.8084009316965406, "or_hi": 1.090468277961022, "p_value": 0.4089816820241856}], "class_counts": {"C. 유지·모니터링": 458, "B. 패턴 기반 수정 권장": 223, "E. 미노출(데이터 없음)": 73, "D. 우수(레퍼런스)": 66, "A. 교체·재작성 우선": 50, "비활성": 5}, "class_by_cat": {"A. 교체·재작성 우선": {"가치관": 4, "감정": 14, "관계": 9, "루틴": 9, "사랑": 0, "취향": 14}, "B. 패턴 기반 수정 권장": {"가치관": 54, "감정": 37, "관계": 41, "루틴": 61, "사랑": 9, "취향": 21}, "C. 유지·모니터링": {"가치관": 160, "감정": 57, "관계": 77, "루틴": 57, "사랑": 56, "취향": 51}, "D. 우수(레퍼런스)": {"가치관": 19, "감정": 22, "관계": 0, "루틴": 0, "사랑": 9, "취향": 16}, "E. 미노출(데이터 없음)": {"가치관": 32, "감정": 0, "관계": 22, "루틴": 10, "사랑": 9, "취향": 0}, "비활성": {"가치관": 1, "감정": 0, "관계": 1, "루틴": 0, "사랑": 2, "취향": 1}}, "risk_feature_counts": {"오늘 기반": 54, "경험 전제형(~있다면/~적 있)": 194, "최근·이번 주 회상": 39, "특정 활동 전제": 63}, "rewrites": [{"질문 ID": 528, "질문 문구": "오늘 누군가와 진심이 닿는 대화를 나눴나요?", "관심사": "관계", "노출": 3, "답변": 0, "원인 진단": "오늘 대화가 없었다면 답할 수 없음 + 예/아니오로 끝나는 닫힌 질문", "수정안 1 (권장)": "진심이 닿았다고 느끼는 대화는 어떤 대화인가요?"}, {"질문 ID": 347, "질문 문구": "오늘 속으로 나를 가만히 안아준 적이 있다면, 어떤 순간이었나요?", "관심사": "감정", "노출": 5, "답변": 0, "원인 진단": "오늘 + 경험 전제 + 추상적 표현('속으로 안아준')의 3중 장벽", "수정안 1 (권장)": "힘든 날 나를 달래주는 나만의 방법은 무엇인가요?"}, {"질문 ID": 333, "질문 문구": "오늘 기억에 남는 소리나 향기가 있다면, 어떤 건가요?", "관심사": "취향", "노출": 12, "답변": 1, "원인 진단": "'오늘' 재료가 부족한 시점에 노출 + 감각 기억을 요구", "수정안 1 (권장)": "가장 좋아하는 소리나 향기는 무엇인가요?"}, {"질문 ID": 353, "질문 문구": "오늘 내 자신에게 칭찬 한 마디를 남긴다면 무엇일까요?", "관심사": "감정", "노출": 5, "답변": 1, "원인 진단": "하루가 끝나지 않은 시점에는 칭찬할 거리가 없음", "수정안 1 (권장)": "요즘의 나에게 칭찬 한 마디를 해준다면 무엇일까요?"}, {"질문 ID": 338, "질문 문구": "오늘 새롭게 알게 된 것 중 더 궁금해진 건 무엇이었나요?", "관심사": "취향", "노출": 10, "답변": 1, "원인 진단": "'새로 알게 된 것'이 없을 가능성이 높음 + 이중 조건(알게 된 것 중 더 궁금해진 것)", "수정안 1 (권장)": "요즘 가장 궁금한 건 무엇인가요?"}, {"질문 ID": 623, "질문 문구": "돌아보니 칭찬해주고 싶은 오늘의 선택은 무엇인가요?", "관심사": "가치관", "노출": 5, "답변": 1, "원인 진단": "오늘 + '선택'이라는 추상 단위를 떠올리기 어려움", "수정안 1 (권장)": "최근 내가 내린 선택 중 잘했다 싶은 건 무엇인가요?"}, {"질문 ID": 362, "질문 문구": "오늘 감정의 온도가 급격히 변한 시점이 있다면, 어떤 때였나요?", "관심사": "감정", "노출": 4, "답변": 1, "원인 진단": "오늘 + 경험 전제 + 추상 은유('감정의 온도')", "수정안 1 (권장)": "기분이 갑자기 바뀌는 순간은 주로 언제인가요?"}, {"질문 ID": 536, "질문 문구": "이번 주, 소중한 사람과 함께한 기억을 한 줄로 적어볼까요?", "관심사": "관계", "노출": 3, "답변": 0, "원인 진단": "'이번 주'로 기간이 좁음 + 특정 인물·만남 전제 + 청유형이라 질문처럼 읽히지 않음", "수정안 1 (권장)": "소중한 사람과 함께할 때 가장 좋아하는 순간은 언제인가요?"}, {"질문 ID": 335, "질문 문구": "오늘 쓴 돈이나 시간 중 가심비 최고였던 건 무엇이었나요?", "관심사": "취향", "노출": 7, "답변": 1, "원인 진단": "오늘 소비가 없으면 답 불가 + '가심비' 개념 해석 부담", "수정안 1 (권장)": "돈이 아깝지 않았던 소비는 무엇인가요?"}, {"질문 ID": 450, "질문 문구": "집중이 안 될 때 나를 다시 잡아주는 나만의 방법이 있다면, 어떤 건가요?", "관심사": "루틴", "노출": 3, "답변": 0, "원인 진단": "'나만의 방법'이 있어야 답할 수 있음", "수정안 1 (권장)": "집중이 안 될 때 잠깐 쉬는 편인가요, 억지로라도 버티는 편인가요?"}, {"질문 ID": 43, "질문 문구": "딱 한 권만 남길 수 있다면 어떤 책인가요?", "관심사": "취향", "노출": 5, "답변": 0, "원인 진단": "독서 습관 전제 + '딱 한 권' 결정 부담", "수정안 1 (권장)": "딱 하나만 평생 다시 볼 수 있다면 어떤 책·영화·드라마를 고를까요?"}, {"질문 ID": 127, "질문 문구": "운동하기 싫을 때 나를 움직이게 하는 주문이 있다면, 어떤 건가요?", "관심사": "루틴", "노출": 3, "답변": 0, "원인 진단": "운동 습관 전제 + '주문' 은유", "수정안 1 (권장)": "하기 싫은 일을 할 때 나를 움직이게 하는 한마디는 무엇인가요?"}, {"질문 ID": 507, "질문 문구": "가족이라서 참고 있는 게 있다면, 어떤 건가요?", "관심사": "관계", "노출": 4, "답변": 1, "원인 진단": "가족 갈등 노출 부담 + 경험 전제", "수정안 1 (권장)": "가족에게 가장 솔직해지기 어려운 부분은 무엇인가요?"}, {"질문 ID": 325, "질문 문구": "좋아하는 시의 제목이나 글귀가 있다면 어떤 건가요?", "관심사": "취향", "노출": 6, "답변": 1, "원인 진단": "시 읽는 습관 전제 (특정 활동)", "수정안 1 (권장)": "마음에 오래 남은 문장이 있나요? 책·노래·대사 무엇이든 좋아요."}, {"질문 ID": 110, "질문 문구": "하루를 시작할 때 듣는 음악 장르가 있다면, 어떤 장르인가요?", "관심사": "루틴", "노출": 5, "답변": 1, "원인 진단": "아침 음악 습관 전제 + 쉼표 복문", "수정안 1 (권장)": "아침에 가장 먼저 하는 일은 무엇인가요?"}, {"질문 ID": 354, "질문 문구": "오늘 하루 감정 그래프를 그리면 어떤 모양일까요?", "관심사": "감정", "노출": 3, "답변": 0, "원인 진단": "오늘 하루가 진행 중이면 그래프를 그릴 수 없음 + 시각화 요구 부담", "수정안 1 (권장)": "요즘 내 기분을 날씨로 표현하면 어떤 날씨인가요?"}, {"질문 ID": 356, "질문 문구": "오늘 아주 잠깐이라도 행복이 스친 순간이 있다면, 어떤 순간이었나요?", "관심사": "감정", "노출": 6, "답변": 2, "원인 진단": "오늘 + '있다면' 전제. 레벨1인데도 장벽 높음", "수정안 1 (권장)": "요즘 나를 웃게 만드는 작은 행복은 무엇인가요?"}, {"질문 ID": 360, "질문 문구": "오늘 하루 중 가장 단골손님처럼 찾아온 감정은 무엇인가요?", "관심사": "감정", "노출": 5, "답변": 1, "원인 진단": "오늘 + 은유('단골손님처럼') 해석 부담", "수정안 1 (권장)": "요즘 가장 자주 느끼는 감정은 무엇인가요?"}, {"질문 ID": 38, "질문 문구": "전시회에서 작품을 보는 나만의 방식이 있다면, 어떤 건가요?", "관심사": "취향", "노출": 4, "답변": 0, "원인 진단": "전시회 관람 경험 전제 (특정 활동)", "수정안 1 (권장)": "무언가를 감상할 때 나만의 방식이 있나요? 전시·영화·음악 무엇이든 좋아요."}, {"질문 ID": 519, "질문 문구": "나의 말이나 행동이 타인에게 기분 좋은 울림을 줬나요?", "관심사": "관계", "노출": 3, "답변": 0, "원인 진단": "예/아니오 닫힌 질문 + 타인 반응을 알아야 답할 수 있음", "수정안 1 (권장)": "내가 누군가에게 힘이 되었다고 느낀 순간은 언제인가요?"}, {"질문 ID": 337, "질문 문구": "오늘 온전한 휴식시간을 보냈나요?", "관심사": "취향", "노출": 12, "답변": 4, "원인 진단": "예/아니오 닫힌 질문 + 오늘 쉬지 못한 사람은 할 말이 없음", "수정안 1 (권장)": "나에게 진짜 휴식은 어떤 모습인가요?"}, {"질문 ID": 170, "질문 문구": "나를 가장 잘 이해한다고 느끼는 사람은 누구인가요?", "관심사": "관계", "노출": 3, "답변": 0, "원인 진단": "특정 인물 지목 (관계 카테고리 '누구' 질문 답변율 28%)", "수정안 1 (권장)": "나를 잘 이해해주는 사람들은 어떤 공통점이 있나요?"}, {"질문 ID": 365, "질문 문구": "오늘 나를 가장 진 빠지게 만든 감정은 무엇인가요?", "관심사": "감정", "노출": 10, "답변": 3, "원인 진단": "오늘 + 부정 감정을 곱씹게 함", "수정안 1 (권장)": "나를 가장 쉽게 지치게 만드는 것은 무엇인가요?"}, {"질문 ID": 192, "질문 문구": "사람들에게 듣고 싶은 진심 어린 말은 무엇인가요?", "관심사": "관계", "노출": 3, "답변": 0, "원인 진단": "추상적 + 타인에게 기대하는 말을 떠올리기 어려움", "수정안 1 (권장)": "요즘 누군가에게 가장 듣고 싶은 말은 무엇인가요?"}, {"질문 ID": 542, "질문 문구": "남이 말해줘서 알게 된 나의 특징은 무엇인가요?", "관심사": "관계", "노출": 3, "답변": 0, "원인 진단": "타인 피드백 경험 전제", "수정안 1 (권장)": "사람들이 나에 대해 자주 하는 말은 무엇인가요?"}, {"질문 ID": 332, "질문 문구": "오늘 먹은 것 중 기분까지 완벽하게 충전해준 메뉴는 무엇인가요?", "관심사": "취향", "노출": 10, "답변": 3, "원인 진단": "오늘 + 식사 전 노출 시 답 불가 (레벨1이지만 낮음)", "수정안 1 (권장)": "기분까지 충전해주는 나만의 소울푸드는 무엇인가요?"}, {"질문 ID": 331, "질문 문구": "SNS에 일상을 올리는 편인가요? 올린다면 어떤 순간을 주로 올리나요?", "관심사": "취향", "노출": 4, "답변": 0, "원인 진단": "SNS 사용 전제 + 두 질문 연결(복문)", "수정안 1 (권장)": "기록으로 남기고 싶은 순간은 주로 어떤 때인가요?"}, {"질문 ID": 369, "질문 문구": "오늘 내가 필사적으로 피하고 싶었던 감정은 무엇인가요?", "관심사": "감정", "노출": 9, "답변": 3, "원인 진단": "오늘 + '필사적으로' 과한 강도 표현", "수정안 1 (권장)": "가장 마주하기 싫은 감정은 무엇인가요?"}, {"질문 ID": 36, "질문 문구": "나만의 특별한 요리 레시피가 있다면, 어떤 건가요?", "관심사": "취향", "노출": 8, "답변": 2, "원인 진단": "요리 습관 전제 (특정 활동)", "수정안 1 (권장)": "자신 있게 만들 수 있는 음식이 있나요? 없다면 가장 좋아하는 음식을 알려주세요."}, {"질문 ID": 49, "질문 문구": "누군가 나에 대한 책을 쓴다면 제목은 뭘까요?", "관심사": "취향", "노출": 7, "답변": 2, "원인 진단": "메타 상상(나에 대한 책) + 제목 짓기 창작 부담", "수정안 1 (권장)": "지금의 나를 한 단어로 표현한다면 무엇일까요?"}, {"질문 ID": 67, "질문 문구": "최근에 질투를 느꼈던 순간이 있다면 어떤 상황이었나요?", "관심사": "감정", "노출": 5, "답변": 1, "원인 진단": "최근 + 경험 전제 + 부정 감정 노출 부담", "수정안 1 (권장)": "나는 주로 어떤 상황에서 질투를 느끼나요?"}, {"질문 ID": 315, "질문 문구": "나만의 공부 스타일이 있다면, 어떤 건가요?", "관심사": "취향", "노출": 8, "답변": 2, "원인 진단": "공부 습관 전제 (특정 활동)", "수정안 1 (권장)": "새로운 걸 배울 때 나에게 맞는 방식은 무엇인가요?"}, {"질문 ID": 357, "질문 문구": "축 처져 있다가 기분이 다시 살아난 계기가 있다면, 어떤 건가요?", "관심사": "감정", "노출": 6, "답변": 1, "원인 진단": "경험 전제 + 앞부분 조건이 김", "수정안 1 (권장)": "기분이 처질 때 나를 살려내는 것은 무엇인가요?"}, {"질문 ID": 798, "질문 문구": "지금 아니면 못 갈 것 같다면, 여행과 커리어 중 뭐가 더 끌리나요?", "관심사": "가치관", "노출": 4, "답변": 0, "원인 진단": "여행·커리어 양쪽 전제 + 가정 조건이 앞에 붙어 복잡", "수정안 1 (권장)": "지금 하고 싶은 일과 해야 하는 일 중 무엇을 먼저 하나요?"}, {"질문 ID": 191, "질문 문구": "나를 가장 힘들게 했던 인연은 누구였나요?", "관심사": "관계", "노출": 3, "답변": 0, "원인 진단": "부정적 특정 인물 지목 → 방어적 회피", "수정안 1 (권장)": "나를 지치게 하는 관계는 어떤 특징이 있나요?"}, {"질문 ID": 63, "질문 문구": "내일 일어날 일 중 설레는 게 있다면, 어떤 건가요?", "관심사": "감정", "노출": 7, "답변": 1, "원인 진단": "'내일 설레는 일'이 없으면 교체 + 경험 전제", "수정안 1 (권장)": "요즘 기다려지는 일은 무엇인가요?"}, {"질문 ID": 56, "질문 문구": "오늘 나를 기운 나게 한 말은 무엇인가요?", "관심사": "감정", "노출": 5, "답변": 1, "원인 진단": "오늘 + 들은 말이 없으면 답 불가", "수정안 1 (권장)": "들으면 기운이 나는 말은 무엇인가요?"}, {"질문 ID": 138, "질문 문구": "새로운 취미를 시작할 때 거치는 과정이 있다면, 어떤 건가요?", "관심사": "루틴", "노출": 3, "답변": 0, "원인 진단": "취미 시작 경험 전제 + '과정' 추상적", "수정안 1 (권장)": "새로운 걸 시작할 때 일단 해보는 편인가요, 충분히 알아보고 시작하는 편인가요?"}, {"질문 ID": 167, "질문 문구": "나랑 유머 코드가 가장 잘 맞는 사람은 누구인가요?", "관심사": "관계", "노출": 3, "답변": 0, "원인 진단": "특정 인물 지목 (관계 카테고리)", "수정안 1 (권장)": "나와 유머 코드가 잘 맞는 사람은 어떤 사람인가요?"}, {"질문 ID": 632, "질문 문구": "문득 나 자신이 어른스러워졌다고 느낀 최근의 순간은 언제인가요?", "관심사": "가치관", "노출": 5, "답변": 1, "원인 진단": "최근 + 경험 전제 + 문장 길이", "수정안 1 (권장)": "어른이 되었다고 느끼는 순간은 언제인가요?"}, {"질문 ID": 119, "질문 문구": "내가 지키는 습관 중 남들에게 추천하고 싶은 게 있다면, 어떤 건가요?", "관심사": "루틴", "노출": 4, "답변": 1, "원인 진단": "'지키는 습관'이 있어야 함 + 추천이라는 이중 요구", "수정안 1 (권장)": "꾸준히 이어가고 있는 습관은 무엇인가요? 작은 것도 좋아요."}, {"질문 ID": 471, "질문 문구": "나만의 작은 성취를 기록하는 방식이 있다면, 어떤 건가요?", "관심사": "루틴", "노출": 5, "답변": 1, "원인 진단": "기록 습관 전제", "수정안 1 (권장)": "작은 성취를 느낄 때 나는 어떻게 스스로를 챙기나요?"}, {"질문 ID": 306, "질문 문구": "최근 산 것 중 가장 만족스러운 건 무엇인가요?", "관심사": "취향", "노출": 6, "답변": 1, "원인 진단": "최근 구매가 없으면 답 불가", "수정안 1 (권장)": "지금까지 산 것 중 가장 만족스러운 건 무엇인가요?"}, {"질문 ID": 605, "질문 문구": "괜찮지 않은데 '괜찮아'라고 넘긴 적이 있다면, 어떤 순간이었나요?", "관심사": "가치관", "노출": 4, "답변": 1, "원인 진단": "경험 전제 + 부정 감정 노출 부담", "수정안 1 (권장)": "괜찮지 않을 때도 '괜찮아'라고 말하는 편인가요?"}, {"질문 ID": 129, "질문 문구": "기념일에 반복적으로 하는 일이 있다면, 어떤 건가요?", "관심사": "루틴", "노출": 5, "답변": 1, "원인 진단": "기념일 의례 전제", "수정안 1 (권장)": "가장 좋아하는 기념일은 무엇인가요?"}, {"질문 ID": 50, "질문 문구": "예전엔 좋아했는데 지금은 아닌 취향이 있다면, 어떤 건가요?", "관심사": "취향", "노출": 5, "답변": 0, "원인 진단": "취향 변화 경험 전제", "수정안 1 (권장)": "예전과 비교해 가장 많이 바뀐 내 취향은 무엇인가요?"}, {"질문 ID": 453, "질문 문구": "쉬고 있는데도 불안했던 적이 있다면, 그 불안은 어디에서 오는 걸까요?", "관심사": "루틴", "노출": 3, "답변": 0, "원인 진단": "경험 전제 + 원인 분석까지 요구(이중 질문)", "수정안 1 (권장)": "마음 편히 쉬기 어려울 때는 언제인가요?"}, {"질문 ID": 60, "질문 문구": "지금 당장 하고 싶은 말이 있다면 무엇인가요?", "관심사": "감정", "노출": 7, "답변": 1, "원인 진단": "'지금 당장 하고 싶은 말'이 없으면 교체 + 대상 불명확", "수정안 1 (권장)": "지금 누군가에게 전하고 싶은 말은 무엇인가요?"}, {"질문 ID": 93, "질문 문구": "내가 세상에 태어나길 잘했다고 느낀 순간이 있다면, 어떤 때였나요?", "관심사": "감정", "노출": 6, "답변": 0, "원인 진단": "존재론적 무게 + 경험 전제 → 즉시 답하기 부담", "수정안 1 (권장)": "살아있길 잘했다 싶은 작은 순간은 언제인가요?"}, {"질문 ID": 419, "질문 문구": "잠 들기 전 꼭 하는 일이 있다면, 어떤 건가요?", "관심사": "루틴", "노출": 4, "답변": 1, "원인 진단": "'꼭 하는 일' 전제 (루틴이 없으면 답 불가)", "수정안 1 (권장)": "잠들기 전 주로 무엇을 하나요?"}], "zero": 127};
+const $ = s => document.querySelector(s);
+const pct = (x, d=1) => (x*100).toFixed(d) + '%';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const glm = Object.fromEntries(D.glm.map(g => [g.term, g]));
+$('#m-exp').textContent = D.totals.exp.toLocaleString();
+$('#m-epq').textContent = (D.totals.exp / D.n_questions).toFixed(1);
+$('#m-zero').textContent = D.zero; $('#m-zero2').textContent = D.zero;
+$('#m-base').textContent = pct(D.base_answer_rate);
+$('#m-k').textContent = D.prior_concentration_k.toFixed(0);
+$('#f-today').textContent = glm['오늘 기반'].odds_ratio.toFixed(2);
+$('#f-exp').textContent = glm['경험 전제형(~있다면/~적 있)'].odds_ratio.toFixed(2);
+$('#f-exp-n').textContent = D.risk_feature_counts['경험 전제형(~있다면/~적 있)'];
+$('#f-rel').textContent = glm['관심사_관계'].odds_ratio.toFixed(2);
+
+// tooltip
+const tip = $('#tip');
+function bindTip(el, html){
+  el.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false;
+    const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8); tip.style.left = x + 'px'; tip.style.top = (e.clientY + 14) + 'px'; });
+  el.addEventListener('pointerleave', () => tip.hidden = true);
+}
+
+// stats
+const T = D.totals;
+$('#stats').innerHTML = [
+  ['질문', D.n_questions.toLocaleString(), ''],
+  ['노출', T.exp.toLocaleString(), ''],
+  ['답변율', pct(T.ans/T.exp), 'var(--ans)'],
+  ['교체율', pct(T.rep/T.exp), 'var(--rep)'],
+  ['미응답률', pct(T.nr/T.exp), 'var(--nr)'],
+].map(([l,v,c]) => `<div class="stat"><span class="l">${l}</span><span class="v"${c?` style="color:${c}"`:''}>${v}</span></div>`).join('');
+
+// forest plot
+(function(){
+  const rows = D.glm.map(g => ({...g, label: g.term.replace('관심사_','관심사: ').replace('레벨2','레벨 2 (vs 1)')}))
+    .sort((a,b) => a.odds_ratio - b.odds_ratio);
+  const W = 760, L = 210, R = 70, rowH = 24, top = 28, H = top + rows.length*rowH + 10;
+  const lo = 0.25, hi = 2.5, lx = v => L + (Math.log(v)-Math.log(lo))/(Math.log(hi)-Math.log(lo))*(W-L-R);
+  const ticks = [0.25,0.5,1,2];
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="문구 특성별 답변 오즈비">`;
+  ticks.forEach(t => s += `<line x1="${lx(t)}" x2="${lx(t)}" y1="${top-8}" y2="${H-6}" stroke="var(--line)" ${t===1?'stroke-width="1.5" stroke="var(--muted)"':''}/><text x="${lx(t)}" y="${top-14}" text-anchor="middle">×${t}</text>`);
+  rows.forEach((r,i) => {
+    const y = top + i*rowH + rowH/2, sig = r.p_value < 0.05;
+    const col = !sig ? 'var(--neutral)' : r.odds_ratio < 1 ? 'var(--worse)' : 'var(--better)';
+    const a = Math.max(lo, r.or_lo), b = Math.min(hi, r.or_hi), x0 = lx(1), x1 = lx(r.odds_ratio);
+    s += `<g class="hit" data-i="${i}"><rect x="0" y="${y-rowH/2}" width="${W}" height="${rowH}" fill="transparent"/>
+      <text x="${L-12}" y="${y+4}" text-anchor="end" style="${sig?'fill:var(--ink);font-weight:600':''}">${esc(r.label)}</text>
+      <rect x="${Math.min(x0,x1)}" y="${y-6}" width="${Math.max(2,Math.abs(x1-x0))}" height="12" rx="3" fill="${col}" opacity="${sig?1:.55}"/>
+      <line x1="${lx(a)}" x2="${lx(b)}" y1="${y}" y2="${y}" stroke="var(--ink-2)" stroke-width="1.2"/>
+      <text class="v" x="${W-R+8}" y="${y+4}">×${r.odds_ratio.toFixed(2)}</text></g>`;
+  });
+  s += '</svg>';
+  $('#forest').innerHTML = s;
+  document.querySelectorAll('#forest .hit').forEach(g => { const r = rows[+g.dataset.i];
+    bindTip(g, `<b>${esc(r.label)}</b><br>오즈비 ×${r.odds_ratio.toFixed(2)} (95% CI ${r.or_lo.toFixed(2)}–${r.or_hi.toFixed(2)})<br>p = ${r.p_value < 0.001 ? '<0.001' : r.p_value.toFixed(3)}`); });
+})();
+
+// categories
+(function(){
+  const rows = D.segments.filter(s => s.group === '관심사').sort((a,b) => b.answer_rate - a.answer_rate);
+  const W = 760, L = 70, R = 90, rowH = 34, top = 26, H = top + rows.length*rowH + 8;
+  const x = v => L + v/0.7*(W-L-R);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="관심사별 답변율">`;
+  [0,0.2,0.4,0.6].forEach(t => s += `<line x1="${x(t)}" x2="${x(t)}" y1="${top-6}" y2="${H-4}" stroke="var(--line)"/><text x="${x(t)}" y="${top-12}" text-anchor="middle">${t*100}%</text>`);
+  s += `<line x1="${x(D.base_answer_rate)}" x2="${x(D.base_answer_rate)}" y1="${top-6}" y2="${H-4}" stroke="var(--muted)" stroke-dasharray="4 3"/>`;
+  s += `<text x="${W-R+14}" y="${top-12}" style="fill:var(--muted)">노출/질문</text>`;
+  rows.forEach((r,i) => {
+    const y = top + i*rowH + rowH/2;
+    s += `<g class="hit" data-i="${i}"><rect x="0" y="${y-rowH/2}" width="${W}" height="${rowH}" fill="transparent"/>
+      <text x="${L-12}" y="${y+4}" text-anchor="end" style="fill:var(--ink)">${esc(r.value)}</text>
+      <line x1="${x(r.ci_lo)}" x2="${x(r.ci_hi)}" y1="${y}" y2="${y}" stroke="var(--ans)" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+      <circle cx="${x(r.answer_rate)}" cy="${y}" r="5.5" fill="var(--ans)" stroke="var(--surface)" stroke-width="2"/>
+      <text class="v" x="${x(r.ci_hi)+8}" y="${y+4}">${pct(r.answer_rate)}</text>
+      <text class="v" x="${W-R+14}" y="${y+4}" style="fill:var(--ink-2)">${r.exp_per_q.toFixed(1)}</text></g>`;
+  });
+  s += '</svg>';
+  $('#cats').innerHTML = s;
+  document.querySelectorAll('#cats .hit').forEach(g => { const r = rows[+g.dataset.i];
+    bindTip(g, `<b>${esc(r.value)}</b> · 질문 ${r.questions}개<br>답변율 ${pct(r.answer_rate)} (95% CI ${pct(r.ci_lo)}–${pct(r.ci_hi)})<br>교체율 ${pct(r.replace_rate)} · 노출 ${r.exposures}회<br>미노출 질문 ${r.zero_exposure}개`); });
+})();
+
+// classes
+const CL = [
+  ['A. 교체·재작성 우선','a','문구 모델 P(평균 미만) ≥ 0.8, 관측 데이터만으로도 ≥ 0.6, 노출 3회 이상','수정안 즉시 배포'],
+  ['B. 패턴 기반 수정 권장','b','위험 특성(오늘·경험 전제·최근·특정 활동) 보유 + 추정 답변율이 평균 미만','가이드 규칙으로 일괄 수정'],
+  ['C. 유지·모니터링','c','뚜렷한 신호 없음','데이터 누적 후 재평가'],
+  ['D. 우수(레퍼런스)','d','P(평균 미만) ≤ 0.2, 관측 데이터 ≤ 0.4, 노출 3회 이상','유지, 새 질문 작성의 기준으로 활용'],
+  ['E. 미노출(데이터 없음)','c','노출 0회, 위험 특성 없음','배포 로직 점검'],
+  ['비활성','c','INACTIVE 상태','해당 없음'],
+];
+$('#classes').innerHTML = CL.map(([k,c,crit,act]) => `<tr><td><span class="chip ${c}">${esc(k)}</span></td><td class="why">${esc(crit)}</td><td class="n">${D.class_counts[k] ?? 0}</td><td class="why">${esc(act)}</td></tr>`).join('');
+
+// rewrites
+const cats = ['전체', ...new Set(D.rewrites.map(r => r['관심사']))];
+let cur = '전체';
+function drawRw(){
+  $('#rw').innerHTML = D.rewrites.filter(r => cur === '전체' || r['관심사'] === cur).map(r =>
+    `<tr><td><div class="old">${esc(r['질문 문구'])}</div><div class="new">→ ${esc(r['수정안 1 (권장)'])}</div></td>
+     <td class="why">${esc(r['원인 진단'])}<br><span class="chip c" style="margin-top:4px">${esc(r['관심사'])}</span></td>
+     <td class="n">${r['노출']} / ${r['답변']}</td></tr>`).join('');
+}
+$('#catf').innerHTML = cats.map(c => `<button type="button" aria-pressed="${c===cur}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+$('#catf').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; cur = b.dataset.c;
+  document.querySelectorAll('#catf button').forEach(x => x.setAttribute('aria-pressed', x.dataset.c === cur)); drawRw(); });
+drawRw();
+</script>
