@@ -17,7 +17,10 @@ pip install -q pandas statsmodels scipy openpyxl
 python analysis/fetch_data.py      # 통계 사이트 CSV → data/snapshots/, nadab_daily_question_stats.csv
 python analysis/analyze.py
 python analysis/improve.py
+python analysis/analyze_v2.py      # AI 태깅 모델·FDR·계층 베이즈·우선순위 (output/v2/)
 ```
+`analyze_v2.py`가 "태그 누락"으로 멈추면 새 질문이 생긴 것이다. `analysis/TAGGING.md` 기준으로
+`analysis/question_tags.csv`에 새 ID의 태그를 추가하고 다시 돌린다.
 fetch가 실패하면(로그인 필요, 컬럼 변경) 멈추고 사용자에게 알린다.
 
 ## 3. 선택 결과 기록
@@ -38,7 +41,7 @@ python analysis/sync_review.py     # "needs rewrite:" 줄이 수정안이 필요
 - 작성 후 `python analysis/lint_questions.py "수정안1" "수정안2"`에서 [높음]이 없어야 한다.
 - CSV는 pandas로 기록한다(쉼표 따옴표 처리).
 
-그다음 `python analysis/improve.py && python analysis/sync_review.py`를 다시 돌려 `needsRewrite`가 0인지 확인한다.
+그다음 `python analysis/improve.py && python analysis/analyze_v2.py && python analysis/sync_review.py`를 다시 돌려 `needsRewrite`가 0인지 확인한다.
 
 ## 5. 검토 페이지 갱신
 `output/review_sync/batch.json`의 writes 배열을 그대로 ArtifactData `batch`로 보낸다.
@@ -56,4 +59,4 @@ git add -A && git commit -m "Monthly question review: <날짜>" && git push -u o
 - 새로 A·B에 들어온 질문 수와 새 수정안 수
 - 선택 완료·반영함·보류 개수, 반영 누락 의심
 - 수정한 질문(Revision 2 이상)의 전후 답변율 중 표본 20회 이상인 것
-- 전체 답변율·교체율 변화
+- 전체 답변율·교체율 변화, v2 교차검증에서 가장 좋은 모델과 FDR 통과 특성이 바뀌었는지

@@ -15,6 +15,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -41,6 +42,12 @@ def main():
         d = d.merge(scored[["질문 ID", "조치 유형", "예측 변화(%p)"]], on="질문 ID", how="left")
     txt = ["원인 진단", "수정 원칙", "수정안 1 (권장)", "수정안 2 (대안)", "조치 유형", "위험 특성"]
     d[[c for c in txt if c in d]] = d[[c for c in txt if c in d]].fillna("")
+    pri_path = OUT / "v2" / "priority.csv"
+    if pri_path.exists():
+        pri = pd.read_csv(pri_path)[["id", "우선순위", "기대 추가 답변(월)", "사후 답변율"]].rename(columns={"id": "질문 ID"})
+        d = d.merge(pri, on="질문 ID", how="left")
+    else:
+        d["우선순위"] = d["기대 추가 답변(월)"] = d["사후 답변율"] = np.nan
     cls = d["분류"].str[0]
     has_rw = d["수정안 1 (권장)"].fillna("") != ""
     # 검토 대상: A·B, 수정 후 관찰(F), 이미 수정안이 있는 질문
@@ -66,9 +73,12 @@ def main():
             "action": r.get("조치 유형") if isinstance(r.get("조치 유형"), str) else "",
             "dPred": num(r.get("예측 변화(%p)"), 2) if isinstance(r.get("예측 변화(%p)"), (int, float)) else None,
             "needsRewrite": (not o1) and r["분류"][0] in "AB",
+            "rank": None if pd.isna(r["우선순위"]) else int(r["우선순위"]),
+            "gain": num(r["기대 추가 답변(월)"], 2), "post": num(r["사후 답변율"]),
         })
     order = {"A": 0, "B": 1, "F": 2}
-    rows.sort(key=lambda x: (order.get(x["cls"][0], 3), x["est"] if x["est"] is not None else 1))
+    # 기대 이득(v2 우선순위) 순. 우선순위가 없는 항목(유지·오류 수정 등)은 분류 순으로 뒤에
+    rows.sort(key=lambda x: (x["rank"] is None, x["rank"] or 0, order.get(x["cls"][0], 3), x["est"] if x["est"] is not None else 1))
 
     n = math.ceil(len(rows) / CHUNK)
     (SYNC / "qchunks").mkdir(parents=True, exist_ok=True)

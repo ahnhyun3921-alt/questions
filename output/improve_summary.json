@@ -1,11 +1,11 @@
 {
- "n_rewrites": 264,
+ "n_rewrites": 270,
  "action_counts": {
-  "재작성": 224,
+  "재작성": 227,
   "경미 수정": 27,
   "유지": 7,
+  "오류 수정": 5,
   "노출 시간 조정 + 재작성": 3,
-  "오류 수정": 2,
   "유지(노출 시간 조정)": 1
  },
  "residual_risk": 23,
@@ -126,10 +126,10 @@
    "수정안 잔여 위험": "특정 활동 전제"
   }
  ],
- "mean_pred_old": 0.35224795028666167,
- "mean_pred_new": 0.45467473686015497,
- "affected_exposure_share": 0.31341952741863577,
+ "mean_pred_old": 0.35432635007627106,
+ "mean_pred_new": 0.4549139674753023,
+ "affected_exposure_share": 0.3178778421756576,
  "overall_now": 0.4498439589835042,
- "overall_projected": 0.48177882323811405,
- "extra_answers_per_month": 71.62990052308976
+ "overall_projected": 0.4819059779179418,
+ "extra_answers_per_month": 71.91510846994365
 }

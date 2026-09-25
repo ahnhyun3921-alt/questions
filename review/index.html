@@ -224,7 +224,8 @@ function cardHtml(it){
   const applied = st === 'applied' && d?.text ? `<div class="track">반영한 문구: ${esc(d.text)}</div>` : '';
   return `<article class="card st-${st}" tabindex="0" data-id="${it.id}" aria-label="질문 ${it.id}">
     <div class="head"><span class="num">#${it.id}</span><span class="chip ${it.cls[0]}">${esc(it.cls)}</span><span>${esc(it.cat)} · 레벨 ${it.level}</span><span class="chip s-${st}">${stLabel}</span>
-      <span class="stats">노출 ${it.exp} · 답변 ${it.ans} · 교체 ${it.rep} · 추정 ${it.est != null ? Math.round(it.est * 100) + '%' : '–'}</span></div>
+      ${it.rank ? `<span class="chip" title="다음 달 노출 × (수정 후 예측 − 현재 추정)">우선순위 ${it.rank} · 월 +${(it.gain ?? 0).toFixed(1)}답변</span>` : ''}
+      <span class="stats">노출 ${it.exp} · 답변 ${it.ans} · 교체 ${it.rep} · 추정 ${it.post != null ? Math.round(it.post * 100) : (it.est != null ? Math.round(it.est * 100) : '–')}%</span></div>
     <div class="orig">${esc(it.q)}</div>
     ${it.diag ? `<div class="diag">${esc(it.diag)}${it.principle ? ' → ' + esc(it.principle) : ''}</div>` : ''}
     ${it.lint.length ? `<div class="warns">${warnHtml(it.lint.map(m => [/오늘|경험 전제/.test(m) ? 'hi' : 'mid', m]))}</div>` : ''}

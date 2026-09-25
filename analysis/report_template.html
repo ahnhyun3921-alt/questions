@@ -143,6 +143,28 @@ ol.steps b{font-weight:600}
 </section>
 
 <section>
+  <h2>정밀 분석 (v2)</h2>
+  <p>위 결과를 더 엄격한 방법으로 다시 확인했습니다. 목표 변수는 결론이 난 노출(답변 또는 교체) 중 답변 비율로 바꿨습니다. 미응답 <span class="num" id="v2-nr"></span>에는 아직 진행 중인 노출이 섞여 있기 때문입니다. 질문 875개는 7개 차원(시점 고정, 경험 전제, 인지 노력, 감정 무게, 자기노출, 형식, 명료성)으로 직접 태깅했습니다.</p>
+  <figure class="fig" style="margin:0">
+    <h3>어떤 모델이 처음 보는 질문을 더 잘 맞히나</h3>
+    <div class="chart" id="cvChart"></div>
+    <figcaption>질문 단위 10겹 교차검증 × 5회 반복. 막대는 기준선(전체 평균) 대비 예측 개선율(검증 로그손실 기준). AI 태깅 모델이 단어 규칙이나 글자 패턴 모델의 약 두 배입니다. 절대 설명력은 작습니다. 질문당 노출이 적어 우연에 의한 변동이 크기 때문입니다.</figcaption>
+  </figure>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>다중검정 보정(FDR) 후 남은 원인</th><th style="text-align:right">오즈비 (95% CI)</th><th style="text-align:right">q값</th></tr></thead>
+    <tbody id="fdrTbl"></tbody>
+  </table></div>
+  <p class="note">문구 특성 20여 개를 동시에 검정했기 때문에 Benjamini-Hochberg 방식으로 거짓 발견률을 보정했습니다. '최근 회상', '특정 활동 전제', 질문 형식 효과는 보정 후에는 근거가 부족합니다.</p>
+  <figure class="fig" style="margin:0">
+    <h3>질문 형식별 답변율과 비중</h3>
+    <div class="chart" id="fmtChart"></div>
+    <figcaption>결론 난 노출 기준 답변율과 95% CI. 오른쪽 숫자는 전체 질문 중 비중입니다. 가장 약한 일화 회상형이 16%를 차지하고, 가장 강한 선호(최애)형은 8%뿐입니다. 새 질문을 만들 때 선호형 비중을 늘릴 여지가 있습니다.</figcaption>
+  </figure>
+  <div class="stats" id="v2stats"></div>
+  <p class="note">효과 신뢰구간은 질문 단위 부트스트랩 400회로 계산했습니다. 질문별 추정치는 질문 랜덤효과를 넣은 계층 베이지안 로지스틱 모델(변분 추론)로 다시 구했고, v1 순위와의 상관은 <span class="num" id="v2-rc"></span>입니다. 우선순위는 다음 달 예상 노출 × (수정 후 예측 − 현재 추정)으로 매긴 기대 추가 답변 수이며, 검토 페이지도 이 순서로 정렬됩니다.</p>
+</section>
+
+<section>
   <h2>질문 분류</h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>분류</th><th>기준</th><th style="text-align:right">질문 수</th><th>조치</th></tr></thead>
@@ -156,8 +178,8 @@ ol.steps b{font-weight:600}
   <div class="stats" id="istats"></div>
   <p>A·B 그룹 전체와 오류가 있는 질문에 수정안을 두 개씩 작성했습니다. 오늘 → 평소, 경험 전제 → 성향형, 특정 활동 → 대상 확장, 특정 인물 → 특징이라는 가이드 규칙을 그대로 적용했고, 관측 성과가 좋은 질문은 억지로 고치지 않고 유지로 분류했습니다. 같은 검수 규칙으로 다시 검사했을 때 '높음' 위험이 남은 수정안은 <span class="num" id="i-resid"></span>개이며, 모두 데이터상 성과가 좋아 의도적으로 유지한 질문입니다.</p>
   <div class="callout">
-    <h3>문구 오류 3건은 바로 고쳐야 합니다</h3>
-    <p>706번 '인성 좋지만 <b>인성은</b> 아쉬운 동료'는 선택지가 뒤섞였습니다(→ 능력은 아쉬운). 549번 '바꾸 수 있다면'(→ 바꿀 수), 609번 '회피하고 있는게'(→ 있는 게)는 맞춤법 오류입니다.</p>
+    <h3>문구 오류 6건과 중복 질문 2쌍은 바로 고쳐야 합니다</h3>
+    <p>706번 '인성 좋지만 <b>인성은</b> 아쉬운 동료'는 선택지가 뒤섞였습니다(→ 능력은 아쉬운). 맞춤법 오류는 5번 '바뀌 때', 163번 '사귀 때', 289번 '옮고 그름', 549번 '바꾸 수', 609번 '있는게'입니다. 874번은 871번과, 875번은 872번과 문구가 완전히 같아서 같은 질문이 두 번 노출됩니다.</p>
   </div>
   <div class="filters" id="clsf" role="group" aria-label="분류 필터"></div>
   <div class="filters" id="catf" role="group" aria-label="관심사 필터"></div>
@@ -289,6 +311,52 @@ $('#stats').innerHTML = [
   $('#cats').innerHTML = s;
   document.querySelectorAll('#cats .hit').forEach(g => { const r = rows[+g.dataset.i];
     bindTip(g, `<b>${esc(r.value)}</b> · 질문 ${r.questions}개<br>답변율 ${pct(r.answer_rate)} (95% CI ${pct(r.ci_lo)}–${pct(r.ci_hi)})<br>교체율 ${pct(r.replace_rate)} · 노출 ${r.exposures}회<br>미노출 질문 ${r.zero_exposure}개`); });
+})();
+
+// ---- v2 ----
+(function(){
+  const V = D.v2; if (!V) return;
+  $('#v2-nr').textContent = pct(V.no_response_share);
+  $('#v2-rc').textContent = V.rank_corr_v1_v2.toFixed(2);
+  const NAMES = { tags: 'AI 태깅 7차원', 'tags+regex': 'AI 태깅 + 단어 규칙', regex: '단어 규칙 (v1)', text: '글자 패턴 (n-gram)', base: '관심사·레벨만' };
+  const cv = V.cv.filter(r => r.model !== 'null').sort((a,b) => b.gain_vs_null_pct - a.gain_vs_null_pct);
+  const W = 760, L = 170, R = 70, rowH = 30, top = 22, H = top + cv.length*rowH + 6, mx = Math.max(...cv.map(r => r.gain_vs_null_pct)) * 1.1;
+  const x = v => L + v / mx * (W - L - R);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="모델별 교차검증 예측 개선율">`;
+  [0,1,2].forEach(t => { if (t <= mx) s += `<line x1="${x(t)}" x2="${x(t)}" y1="${top-6}" y2="${H-4}" stroke="var(--line)"/><text x="${x(t)}" y="${top-10}" text-anchor="middle">${t}%</text>`; });
+  cv.forEach((r,i) => { const y = top + i*rowH + rowH/2, best = i === 0;
+    s += `<text x="${L-12}" y="${y+4}" text-anchor="end" style="${best?'fill:var(--ink);font-weight:600':''}">${esc(NAMES[r.model] || r.model)}</text>
+      <rect x="${x(0)}" y="${y-8}" width="${Math.max(2, x(r.gain_vs_null_pct)-x(0))}" height="16" rx="3" fill="${best?'var(--accent)':'var(--neutral)'}"/>
+      <text class="v" x="${x(r.gain_vs_null_pct)+8}" y="${y+4}">${r.gain_vs_null_pct.toFixed(1)}%</text>`; });
+  $('#cvChart').innerHTML = s + '</svg>';
+
+  const lab = t => t.replace('[규칙] ', '').replace('관심사_', '관심사: ').replace('=2', ' (강함)');
+  const sig = [...V.effects_tags.map(r => ({...r, src:'AI 태깅'})), ...V.effects_regex.map(r => ({...r, src:'단어 규칙'}))]
+    .filter(r => r.q_fdr < 0.2).sort((a,b) => a.q_fdr - b.q_fdr);
+  $('#fdrTbl').innerHTML = sig.map(r => `<tr><td>${esc(lab(r.term))} <span class="chip c">${r.src}</span> ${r.q_fdr < 0.05 ? '<span class="chip a">유의</span>' : '<span class="chip b">경향</span>'}</td><td class="n">×${r.odds_ratio.toFixed(2)} (${r.or_lo.toFixed(2)}–${r.or_hi.toFixed(2)})</td><td class="n">${r.q_fdr < 0.001 ? '<0.001' : r.q_fdr.toFixed(3)}</td></tr>`).join('');
+
+  const fm = V.format.slice().sort((a,b) => b['답변율(결론 기준)'] - a['답변율(결론 기준)']);
+  const W2 = 760, L2 = 110, R2 = 80, H2 = 22 + fm.length*30 + 6, x2 = v => L2 + v / 0.82 * (W2 - L2 - R2);
+  let s2 = `<svg viewBox="0 0 ${W2} ${H2}" role="img" aria-label="질문 형식별 답변율">`;
+  [0,0.25,0.5,0.75].forEach(t => s2 += `<line x1="${x2(t)}" x2="${x2(t)}" y1="16" y2="${H2-4}" stroke="var(--line)"/><text x="${x2(t)}" y="12" text-anchor="middle">${t*100}%</text>`);
+  s2 += `<line x1="${x2(V.base_resolved_rate)}" x2="${x2(V.base_resolved_rate)}" y1="16" y2="${H2-4}" stroke="var(--muted)" stroke-dasharray="4 3"/><text x="${W2-R2+14}" y="12" style="fill:var(--muted)">비중</text>`;
+  fm.forEach((r,i) => { const y = 22 + i*30 + 15;
+    s2 += `<g class="hit" data-i="${i}"><rect x="0" y="${y-15}" width="${W2}" height="30" fill="transparent"/><text x="${L2-12}" y="${y+4}" text-anchor="end" style="fill:var(--ink)">${esc(r['형식'])}</text>
+      <line x1="${x2(r.ci_lo)}" x2="${x2(r.ci_hi)}" y1="${y}" y2="${y}" stroke="var(--ans)" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+      <circle cx="${x2(r['답변율(결론 기준)'])}" cy="${y}" r="5.5" fill="var(--ans)" stroke="var(--surface)" stroke-width="2"/>
+      <text class="v" x="${x2(r.ci_hi)+8}" y="${y+4}">${pct(r['답변율(결론 기준)'])}</text>
+      <text class="v" x="${W2-R2+14}" y="${y+4}" style="fill:var(--ink-2)">${r['비중(%)'].toFixed(0)}%</text></g>`; });
+  $('#fmtChart').innerHTML = s2 + '</svg>';
+  document.querySelectorAll('#fmtChart .hit').forEach(g => { const r = fm[+g.dataset.i];
+    bindTip(g, `<b>${esc(r['형식'])}</b> · 질문 ${r['질문수']}개<br>답변율 ${pct(r['답변율(결론 기준)'])} (95% CI ${pct(r.ci_lo)}–${pct(r.ci_hi)})<br>결론 난 노출 ${r['결론노출']}회`); });
+
+  const im = V.impact;
+  $('#v2stats').innerHTML = [
+    ['전체 답변율 효과 (95% CI)', `+${im.overall_pp_mean.toFixed(1)}%p`, `${im.overall_pp_ci[0].toFixed(1)} ~ ${im.overall_pp_ci[1].toFixed(1)}`],
+    ['수정 질문당 효과 (95% CI)', `+${im.per_question_pp_mean.toFixed(1)}%p`, `${im.per_question_pp_ci[0].toFixed(1)} ~ ${im.per_question_pp_ci[1].toFixed(1)}`],
+    ['상위 50개가 차지하는 기대 이득', pct(V.priority_top50_share, 0), `전체 월 +${Math.round(V.priority_total_gain)}답변 중`],
+    ['완전 중복 질문', `${V.n_exact_dup}쌍`, V.duplicates.filter(d => d.exact).map(d => `#${d.id_a}=#${d.id_b}`).join(', ')],
+  ].map(([l,v,sub]) => `<div class="stat"><span class="l">${l}</span><span class="v" style="font-size:1.2rem">${v}</span><span class="l">${esc(sub)}</span></div>`).join('');
 })();
 
 // classes

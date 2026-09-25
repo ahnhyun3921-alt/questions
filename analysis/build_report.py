@@ -13,6 +13,8 @@ OUT = ROOT / "output"
 
 s = json.loads((OUT / "summary.json").read_text())
 s["improve"] = json.loads((OUT / "improve_summary.json").read_text())
+if (OUT / "v2" / "summary.json").exists():
+    s["v2"] = json.loads((OUT / "v2" / "summary.json").read_text())
 card = pd.read_csv(OUT / "question_scorecard.csv")[["질문 ID", "질문 문구", "관심사"]]
 rw = pd.read_csv(OUT / "rewrites_scored.csv").fillna("").merge(card, on="질문 ID")
 order = {"A": 0, "B": 1}

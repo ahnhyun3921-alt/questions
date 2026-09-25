@@ -34,3 +34,10 @@ python analysis/lint_questions.py -f new_questions.txt
 - `analysis/sync_review.py`: 검토 페이지 DB에 올릴 문서 생성, 새 수정안이 필요한 질문 표시
 - `analysis/record_decisions.py`: 페이지의 선택 결과를 `data/decisions.csv`로 기록, 반영 누락 탐지
 - `analysis/ROUTINE.md`: 월간 자동 실행 절차 (매월 1일 08:52 KST)
+
+## 분석 v2 (`analysis/analyze_v2.py`, 결과는 `output/v2/`)
+- 목표 변수: 결론 난 노출(답변+교체) 중 답변 비율
+- 특성: `analysis/question_tags.csv` (AI 태깅 7차원, 기준은 `analysis/TAGGING.md`)
+- 질문 단위 교차검증으로 모델 비교(`cv_models.csv`), FDR 보정 효과(`effects_*.csv`)
+- 계층 베이지안 질문 추정(`question_posterior.csv`), 부트스트랩 효과 신뢰구간, 기대 이득 우선순위(`priority.csv`)
+- 중복·유사 질문(`near_duplicates.csv`), 형식 커버리지(`coverage_*.csv`)
