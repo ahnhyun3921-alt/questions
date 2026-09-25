@@ -26,3 +26,11 @@ python analysis/lint_questions.py -f new_questions.txt
 - `rewrites.csv`: A·B그룹과 오류 질문 264개의 진단과 수정안 2개(직접 작성). `rw/`는 작성 원본
 - `improve.py`: 수정안 자체 검수 + 원인 모델로 기대 효과 추정
 - `lint_questions.py`: 새 질문 검수 도구
+
+## 자동화 (데이터 수집 → 분석 → 수정안 → 검토 → 추적)
+- 검토 페이지: https://claude.ai/artifact/LHDQVB4zuBeX8JkWjs79DJ
+  질문별로 수정안 1·2 / 원문 유지 / 직접 입력(실시간 검수) / AI 추가 제안 중 선택 → 선택 문구 일괄 복사·CSV 저장 → 관리자 도구 반영 후 '반영함' 표시
+- `analysis/fetch_data.py`: 통계 사이트 CSV 수집 (`data/snapshots/`에 날짜별 보관)
+- `analysis/sync_review.py`: 검토 페이지 DB에 올릴 문서 생성, 새 수정안이 필요한 질문 표시
+- `analysis/record_decisions.py`: 페이지의 선택 결과를 `data/decisions.csv`로 기록, 반영 누락 탐지
+- `analysis/ROUTINE.md`: 주간 자동 실행 절차

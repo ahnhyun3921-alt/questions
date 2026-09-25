@@ -126,10 +126,10 @@
    "수정안 잔여 위험": "특정 활동 전제"
   }
  ],
- "mean_pred_old": 0.3521688242451788,
- "mean_pred_new": 0.4535812742150047,
- "affected_exposure_share": 0.3128916741271262,
- "overall_now": 0.450313339301701,
- "overall_projected": 0.48197376781403733,
- "extra_answers_per_month": 70.72939729655937
+ "mean_pred_old": 0.35224795028666167,
+ "mean_pred_new": 0.45467473686015497,
+ "affected_exposure_share": 0.31341952741863577,
+ "overall_now": 0.4498439589835042,
+ "overall_projected": 0.48177882323811405,
+ "extra_answers_per_month": 71.62990052308976
 }

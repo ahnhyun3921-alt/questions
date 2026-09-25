@@ -38,7 +38,9 @@ def load():
     d.columns = COLS
     d["q"] = d["q"].str.strip()
     assert (d.exp == d.ans + d.rep + d.nr).all(), "노출 ≠ 답변+교체+미응답"
-    assert (d.exp == d.texp).all(), "Revision이 1개가 아닌 질문이 있음"
+    assert (d.texp >= d.exp).all(), "전체 Revision 노출 < 현재 Revision 노출"
+    # 분석은 현재 Revision(현재 문구) 기준. 이전 Revision 합계는 수정 전후 비교용
+    d["prev_exp"], d["prev_ans"] = d.texp - d.exp, d.tans - d.ans
     f = pd.DataFrame([extract(q) for q in d.q])
     return pd.concat([d, f], axis=1)
 
@@ -123,12 +125,14 @@ def classify(d, base):
     p = d["P(평균 미만)"]
     grp = np.select(
         [d.status == "INACTIVE",
+         # 문구를 고친 지 얼마 안 된 질문은 새 Revision 표본이 쌓일 때까지 판정 보류
+         (d.rev > 1) & (d.exp < 20),
          # 문구 모델과 관측 데이터가 모두 '평균 미만'을 가리킬 때만 교체 우선
          (p >= 0.8) & (d["P(평균 미만|데이터만)"] >= 0.6) & (d.exp >= 3),
          has_risk & (d["추정 답변율(축소)"] < base),
          (p <= 0.2) & (d["P(평균 미만|데이터만)"] <= 0.4) & (d.exp >= 3),
          d.exp == 0],
-        ["비활성", "A. 교체·재작성 우선", "B. 패턴 기반 수정 권장", "D. 우수(레퍼런스)", "E. 미노출(데이터 없음)"],
+        ["비활성", "F. 수정 후 관찰 중", "A. 교체·재작성 우선", "B. 패턴 기반 수정 권장", "D. 우수(레퍼런스)", "E. 미노출(데이터 없음)"],
         default="C. 유지·모니터링")
     d["분류"] = grp
     return d
@@ -177,11 +181,12 @@ def main():
     k, base = shrink(d, m)
     d = classify(d, base)
 
-    keep = ["id", "q", "cat", "level", "status", "exp", "ans", "rep", "nr", "ar", "rr",
+    keep = ["id", "q", "cat", "level", "status", "rev", "exp", "ans", "rep", "nr", "ar", "rr", "prev_exp", "prev_ans",
             "예측 답변율(문구 모델)", "추정 답변율(축소)", "추정 하한(10%)", "추정 상한(90%)",
             "P(평균 미만)", "P(평균 미만|데이터만)", "위험 특성", "분류"] + list(FEATURES) + ["문구 길이"]
     card = d[keep].rename(columns={"id": "질문 ID", "q": "질문 문구", "cat": "관심사", "level": "레벨",
-                                   "status": "상태", "exp": "노출", "ans": "답변", "rep": "교체",
+                                   "status": "상태", "rev": "현재 Revision", "prev_exp": "이전 Revision 노출",
+                                   "prev_ans": "이전 Revision 답변", "exp": "노출", "ans": "답변", "rep": "교체",
                                    "nr": "미응답", "ar": "답변율(%)", "rr": "교체율(%)"})
     card["수정 방향(패턴)"] = card["위험 특성"].fillna("").map(guidance)
     rw = pd.read_csv(Path(__file__).parent / "rewrites.csv")
