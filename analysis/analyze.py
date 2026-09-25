@@ -151,13 +151,14 @@ def write_xlsx(card, seg, coef):
                  "추정 답변율(축소)", "추정 하한(10%)", "추정 상한(90%)", "P(평균 미만)", "위험 특성", "분류"]
     a = card[card["분류"].str.startswith("A")][base_cols[:8] + ["추정 답변율(축소)", "원인 진단", "수정 원칙",
                                                              "수정안 1 (권장)", "수정안 2 (대안)"]]
-    b = card[card["분류"].str.startswith("B")][base_cols + ["수정 방향(패턴)"]]
+    b = card[card["분류"].str.startswith("B")][base_cols + ["수정 방향(패턴)", "원인 진단", "수정 원칙",
+                                                             "수정안 1 (권장)", "수정안 2 (대안)"]]
     dd = card[card["분류"].str.startswith("D")][base_cols]
     with pd.ExcelWriter(OUT / "question_review.xlsx") as w:
         pd.DataFrame({"분류": card["분류"].value_counts().index,
                       "질문 수": card["분류"].value_counts().values}).to_excel(w, sheet_name="분류 요약", index=False)
         a.to_excel(w, sheet_name="A 교체·재작성", index=False)
-        b.to_excel(w, sheet_name="B 패턴 수정", index=False)
+        b.to_excel(w, sheet_name="B 패턴 수정(수정안 포함)", index=False)
         dd.to_excel(w, sheet_name="D 우수 레퍼런스", index=False)
         card.to_excel(w, sheet_name="전체 스코어카드", index=False)
         seg.to_excel(w, sheet_name="세그먼트", index=False)
