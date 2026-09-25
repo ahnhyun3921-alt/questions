@@ -1,6 +1,6 @@
-# 주간 질문 개선 루틴
+# 월간 질문 개선 루틴
 
-매주 자동 실행되는 세션이 이 순서대로 진행한다. 사람이 직접 돌릴 때도 같다.
+매월 1일 자동 실행되는 세션이 이 순서대로 진행한다. 사람이 직접 돌릴 때도 같다.
 
 검토 페이지: https://claude.ai/artifact/LHDQVB4zuBeX8JkWjs79DJ
 작업 브랜치: `claude/nadab-daily-question-stats-4o327c`
@@ -48,7 +48,7 @@ chunks 수가 지난번보다 줄었으면 남는 `qchunks/c{n}` 문서는 delet
 ## 6. 리포트·기록
 ```bash
 python analysis/build_report.py
-git add -A && git commit -m "Weekly question review: <날짜>" && git push -u origin claude/nadab-daily-question-stats-4o327c
+git add -A && git commit -m "Monthly question review: <날짜>" && git push -u origin claude/nadab-daily-question-stats-4o327c
 ```
 리포트 아티팩트(https://claude.ai/artifact/QYjtnbNpKA6hMZ219aUX7J)는 `output/report.html`로 url을 지정해 다시 게시한다.
 

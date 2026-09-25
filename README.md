@@ -33,4 +33,4 @@ python analysis/lint_questions.py -f new_questions.txt
 - `analysis/fetch_data.py`: 통계 사이트 CSV 수집 (`data/snapshots/`에 날짜별 보관)
 - `analysis/sync_review.py`: 검토 페이지 DB에 올릴 문서 생성, 새 수정안이 필요한 질문 표시
 - `analysis/record_decisions.py`: 페이지의 선택 결과를 `data/decisions.csv`로 기록, 반영 누락 탐지
-- `analysis/ROUTINE.md`: 주간 자동 실행 절차
+- `analysis/ROUTINE.md`: 월간 자동 실행 절차 (매월 1일 08:52 KST)
