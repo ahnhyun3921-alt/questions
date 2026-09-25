@@ -1,3 +1,4 @@
 output/decisions_dump/
 output/review_sync/
 __pycache__/
+output/charts/_check.*
