@@ -41,3 +41,8 @@ python analysis/lint_questions.py -f new_questions.txt
 - 질문 단위 교차검증으로 모델 비교(`cv_models.csv`), FDR 보정 효과(`effects_*.csv`)
 - 계층 베이지안 질문 추정(`question_posterior.csv`), 부트스트랩 효과 신뢰구간, 기대 이득 우선순위(`priority.csv`)
 - 중복·유사 질문(`near_duplicates.csv`), 형식 커버리지(`coverage_*.csv`)
+
+## 전체 질문 최종본
+- `output/final_questions.xlsx` / `.csv`: 875개 전체의 기존 문구 → 최종 권장 문구, 조치(재작성·경미 수정·오류 수정·유지), 이유, 대안, 예측 효과, 우선순위
+- 최종 문구 우선순위: 검토 페이지에서 고른 문구 > 수정안 1 > 원문
+- 생성: `python analysis/build_final_list.py` (선택 기록은 `data/decisions.csv`)

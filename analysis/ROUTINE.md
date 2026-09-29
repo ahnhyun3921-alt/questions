@@ -50,6 +50,7 @@ chunks 수가 지난번보다 줄었으면 남는 `qchunks/c{n}` 문서는 delet
 
 ## 6. 리포트·기록
 ```bash
+python analysis/build_final_list.py
 python analysis/build_report.py
 git add -A && git commit -m "Monthly question review: <날짜>" && git push -u origin claude/nadab-daily-question-stats-4o327c
 ```

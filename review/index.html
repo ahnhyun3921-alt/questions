@@ -202,7 +202,7 @@ function renderSummary(){
   $('#markAll').disabled = !chosen.length || !canWrite;
 }
 function renderFilters(){
-  const cls = [['all','전체'],['A','A 교체'],['B','B 패턴'],['F','수정 후']];
+  const cls = [['all','전체'],['A','A 교체'],['B','B 패턴'],['C','기타 개선'],['F','수정 후']];
   $('#clsSeg').innerHTML = cls.map(([k,l]) => `<button type="button" data-cls="${k}" aria-pressed="${F.cls===k}">${l}</button>`).join('');
   const cats = [...new Set(items().map(it => it.cat))];
   $('#catSel').innerHTML = `<option value="all">관심사 전체</option>` + cats.map(c => `<option value="${esc(c)}"${F.cat===c?' selected':''}>${esc(c)}</option>`).join('');
