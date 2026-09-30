@@ -17,7 +17,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
-from db_questions import latest_db, stats_to_db  # noqa: E402
+from db_questions import INTEREST_ID, latest_db, stats_to_db  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 EXP = ROOT / "output" / "db_export"
@@ -65,6 +65,14 @@ def main():
         if i in idx:
             put(i, **{"분석 축": t["분석 축"], "통계 질문 ID": sid})
 
+    # 1-2) 기존 질문 관심사 조정(analysis/category_fixes_existing.csv)
+    db["관심사 변경"] = pd.Series([""] * len(db), index=db.index, dtype=object)
+    cf_path = Path(__file__).parent / "category_fixes_existing.csv"
+    if cf_path.exists():
+        for _, r in pd.read_csv(cf_path).iterrows():
+            i = stats_to_db(int(r["통계 질문 ID"]))
+            put(i, interest_id=INTEREST_ID[r["제안 관심사"]], **{"관심사 변경": f"{r['지금 관심사']}→{r['제안 관심사']}"})
+
     # 2) 비활성화(중복 통합)
     for _, r in pd.read_csv(EXP / "deactivate.csv").iterrows():
         put(r["id"], deleted_at=now, **{"변경 구분": "비활성화(중복 통합)"})
@@ -96,12 +104,15 @@ def main():
 
     out.to_csv(ROOT / "output" / "daily_questions_revised.csv", index=False, encoding="utf-8-sig")
     live = out[out.deleted_at == ""]
-    summ = out["변경 구분"].value_counts().rename("행 수").reset_index()
+    out["관심사 변경"] = out["관심사 변경"].fillna("")
+    summ = pd.concat([out["변경 구분"].value_counts().rename("행 수").reset_index(),
+                      pd.DataFrame([{"변경 구분": "(별도) 기존 질문 관심사 변경", "행 수": int((out["관심사 변경"] != "").sum())}])])
     with pd.ExcelWriter(ROOT / "output" / "daily_questions_revised.xlsx") as w:
         summ.to_excel(w, sheet_name="요약", index=False)
         out.to_excel(w, sheet_name="전체", index=False)
         live.to_excel(w, sheet_name="활성만", index=False)
-        out[out["변경 구분"] != "유지"].to_excel(w, sheet_name="바뀌는 것만", index=False)
+        out[(out["변경 구분"] != "유지") | (out["관심사 변경"] != "")].to_excel(w, sheet_name="바뀌는 것만", index=False)
+        out[out["관심사 변경"] != ""].to_excel(w, sheet_name="관심사 변경", index=False)
         for ws in w.book.worksheets:
             ws.freeze_panes = "D2"
     print(f"전체 {len(out)}행 · 활성 {len(live)}개 (레벨1 {int((live.question_level == 1).sum())}) · 가이드 빈 칸 {int(live[G].isna().any(axis=1).sum())}")
