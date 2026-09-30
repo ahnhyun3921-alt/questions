@@ -58,6 +58,7 @@ chunks 수가 지난번보다 줄었으면 남는 `qchunks/c{n}` 문서는 delet
 ```bash
 python analysis/build_final_list.py
 python analysis/build_db_export.py   # output/db_export/: DB id 기준 수정·신규·비활성화 파일
+python analysis/build_full_db.py     # output/daily_questions_revised.csv: DB 원본 형식 전체본
 python analysis/build_report.py
 git add -A && git commit -m "Monthly question review: <날짜>" && git push -u origin claude/nadab-daily-question-stats-4o327c
 ```

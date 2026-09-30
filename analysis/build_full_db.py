@@ -1,0 +1,112 @@
+"""관리자 DB 원본(daily_questions_*.csv)과 같은 형식으로, 수정·신규·비활성화를 모두 적용한 전체본을 만든다.
+
+사용법: python analysis/build_full_db.py
+결과:   output/daily_questions_revised.csv, output/daily_questions_revised.xlsx
+
+- 기존 열(id ~ deleted_at)은 원본과 같다. 뒤에 참고 열(변경 구분 등)을 붙였다.
+- 문구가 바뀐 행은 question_text·가이드 3종·updated_at을 바꾼다.
+- 비활성화는 원본처럼 deleted_at을 채운다.
+- 신규 행은 id를 비워 둔다(DB가 번호를 매긴다). 신규 ID 열로 구분한다.
+- 검토 페이지 선택(data/decisions.csv)을 따른다: 신규·레벨1 묶음에서 '제외(skipped)'는 빼고,
+  고른 문구(chosen/applied)가 있으면 그 문구를 쓴다.
+"""
+import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).parent))
+from db_questions import latest_db, stats_to_db  # noqa: E402
+
+ROOT = Path(__file__).resolve().parent.parent
+EXP = ROOT / "output" / "db_export"
+G = ["empathy_guide", "hint_guide", "leading_question_guide"]
+DB_COLS = ["id", "interest_id", "question_text", "question_level", *G, "created_at", "updated_at", "deleted_at"]
+
+
+def main():
+    now = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M:%S.000 +0900")
+    db = latest_db()[DB_COLS].copy()
+    db["변경 구분"] = db["deleted_at"].map(lambda x: "이미 삭제됨" if isinstance(x, str) and x else "유지")
+    for c in ["통계 질문 ID", "기존 question_text", "신규 ID", "세트", "분석 축"]:
+        db[c] = ""
+    db = db.astype(object)
+
+    dec_path = ROOT / "data" / "decisions.csv"
+    dec = pd.read_csv(dec_path, dtype={"id": str}).set_index("id") if dec_path.exists() else pd.DataFrame()
+
+    def decided(key):
+        if not len(dec) or key not in dec.index:
+            return None, None
+        r = dec.loc[key]
+        return r["status"], (r["text"] if isinstance(r.get("text"), str) else None)
+
+    idx = db.set_index("id").index
+
+    def put(i, **kw):
+        pos = idx.get_loc(i)
+        for k, v in kw.items():
+            db.iat[pos, db.columns.get_loc(k)] = v
+
+    # 1) 기존 질문 문구 수정(검토 페이지 선택은 final_questions에 이미 반영됨)
+    up = pd.read_csv(EXP / "update_existing.csv")
+    tags = pd.read_csv(Path(__file__).parent / "axis_tags.csv").set_index("질문 ID")
+    for _, r in up.iterrows():
+        cur = db.loc[db.id == r["id"]].iloc[0]
+        was_deleted = isinstance(cur["deleted_at"], str) and cur["deleted_at"] != ""
+        put(r["id"], **{"기존 question_text": cur["question_text"],
+                        "question_text": r["question_text"], **{c: r[c] for c in G}, "updated_at": now,
+                        "변경 구분": "이미 삭제됨(다시 쓸 때를 위한 수정안)" if was_deleted else f"문구 수정(가이드 {r['가이드 처리']})",
+                        "통계 질문 ID": r["통계 질문 ID"]})
+    # 축 태그는 통계 ID 기준
+    for sid, t in tags.iterrows():
+        i = stats_to_db(int(sid))
+        if i in idx:
+            put(i, **{"분석 축": t["분석 축"], "통계 질문 ID": sid})
+
+    # 2) 비활성화(중복 통합)
+    for _, r in pd.read_csv(EXP / "deactivate.csv").iterrows():
+        put(r["id"], deleted_at=now, **{"변경 구분": "비활성화(중복 통합)"})
+
+    # 3) 레벨 1 첫 질문 묶음(661~684)
+    lb = pd.read_csv(EXP / "update_level1_block.csv")
+    for _, r in lb.iterrows():
+        st, txt = decided(f"D{r['id']}")
+        if st == "skipped":
+            continue
+        put(r["id"], **{"기존 question_text": r["기존 question_text"], "question_text": txt or r["question_text"],
+                        **{c: r[c] for c in G}, "updated_at": now, "변경 구분": "레벨1 묶음 재작성"})
+    for i in db.loc[db.question_text.str.contains("QA 소셜 집계", na=False), "id"]:
+        put(i, deleted_at=now, **{"변경 구분": "비활성화(테스트 행)"})
+
+    # 4) 신규
+    nw = pd.read_csv(EXP / "insert_new.csv")
+    keep = []
+    for _, r in nw.iterrows():
+        st, txt = decided(r["신규 ID"])
+        if st == "skipped":
+            continue
+        keep.append({"id": "", "interest_id": r["interest_id"], "question_text": txt or r["question_text"],
+                     "question_level": r["question_level"], **{c: r[c] for c in G},
+                     "created_at": now, "updated_at": now, "deleted_at": "", "변경 구분": "신규",
+                     "신규 ID": r["신규 ID"], "세트": r["세트"], "분석 축": r.get("분석 축", "") if isinstance(r.get("분석 축"), str) else ""})
+    out = pd.concat([db, pd.DataFrame(keep)], ignore_index=True)
+    out["deleted_at"] = out["deleted_at"].fillna("")
+
+    out.to_csv(ROOT / "output" / "daily_questions_revised.csv", index=False, encoding="utf-8-sig")
+    live = out[out.deleted_at == ""]
+    summ = out["변경 구분"].value_counts().rename("행 수").reset_index()
+    with pd.ExcelWriter(ROOT / "output" / "daily_questions_revised.xlsx") as w:
+        summ.to_excel(w, sheet_name="요약", index=False)
+        out.to_excel(w, sheet_name="전체", index=False)
+        live.to_excel(w, sheet_name="활성만", index=False)
+        out[out["변경 구분"] != "유지"].to_excel(w, sheet_name="바뀌는 것만", index=False)
+        for ws in w.book.worksheets:
+            ws.freeze_panes = "D2"
+    print(f"전체 {len(out)}행 · 활성 {len(live)}개 (레벨1 {int((live.question_level == 1).sum())}) · 가이드 빈 칸 {int(live[G].isna().any(axis=1).sum())}")
+    print(summ.to_string(index=False))
+
+
+if __name__ == "__main__":
+    main()
