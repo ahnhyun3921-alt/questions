@@ -46,3 +46,8 @@ python analysis/lint_questions.py -f new_questions.txt
 - `output/final_questions.xlsx` / `.csv`: 875개 전체의 기존 문구 → 최종 권장 문구, 조치(재작성·경미 수정·오류 수정·유지), 이유, 대안, 예측 효과, 우선순위
 - 최종 문구 우선순위: 검토 페이지에서 고른 문구 > 수정안 1 > 원문
 - 생성: `python analysis/build_final_list.py` (선택 기록은 `data/decisions.csv`)
+
+## 중복 검사 · 신규 질문
+- `analysis/dedupe.py`: 글자 n-gram + 핵심어 겹침으로 중복 후보 탐지 (`--new 파일.csv`로 신규 후보 검사)
+- `analysis/new/candidates.csv`: 신규 질문 후보(Drive 디깅 + 부족한 형식 보강, 나답투), `analysis/new_questions.py`로 중복·검수·예상 답변율 평가
+- `output/나답_질문_수정본_신규.xlsx`: 수정본 전체 / 변경분 / 중복 검토 / 신규 질문 / 나답투 가이드 / 디깅 원천

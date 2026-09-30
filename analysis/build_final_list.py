@@ -34,6 +34,8 @@ def main():
         if isinstance(r.get("검토에서 고른 문구"), str) and r.get("검토 상태") in ("chosen", "applied"):
             return r["검토에서 고른 문구"]
         o1 = r["수정안 1 (권장)"]
+        if o1.startswith("(통합"):
+            return "(비활성화)"
         if not o1 or o1.startswith("(유지"):
             return r["질문 문구"]
         return o1
@@ -59,9 +61,11 @@ def main():
 
     d["최종 권장 문구"] = d.apply(final, axis=1)
     d["변경"] = d["최종 권장 문구"] != d["질문 문구"]
+    d.loc[d["최종 권장 문구"] == "(비활성화)", "조치"] = "중복 통합(비활성화)"
     d["조치"] = d.apply(kind, axis=1)
+    d.loc[d["최종 권장 문구"] == "(비활성화)", "조치"] = "중복 통합(비활성화)"
     d["이유"] = d.apply(why, axis=1)
-    d["최종 문구 검수"] = d["최종 권장 문구"].map(lambda q: " / ".join(m.split(" (")[0].split(".")[0] for l, m in lint(q) if l != "가이드"))
+    d["최종 문구 검수"] = d["최종 권장 문구"].map(lambda q: "" if q == "(비활성화)" else q).map(lambda q: " / ".join(m.split(" (")[0].split(".")[0] for l, m in lint(q) if l != "가이드"))
     cols = ["질문 ID", "관심사", "레벨", "분류", "노출", "답변", "교체", "질문 문구", "최종 권장 문구", "변경", "조치",
             "이유", "수정 원칙", "수정안 2 (대안)", "예측 변화(%p)", "우선순위", "기대 추가 답변(월)", "검토 상태", "최종 문구 검수"]
     d = d[cols].rename(columns={"질문 문구": "기존 문구", "수정안 2 (대안)": "대안"}).sort_values("질문 ID")

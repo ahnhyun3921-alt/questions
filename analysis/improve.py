@@ -17,6 +17,8 @@ from features import RISK_FEATURES, extract  # noqa: E402
 
 
 def action_type(principle: str, text: str) -> str:
+    if text.startswith("(통합"):
+        return "중복 통합(비활성화)"
     if text.startswith("(유지"):
         return "유지(노출 시간 조정)" if "노출" in text else "유지"
     if "오류" in principle:
@@ -52,7 +54,7 @@ def main():
     rw["예측(기존 문구)"] = m.predict(X_old).values
     rw["예측(수정안)"] = m.predict(X_new).values
     # 유지·노출 조정 항목은 문구 효과 0으로 처리
-    keep = rw["조치 유형"].str.startswith("유지")
+    keep = rw["조치 유형"].str.startswith(("유지", "중복 통합"))
     rw.loc[keep, "예측(수정안)"] = rw.loc[keep, "예측(기존 문구)"]
     rw["예측 변화(%p)"] = (rw["예측(수정안)"] - rw["예측(기존 문구)"]) * 100
 
