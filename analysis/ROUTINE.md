@@ -43,6 +43,12 @@ python analysis/sync_review.py     # "needs rewrite:" 줄이 수정안이 필요
 
 그다음 `python analysis/improve.py && python analysis/analyze_v2.py && python analysis/sync_review.py`를 다시 돌려 `needsRewrite`가 0인지 확인한다.
 
+## 질문 ID 주의
+통계 사이트의 `질문 ID`와 관리자 DB `id`는 다르다(통계 ID 661 이상은 DB id가 24 크다).
+사용자가 `daily_questions_*.csv`(DB 원본)를 새로 주면 `data/`에 넣고, `analysis/db_questions.py`의
+`check_mapping`이 빈 결과인지 확인한다. 어긋나면 규칙이 바뀐 것이니 문구로 다시 맞춘다.
+문구가 바뀌는 질문은 가이드 3종(empathy·hint·leading)도 새 문구에 맞게 `analysis/guides_rewrite.csv`에 적는다.
+
 ## 5. 검토 페이지 갱신
 `output/review_sync/batch.json`의 writes 배열을 그대로 ArtifactData `batch`로 보낸다.
 chunks 수가 지난번보다 줄었으면 남는 `qchunks/c{n}` 문서는 delete로 지운다.
@@ -51,6 +57,7 @@ chunks 수가 지난번보다 줄었으면 남는 `qchunks/c{n}` 문서는 delet
 ## 6. 리포트·기록
 ```bash
 python analysis/build_final_list.py
+python analysis/build_db_export.py   # output/db_export/: DB id 기준 수정·신규·비활성화 파일
 python analysis/build_report.py
 git add -A && git commit -m "Monthly question review: <날짜>" && git push -u origin claude/nadab-daily-question-stats-4o327c
 ```

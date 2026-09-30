@@ -90,6 +90,12 @@ def main():
         fun.to_excel(w, sheet_name="신규(재미 보강)", index=False)
         selfq.sort_values(["분석 축", "신규 ID"]).to_excel(w, sheet_name="신규(자아분석)", index=False)
         axes.to_excel(w, sheet_name="자아분석 축", index=False)
+        pd.read_csv(Path(__file__).parent / "axis_tags.csv").to_excel(w, sheet_name="기존 질문 축 태그", index=False)
+        exp = OUT / "db_export"
+        for fn, name in [("update_existing.csv", "DB 반영(수정)"), ("insert_new.csv", "DB 반영(신규)"),
+                         ("deactivate.csv", "DB 반영(비활성화)"), ("db_issues.csv", "DB 점검")]:
+            if (exp / fn).exists():
+                pd.read_csv(exp / fn).to_excel(w, sheet_name=name, index=False)
         src.to_excel(w, sheet_name="디깅 출처", index=False)
         new.to_excel(w, sheet_name="신규(내부 보강)", index=False)
         pd.DataFrame(TONE, columns=["항목", "나답투 규칙"]).to_excel(w, sheet_name="나답투 가이드", index=False)

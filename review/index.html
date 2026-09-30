@@ -236,7 +236,9 @@ function cardHtml(it){
     <div class="orig">${esc(it.q)}</div>
     ${it.diag ? `<div class="diag">${esc(it.diag)}${it.principle ? (isNew(it) ? ' · 근거: ' : ' → ') + esc(it.principle) : ''}${isNew(it) && /^https?:/.test(it.src || '') ? ` · <a href="${esc(it.src)}" target="_blank" rel="noopener">출처</a>` : ''}</div>` : ''}
     ${it.lint.length ? `<div class="warns">${warnHtml(it.lint.map(m => [/오늘|경험 전제/.test(m) ? 'hi' : 'mid', m]))}</div>` : ''}
-    ${isNew(it) && it.similar ? `<div class="track">가장 비슷한 기존 질문: ${esc(it.similar)}</div>` : ''}${track}${applied}
+    ${isNew(it) && it.similar ? `<div class="track">가장 비슷한 기존 질문: ${esc(it.similar)}</div>` : ''}
+    ${isNew(it) && (it.guides || []).length ? `<div class="track">가이드 · 공감: ${esc(it.guides[0])} · 힌트: ${esc(it.guides[1])} · 유도: ${esc(it.guides[2])}</div>` : ''}
+    ${!isNew(it) && it.axis ? `<div class="track">자아분석 축: ${esc(it.axis)}</div>` : ''}${track}${applied}
     <div class="opts" role="radiogroup" aria-label="${isNew(it) ? '추가할 문구 선택' : '수정안 선택'}">${optHtml}</div>
     <div class="row">
       <input class="grow" id="hint-${it.id}" data-hint="${it.id}" placeholder="AI에게 요청 (예: 더 가볍게, 10대도 답하기 쉽게)" value="${esc(local.get(it.id)?.hint || '')}" ${sample ? '' : 'hidden'}>

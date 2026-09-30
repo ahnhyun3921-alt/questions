@@ -41,6 +41,9 @@ NEW_SETS = [("new_questions_love.csv", "L. 신규 연애"),
 
 def new_rows():
     out = []
+    gp = Path(__file__).parent / "new" / "guides_new.csv"
+    guides = pd.read_csv(gp).set_index("신규 ID") if gp.exists() else None
+    gcols = ("empathy_guide", "hint_guide", "leading_question_guide")
     for fn, cls in NEW_SETS:
         p = OUT / fn
         if not p.exists():
@@ -61,6 +64,8 @@ def new_rows():
                 "lint": [m for _, m in lint(r["문구"])],
                 "o1": r["문구"], "o2": "", "action": "신규 추가", "dPred": None, "needsRewrite": False,
                 "rank": None, "gain": None, "post": None, "pBelow": None, "risk": "",
+                "guides": ([str(guides.loc[r["신규 ID"], c]) for c in gcols]
+                           if guides is not None and r["신규 ID"] in guides.index else []),
             })
     return out
 
@@ -87,6 +92,8 @@ def main():
     # 검토 대상: A·B, 수정 후 관찰(F), 이미 수정안이 있는 질문
     sel = d[cls.isin(["A", "B", "F"]) | has_rw].copy()
 
+    tp = Path(__file__).parent / "axis_tags.csv"
+    axis = pd.read_csv(tp).set_index("질문 ID") if tp.exists() else None
     rows = []
     for _, r in sel.iterrows():
         o1, o2 = r.get("수정안 1 (권장)") or "", r.get("수정안 2 (대안)") or ""
@@ -109,6 +116,8 @@ def main():
             "needsRewrite": (not o1) and r["분류"][0] in "AB",
             "rank": None if pd.isna(r["우선순위"]) else int(r["우선순위"]),
             "gain": num(r["기대 추가 답변(월)"], 2), "post": num(r["사후 답변율"]),
+            "axis": (f"{axis.loc[r['질문 ID'], '분석 축']} · {axis.loc[r['질문 ID'], '해석 가이드']}"
+                     if axis is not None and r["질문 ID"] in axis.index else ""),
         })
     order = {"A": 0, "B": 1, "F": 2}
     # 기대 이득(v2 우선순위) 순. 우선순위가 없는 항목(유지·오류 수정 등)은 분류 순으로 뒤에

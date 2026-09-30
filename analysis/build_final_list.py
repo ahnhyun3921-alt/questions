@@ -10,6 +10,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
 from lint_questions import lint  # noqa: E402
+from db_questions import latest_db, stats_to_db  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "output"
@@ -69,6 +70,17 @@ def main():
     cols = ["질문 ID", "관심사", "레벨", "분류", "노출", "답변", "교체", "질문 문구", "최종 권장 문구", "변경", "조치",
             "이유", "수정 원칙", "수정안 2 (대안)", "예측 변화(%p)", "우선순위", "기대 추가 답변(월)", "검토 상태", "최종 문구 검수"]
     d = d[cols].rename(columns={"질문 문구": "기존 문구", "수정안 2 (대안)": "대안"}).sort_values("질문 ID")
+    # 관리자 DB id와 현재 가이드 3종, 자아분석 축 태그
+    d.insert(1, "DB id", d["질문 ID"].map(stats_to_db))
+    db = latest_db()
+    if db is not None:
+        g = db[["id", "empathy_guide", "hint_guide", "leading_question_guide"]].rename(columns={"id": "DB id"})
+        d = d.merge(g, on="DB id", how="left")
+        d["가이드 점검"] = d.apply(lambda r: "문구 변경 → 가이드 재작성 필요" if r["변경"] and r["최종 권장 문구"] != "(비활성화)" else "", axis=1)
+    tags = Path(__file__).parent / "axis_tags.csv"
+    if tags.exists():
+        t = pd.read_csv(tags)[["질문 ID", "분석 축", "신호", "해석 가이드"]]
+        d = d.merge(t, on="질문 ID", how="left")
     d.to_csv(OUT / "final_questions.csv", index=False, encoding="utf-8-sig")
     with pd.ExcelWriter(OUT / "final_questions.xlsx") as w:
         summ = d.groupby("조치").size().rename("질문 수").reset_index().sort_values("질문 수", ascending=False)
