@@ -55,6 +55,8 @@ def new_rows():
             src_text = r.get("원문") or r.get("참고 원문") or ""
             out.append({
                 "kind": "new", "id": str(r["신규 ID"]), "q": r["문구"], "cat": r["관심사"], "level": int(r["레벨"]),
+                "axisName": r.get("분석 축", "") or "",
+                "axis": (f"{r['분석 축']} · {r['해석 가이드']}" if r.get("분석 축") else ""),
                 "cls": cls, "rev": 0, "exp": 0, "ans": 0, "rep": 0, "prevExp": 0, "prevAns": 0,
                 "est": num(r["예상 답변율(결론 기준)"]), "vsBase": num(r["기존 평균 대비(%p)"], 1),
                 "form": r.get("형식", ""),
@@ -92,6 +94,49 @@ def level1_block_rows():
     return out
 
 
+def axis_ref_rows(axis, card, have):
+    """축이 붙었지만 검토 목록에 없는(문구 유지) 기존 질문. 축 필터로 볼 때만 나오는 보기 전용 카드."""
+    if axis is None:
+        return []
+    fin = pd.read_csv(OUT / "final_questions.csv").set_index("질문 ID")
+    sc = card.set_index("질문 ID")
+    out = []
+    for i, t in axis.iterrows():
+        if int(i) in have or i not in fin.index:
+            continue
+        out.append({
+            "kind": "ref", "id": int(i), "q": fin.loc[i, "최종 권장 문구"], "cat": fin.loc[i, "관심사"], "level": int(sc.loc[i, "레벨"]),
+            "cls": "V. 축 참고(문구 유지)", "rev": 0, "exp": int(sc.loc[i, "노출"]), "ans": int(sc.loc[i, "답변"]), "rep": int(sc.loc[i, "교체"]),
+            "prevExp": 0, "prevAns": 0, "est": None, "post": None, "lint": [], "diag": "", "principle": "", "o1": "", "o2": "",
+            "rank": None, "gain": None, "needsRewrite": False, "axisName": t["분석 축"], "axis": f"{t['분석 축']} · {t['해석 가이드']}",
+        })
+    return out
+
+
+def category_rows(cf, card, axis):
+    """기존 질문 관심사 변경 제안. id는 'K{통계 ID}'로 따로 둔다(문구 결정과 섞이지 않게)."""
+    if not len(cf):
+        return []
+    fin = pd.read_csv(OUT / "final_questions.csv").set_index("질문 ID")
+    sc = card.set_index("질문 ID")
+    out = []
+    for _, r in cf.iterrows():
+        i = int(r["통계 질문 ID"])
+        out.append({
+            "kind": "cat", "id": f"K{i}", "q": fin.loc[i, "최종 권장 문구"], "cat": r["제안 관심사"], "catFrom": r["지금 관심사"],
+            "level": int(sc.loc[i, "레벨"]), "cls": "K. 관심사 변경", "rev": 0,
+            "exp": int(sc.loc[i, "노출"]), "ans": int(sc.loc[i, "답변"]), "rep": int(sc.loc[i, "교체"]), "prevExp": 0, "prevAns": 0,
+            "est": None, "vsBase": None, "form": "",
+            "diag": f"통계 #{i} · 관심사 {r['지금 관심사']} → {r['제안 관심사']} · 이유: {r['이유']}", "principle": "", "src": "",
+            "similar": "", "lint": [], "o1": fin.loc[i, "최종 권장 문구"], "o2": "", "action": "관심사 변경",
+            "dPred": None, "needsRewrite": False, "rank": None, "gain": None, "post": None, "pBelow": None, "risk": "",
+            "guides": [],
+            "axisName": axis.loc[i, "분석 축"] if axis is not None and i in axis.index else "",
+            "axis": (f"{axis.loc[i, '분석 축']} · {axis.loc[i, '해석 가이드']}" if axis is not None and i in axis.index else ""),
+        })
+    return out
+
+
 def main():
     card = pd.read_csv(OUT / "question_scorecard.csv")
     rw = pd.read_csv(Path(__file__).parent / "rewrites.csv").fillna("")
@@ -116,6 +161,9 @@ def main():
 
     tp = Path(__file__).parent / "axis_tags.csv"
     axis = pd.read_csv(tp).set_index("질문 ID") if tp.exists() else None
+    cf_path = Path(__file__).parent / "category_fixes_existing.csv"
+    cf = pd.read_csv(cf_path) if cf_path.exists() else pd.DataFrame(columns=["통계 질문 ID"])
+    cat_change = {int(r["통계 질문 ID"]): f"{r['지금 관심사']} → {r['제안 관심사']} ({r['이유']})" for _, r in cf.iterrows()}
     rows = []
     for _, r in sel.iterrows():
         o1, o2 = r.get("수정안 1 (권장)") or "", r.get("수정안 2 (대안)") or ""
@@ -138,13 +186,16 @@ def main():
             "needsRewrite": (not o1) and r["분류"][0] in "AB",
             "rank": None if pd.isna(r["우선순위"]) else int(r["우선순위"]),
             "gain": num(r["기대 추가 답변(월)"], 2), "post": num(r["사후 답변율"]),
+            "axisName": axis.loc[r["질문 ID"], "분석 축"] if axis is not None and r["질문 ID"] in axis.index else "",
+            "catChange": cat_change.get(int(r["질문 ID"]), ""),
             "axis": (f"{axis.loc[r['질문 ID'], '분석 축']} · {axis.loc[r['질문 ID'], '해석 가이드']}"
                      if axis is not None and r["질문 ID"] in axis.index else ""),
         })
     order = {"A": 0, "B": 1, "F": 2}
     # 기대 이득(v2 우선순위) 순. 우선순위가 없는 항목(유지·오류 수정 등)은 분류 순으로 뒤에
     rows.sort(key=lambda x: (x["rank"] is None, x["rank"] or 0, order.get(x["cls"][0], 3), x["est"] if x["est"] is not None else 1))
-    rows += level1_block_rows() + new_rows()
+    rows += axis_ref_rows(axis, card, {r["id"] for r in rows})
+    rows += level1_block_rows() + category_rows(cf, card, axis) + new_rows()
 
     n = math.ceil(len(rows) / CHUNK)
     (SYNC / "qchunks").mkdir(parents=True, exist_ok=True)

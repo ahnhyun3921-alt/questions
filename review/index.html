@@ -61,7 +61,7 @@ kbd{font-family:var(--mono);font-size:.72rem;border:1px solid var(--line);border
 .card.st-applied{border-color:color-mix(in srgb,var(--good) 40%,var(--line))}
 .head{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:.8rem;color:var(--muted)}
 .chip{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:999px;font-weight:500;white-space:nowrap;background:var(--line-2);color:var(--ink-2)}
-.chip.A{background:var(--a);color:var(--a-ink)} .chip.B{background:var(--b);color:var(--b-ink)} .chip.F{background:var(--f);color:var(--f-ink)} .chip.N{background:var(--good-soft);color:var(--good)} .chip.L{background:var(--accent-soft);color:var(--accent)} .chip.\31{background:var(--good-soft);color:var(--good)}
+.chip.A{background:var(--a);color:var(--a-ink)} .chip.B{background:var(--b);color:var(--b-ink)} .chip.F{background:var(--f);color:var(--f-ink)} .chip.N{background:var(--good-soft);color:var(--good)} .chip.L{background:var(--accent-soft);color:var(--accent)} .chip.\31{background:var(--good-soft);color:var(--good)} .chip.K{background:var(--b);color:var(--b-ink)} .chip.V{background:var(--line-2);color:var(--muted)}
 .chip.s-chosen{background:var(--accent-soft);color:var(--accent)} .chip.s-applied{background:var(--good-soft);color:var(--good)} .chip.s-skipped{background:var(--line-2);color:var(--muted)}
 .stats{margin-left:auto;font-family:var(--mono);font-size:.76rem}
 .orig{font-size:1.02rem;font-weight:500}
@@ -109,6 +109,7 @@ kbd{font-family:var(--mono);font-size:.72rem;border:1px solid var(--line);border
     <input id="search" type="search" placeholder="ID 또는 문구 검색" aria-label="검색">
     <div class="seg" id="clsSeg" role="group" aria-label="분류"></div>
     <select id="catSel" aria-label="관심사"></select>
+    <select id="axisSel" aria-label="자아분석 축"></select>
     <span class="keys"><kbd>J</kbd><kbd>K</kbd> 이동 · <kbd>1</kbd>~<kbd>5</kbd> 선택 · <kbd>Enter</kbd> 저장 · <kbd>S</kbd> 보류</span>
   </div>
 
@@ -146,9 +147,9 @@ const warnHtml = (ws, okMsg) => ws.length ? ws.map(([l,m]) => `<div class="w ${l
 let META = null, CHUNKS = new Map(), DEC = new Map(), db = null, sample = null, downloads = null, canWrite = true;
 const local = new Map();   // id -> {sel, custom, hint}
 const busy = new Set();
-let F = { status: 'pending', cls: 'all', cat: 'all', q: '' }, limit = 40;
+let F = { status: 'pending', cls: 'all', cat: 'all', axis: 'all', q: '' }, limit = 40;
 try { const s = JSON.parse(localStorage.getItem('nadab-review-filter') || 'null'); if (s) F = { ...F, ...s, q: '' }; } catch {}
-const saveF = () => { try { localStorage.setItem('nadab-review-filter', JSON.stringify({ status: F.status, cls: F.cls, cat: F.cat })); } catch {} };
+const saveF = () => { try { localStorage.setItem('nadab-review-filter', JSON.stringify({ status: F.status, cls: F.cls, cat: F.cat, axis: F.axis })); } catch {} };
 
 const items = () => {
   if (!META) return [];
@@ -158,12 +159,15 @@ const items = () => {
 };
 const dec = id => DEC.get('q' + id);
 const statusOf = id => dec(id)?.status || 'pending';
-const isNew = it => it.kind === 'new';
+const isCat = it => it.kind === 'cat';
+const isRef = it => it.kind === 'ref';
+const isNew = it => it.kind === 'new' || isCat(it);
 const isKeep = t => /^\(유지/.test(t || '');
 const clean = t => (t || '').replace(/^\([^)]*\)\s*/, '');
 
 function optionsOf(it){
   const d = dec(it.id), o = [];
+  if (isCat(it)) return [{ key: 'o1', text: it.q, label: `문구는 그대로, 관심사만 ${it.catFrom} → ${it.cat}` }];
   if (isNew(it)){
     o.push({ key: 'o1', text: it.o1, label: '신규 문구 그대로 추가' });
     (d?.ai || []).forEach((a, i) => o.push({ key: 'ai' + i, text: a.text, label: 'AI 제안', why: a.why }));
@@ -192,14 +196,16 @@ function textOf(it, sel){
 function visible(){
   const q = F.q.trim().toLowerCase();
   return items().filter(it =>
-    (F.status === 'all' || statusOf(it.id) === F.status) &&
+    (!isRef(it) || F.axis !== 'all' || F.cls === 'V') &&
+    (isRef(it) || F.status === 'all' || statusOf(it.id) === F.status) &&
     (F.cls === 'all' || it.cls[0] === F.cls) &&
     (F.cat === 'all' || it.cat === F.cat) &&
+    (F.axis === 'all' || (F.axis === 'none' ? !it.axisName : it.axisName === F.axis)) &&
     (!q || it.id.toLowerCase() === q || it.q.toLowerCase().includes(q) || (it.o1 || '').toLowerCase().includes(q)));
 }
 
 function renderSummary(){
-  const all = items(), c = { pending: 0, chosen: 0, applied: 0, skipped: 0 };
+  const all = items().filter(it => !isRef(it)), c = { pending: 0, chosen: 0, applied: 0, skipped: 0 };
   all.forEach(it => c[statusOf(it.id)]++);
   const tiles = [['pending','검토 대기'],['chosen','선택 완료'],['applied','반영함'],['skipped','보류'],['all','전체']];
   $('#summary').innerHTML = tiles.map(([k,l]) => `<button type="button" data-status="${k}" aria-pressed="${F.status===k}"><span class="v">${k==='all'?all.length:c[k]}</span><span class="l">${l}</span></button>`).join('');
@@ -209,15 +215,22 @@ function renderSummary(){
   $('#markAll').disabled = !chosen.length || !canWrite;
 }
 function renderFilters(){
-  const cls = [['all','전체'],['A','A 교체'],['B','B 패턴'],['C','기타 개선'],['F','수정 후'],['N','신규 후보'],['L','신규 연애'],['1','레벨1 661~684']];
+  const cls = [['all','전체'],['A','A 교체'],['B','B 패턴'],['C','기타 개선'],['F','수정 후'],['N','신규 후보'],['L','신규 연애'],['1','레벨1 661~684'],['K','관심사 변경'],['V','축 참고']];
   $('#clsSeg').innerHTML = cls.map(([k,l]) => `<button type="button" data-cls="${k}" aria-pressed="${F.cls===k}">${l}</button>`).join('');
   const cats = [...new Set(items().map(it => it.cat))];
   $('#catSel').innerHTML = `<option value="all">관심사 전체</option>` + cats.map(c => `<option value="${esc(c)}"${F.cat===c?' selected':''}>${esc(c)}</option>`).join('');
+  const axes = [...new Set(items().map(it => it.axisName).filter(Boolean))].sort();
+  $('#axisSel').innerHTML = `<option value="all">자아분석 축 전체</option>` + axes.map(a => `<option value="${esc(a)}"${F.axis===a?' selected':''}>${esc(a)} (${items().filter(it => it.axisName === a).length})</option>`).join('') + `<option value="none"${F.axis==='none'?' selected':''}>축 없음</option>`;
 }
 
 function cardHtml(it){
+  if (isRef(it)) return `<article class="card" tabindex="0" data-id="${it.id}" aria-label="질문 ${it.id}">
+    <div class="head"><span class="num">#${it.id}</span><span class="chip V">${esc(it.cls)}</span><span>${esc(it.cat)} · 레벨 ${it.level}</span><span class="chip">${esc(it.axisName)}</span><span class="stats">노출 ${it.exp} · 답변 ${it.ans} · 교체 ${it.rep}</span></div>
+    <div class="orig">${esc(it.q)}</div>
+    <div class="track">자아분석 축: ${esc(it.axis)}</div>
+  </article>`;
   const d = dec(it.id), st = statusOf(it.id), sel = selOf(it), opts = optionsOf(it), b = busy.has(it.id);
-  const stLabel = (isNew(it) ? { pending: '검토 대기', chosen: '추가 확정', applied: '등록함', skipped: '제외' } : { pending: '검토 대기', chosen: '선택 완료', applied: '반영함', skipped: '보류' })[st];
+  const stLabel = (isCat(it) ? { pending: '검토 대기', chosen: '변경 확정', applied: 'DB 반영함', skipped: '원래대로' } : isNew(it) ? { pending: '검토 대기', chosen: '추가 확정', applied: '등록함', skipped: '제외' } : { pending: '검토 대기', chosen: '선택 완료', applied: '반영함', skipped: '보류' })[st];
   const custom = local.get(it.id)?.custom ?? d?.custom ?? '';
   const curText = textOf(it, sel);
   const optHtml = opts.map((o, i) => {
@@ -230,7 +243,7 @@ function cardHtml(it){
     ? `<div class="track">수정 전 답변율 ${pct(it.prevAns, it.prevExp)} (노출 ${it.prevExp}) → 현재 Revision ${it.rev} ${pct(it.ans, it.exp)} (노출 ${it.exp})${it.exp < 20 ? ' · 표본이 더 쌓이는 중' : ''}</div>` : '';
   const applied = st === 'applied' && d?.text ? `<div class="track">반영한 문구: ${esc(d.text)}</div>` : '';
   return `<article class="card st-${st}" tabindex="0" data-id="${it.id}" aria-label="질문 ${it.id}">
-    <div class="head"><span class="num">#${it.id}</span><span class="chip ${it.cls[0]}">${esc(it.cls)}</span><span>${esc(it.cat)} · 레벨 ${it.level}</span><span class="chip s-${st}">${stLabel}</span>
+    <div class="head"><span class="num">#${it.id}</span><span class="chip ${it.cls[0]}">${esc(it.cls)}</span><span>${esc(it.cat)} · 레벨 ${it.level}</span><span class="chip s-${st}">${stLabel}</span>${it.axisName ? `<span class="chip" title="자아분석 축">${esc(it.axisName)}</span>` : ''}
       ${it.rank ? `<span class="chip" title="다음 달 노출 × (수정 후 예측 − 현재 추정)">우선순위 ${it.rank} · 월 +${(it.gain ?? 0).toFixed(1)}답변</span>` : ''}
       <span class="stats">${isNew(it) ? `${esc(it.form || '')} · 예상 답변율 ${it.est != null ? Math.round(it.est * 100) : '–'}%${it.vsBase != null ? ` (기존 평균 대비 ${it.vsBase >= 0 ? '+' : ''}${it.vsBase}%p)` : ''}` : `노출 ${it.exp} · 답변 ${it.ans} · 교체 ${it.rep} · 추정 ${it.post != null ? Math.round(it.post * 100) : (it.est != null ? Math.round(it.est * 100) : '–')}%`}</span></div>
     <div class="orig">${esc(it.q)}</div>
@@ -238,17 +251,18 @@ function cardHtml(it){
     ${it.lint.length ? `<div class="warns">${warnHtml(it.lint.map(m => [/오늘|경험 전제/.test(m) ? 'hi' : 'mid', m]))}</div>` : ''}
     ${isNew(it) && it.similar ? `<div class="track">가장 비슷한 기존 질문: ${esc(it.similar)}</div>` : ''}
     ${isNew(it) && (it.guides || []).length ? `<div class="track">가이드 · 공감: ${esc(it.guides[0])} · 힌트: ${esc(it.guides[1])} · 유도: ${esc(it.guides[2])}</div>` : ''}
-    ${!isNew(it) && it.axis ? `<div class="track">자아분석 축: ${esc(it.axis)}</div>` : ''}${track}${applied}
+    ${it.axis ? `<div class="track">자아분석 축: ${esc(it.axis)}</div>` : ''}
+    ${!isCat(it) && it.catChange ? `<div class="track">관심사 변경 제안: ${esc(it.catChange)} ('관심사 변경' 필터에서 따로 확정)</div>` : ''}${track}${applied}
     <div class="opts" role="radiogroup" aria-label="${isNew(it) ? '추가할 문구 선택' : '수정안 선택'}">${optHtml}</div>
     <div class="row">
-      <input class="grow" id="hint-${it.id}" data-hint="${it.id}" placeholder="AI에게 요청 (예: 더 가볍게, 10대도 답하기 쉽게)" value="${esc(local.get(it.id)?.hint || '')}" ${sample ? '' : 'hidden'}>
-      <button class="btn" type="button" data-act="ai" ${sample ? '' : 'hidden'} ${b ? 'disabled' : ''}>AI로 다른 안 만들기</button>
+      <input class="grow" id="hint-${it.id}" data-hint="${it.id}" placeholder="AI에게 요청 (예: 더 가볍게, 10대도 답하기 쉽게)" value="${esc(local.get(it.id)?.hint || '')}" ${sample && !isCat(it) ? '' : 'hidden'}>
+      <button class="btn" type="button" data-act="ai" ${sample && !isCat(it) ? '' : 'hidden'} ${b ? 'disabled' : ''}>AI로 다른 안 만들기</button>
     </div>
     <div class="row">
-      <button class="btn primary" type="button" data-act="choose" ${b || !canWrite || !curText ? 'disabled' : ''}>${isNew(it) ? (st === 'chosen' ? '문구 변경 저장' : '이 문구로 추가 확정') : (st === 'chosen' ? '선택 변경 저장' : '이 문구로 선택')}</button>
+      <button class="btn primary" type="button" data-act="choose" ${b || !canWrite || !curText ? 'disabled' : ''}>${isCat(it) ? '관심사 변경 확정' : isNew(it) ? (st === 'chosen' ? '문구 변경 저장' : '이 문구로 추가 확정') : (st === 'chosen' ? '선택 변경 저장' : '이 문구로 선택')}</button>
       <button class="btn" type="button" data-act="copy" ${curText ? '' : 'disabled'}>문구 복사</button>
-      ${st === 'chosen' ? `<button class="btn" type="button" data-act="applied" ${b || !canWrite ? 'disabled' : ''}>${isNew(it) ? '등록함' : '반영함'}</button>` : ''}
-      ${st !== 'skipped' ? `<button class="btn" type="button" data-act="skip" ${b || !canWrite ? 'disabled' : ''}>${isNew(it) ? '제외' : '보류'}</button>` : ''}
+      ${st === 'chosen' ? `<button class="btn" type="button" data-act="applied" ${b || !canWrite ? 'disabled' : ''}>${isCat(it) ? 'DB 반영함' : isNew(it) ? '등록함' : '반영함'}</button>` : ''}
+      ${st !== 'skipped' ? `<button class="btn" type="button" data-act="skip" ${b || !canWrite ? 'disabled' : ''}>${isCat(it) ? '원래대로' : isNew(it) ? '제외' : '보류'}</button>` : ''}
       ${st !== 'pending' ? `<button class="btn" type="button" data-act="reset" ${b || !canWrite ? 'disabled' : ''}>대기로 되돌리기</button>` : ''}
     </div>
   </article>`;
@@ -308,7 +322,7 @@ async function copyText(t){
 const itemById = id => items().find(it => it.id === String(id));
 
 async function act(card, what){
-  const id = card.dataset.id, it = itemById(id); if (!it) return;
+  const id = card.dataset.id, it = itemById(id); if (!it || isRef(it)) return;
   const sel = selOf(it), text = textOf(it, sel);
   if (what === 'choose'){
     if (!text) return toast('문구가 비어 있습니다.');
@@ -374,6 +388,7 @@ function focusNext(card){ const n = card.nextElementSibling; if (n && n.dataset.
 $('#summary').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; F.status = b.dataset.status; limit = 40; saveF(); render(); });
 $('#clsSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; F.cls = b.dataset.cls; limit = 40; saveF(); renderFilters(); render(); });
 $('#catSel').addEventListener('change', e => { F.cat = e.target.value; limit = 40; saveF(); render(); });
+$('#axisSel').addEventListener('change', e => { F.axis = e.target.value; limit = 40; saveF(); render(); });
 let st; $('#search').addEventListener('input', e => { clearTimeout(st); st = setTimeout(() => { F.q = e.target.value; limit = 40; render(); }, 150); });
 $('#more').addEventListener('click', () => { limit += 40; render(); });
 const list = $('#list');

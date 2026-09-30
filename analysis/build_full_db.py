@@ -70,6 +70,8 @@ def main():
     cf_path = Path(__file__).parent / "category_fixes_existing.csv"
     if cf_path.exists():
         for _, r in pd.read_csv(cf_path).iterrows():
+            if decided(f"K{int(r['통계 질문 ID'])}")[0] == "skipped":   # 검토 페이지에서 '원래대로'
+                continue
             i = stats_to_db(int(r["통계 질문 ID"]))
             put(i, interest_id=INTEREST_ID[r["제안 관심사"]], **{"관심사 변경": f"{r['지금 관심사']}→{r['제안 관심사']}"})
 
