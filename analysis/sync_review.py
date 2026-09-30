@@ -31,6 +31,37 @@ def num(x, nd=4):
     return None if pd.isna(x) else round(float(x), nd)
 
 
+# 신규 후보 세트: (파일, 분류 라벨). 검토 화면에서 '신규 후보'(N)·'신규 연애'(L) 필터로 본다
+NEW_SETS = [("new_questions_love.csv", "L. 신규 연애"),
+            ("new_questions_scraped.csv", "N. 신규(외부 디깅)"),
+            ("new_questions.csv", "N. 신규(내부 보강)")]
+
+
+def new_rows():
+    out = []
+    for fn, cls in NEW_SETS:
+        p = OUT / fn
+        if not p.exists():
+            continue
+        nd = pd.read_csv(p).fillna("")
+        nd = nd.sort_values("예상 답변율(결론 기준)", ascending=False)
+        for _, r in nd.iterrows():
+            src_text = r.get("원문") or r.get("참고 원문") or ""
+            out.append({
+                "kind": "new", "id": str(r["신규 ID"]), "q": r["문구"], "cat": r["관심사"], "level": int(r["레벨"]),
+                "cls": cls, "rev": 0, "exp": 0, "ans": 0, "rep": 0, "prevExp": 0, "prevAns": 0,
+                "est": num(r["예상 답변율(결론 기준)"]), "vsBase": num(r["기존 평균 대비(%p)"], 1),
+                "form": r.get("형식", ""),
+                "diag": f"{r['출처']}" + (f" · 원문: {src_text}" if src_text else ""),
+                "principle": r.get("인기·검증 근거", ""), "src": r.get("출처 URL", ""),
+                "similar": f"{r['가장 비슷한 기존 질문']} (유사도 {r['글자 유사도']})",
+                "lint": [m for _, m in lint(r["문구"])],
+                "o1": r["문구"], "o2": "", "action": "신규 추가", "dPred": None, "needsRewrite": False,
+                "rank": None, "gain": None, "post": None, "pBelow": None, "risk": "",
+            })
+    return out
+
+
 def main():
     card = pd.read_csv(OUT / "question_scorecard.csv")
     rw = pd.read_csv(Path(__file__).parent / "rewrites.csv").fillna("")
@@ -79,6 +110,7 @@ def main():
     order = {"A": 0, "B": 1, "F": 2}
     # 기대 이득(v2 우선순위) 순. 우선순위가 없는 항목(유지·오류 수정 등)은 분류 순으로 뒤에
     rows.sort(key=lambda x: (x["rank"] is None, x["rank"] or 0, order.get(x["cls"][0], 3), x["est"] if x["est"] is not None else 1))
+    rows += new_rows()
 
     n = math.ceil(len(rows) / CHUNK)
     (SYNC / "qchunks").mkdir(parents=True, exist_ok=True)
