@@ -19,6 +19,7 @@ TONE = [
     ("사람", "'누구인가요'로 특정인을 지목하지 않고 그 사람의 특징·이유를 묻는다."),
     ("무게", "상처·비밀·가족 갈등은 회복·선호 쪽으로 각도를 튼다. 깊은 성찰형은 레벨 2로만."),
     ("형식", "선호형(57%)·양자택일형(55%)·성향형(51%) 우선. 일화 회상형(40%)은 줄인다."),
+    ("외부 질문 옮기기", "검사 문항(예: I get chores done right away)은 '~하는 편인가요, ~하는 편인가요?' 양자택일로. 저작권 있는 검사(MBTI·16Personalities)는 문장이 아니라 축 개념만 차용. '당신'→'나', 무거운 주제는 가벼운 각도로."),
     ("말투 예시", "가장 좋아하는 ___은 무엇인가요? / ___하는 편인가요, ___하는 편인가요? / A와 B 중 뭐가 더 ___나요?"),
 ]
 
@@ -34,6 +35,9 @@ def autosize(w):
 def main():
     fin = pd.read_csv(OUT / "final_questions.csv")
     new = pd.read_csv(OUT / "new_questions.csv")
+    ext = pd.read_csv(OUT / "new_questions_scraped.csv")
+    src = (ext.groupby(["출처", "출처 URL", "인기·검증 근거"]).size().rename("채택 질문 수").reset_index()
+           .sort_values("채택 질문 수", ascending=False))
     rw = pd.read_csv(Path(__file__).parent / "rewrites.csv").fillna("")
     card = pd.read_csv(OUT / "question_scorecard.csv")[["질문 ID", "질문 문구"]]
     dup = rw[rw["수정 원칙"].str.contains("중복") | rw["원인 진단"].str.contains("중복")].merge(card, on="질문 ID")
@@ -53,11 +57,14 @@ def main():
         ("수정본", "유지", int((~fin["변경"]).sum() - (fin["조치"] == "중복 통합(비활성화)").sum())),
         ("수정본", "중복 통합(비활성화)", int((fin["조치"] == "중복 통합(비활성화)").sum())),
         ("중복 검토", "중복 해소한 질문", len(dup)),
-        ("신규", "신규 질문", len(new)),
-        ("신규", "예상 답변율 평균(결론 기준)", round(new["예상 답변율(결론 기준)"].mean(), 3)),
-        ("신규", "기존 질문과 최대 글자 유사도", new["글자 유사도"].max()),
-        ("디깅", "Drive 자료 중 현재 풀에 없던 질문", len(dig)),
-        ("디깅", "채택", int(dig["판정"].str.startswith("채택").sum())),
+        ("신규(외부 디깅)", "커뮤니티·검사 원천에서 옮긴 질문", len(ext)),
+        ("신규(외부 디깅)", "원천 수", ext["출처"].nunique()),
+        ("신규(외부 디깅)", "예상 답변율 평균(결론 기준)", round(ext["예상 답변율(결론 기준)"].mean(), 3)),
+        ("신규(내부 보강)", "부족한 형식·카테고리 보강 질문", len(new)),
+        ("신규(내부 보강)", "예상 답변율 평균(결론 기준)", round(new["예상 답변율(결론 기준)"].mean(), 3)),
+        ("신규 전체", "기존 풀 대비 최대 글자 유사도", max(new["글자 유사도"].max(), ext["글자 유사도"].max())),
+        ("Drive 자료", "현재 풀에 없던 질문", len(dig)),
+        ("Drive 자료", "채택(내부 보강에 포함)", int(dig["판정"].str.startswith("채택").sum())),
     ], columns=["구분", "항목", "값"])
 
     with pd.ExcelWriter(OUT / "나답_질문_수정본_신규.xlsx") as w:
@@ -65,9 +72,11 @@ def main():
         fin.to_excel(w, sheet_name="수정본 전체", index=False)
         fin[fin["변경"]].to_excel(w, sheet_name="수정본 변경분", index=False)
         dup.to_excel(w, sheet_name="중복 검토", index=False)
-        new.to_excel(w, sheet_name="신규 질문", index=False)
+        ext.to_excel(w, sheet_name="신규(외부 디깅)", index=False)
+        src.to_excel(w, sheet_name="디깅 출처", index=False)
+        new.to_excel(w, sheet_name="신규(내부 보강)", index=False)
         pd.DataFrame(TONE, columns=["항목", "나답투 규칙"]).to_excel(w, sheet_name="나답투 가이드", index=False)
-        dig.to_excel(w, sheet_name="디깅 원천(Drive)", index=False)
+        dig.to_excel(w, sheet_name="Drive 자료 검토", index=False)
         autosize(w)
     print(summ.to_string(index=False))
 

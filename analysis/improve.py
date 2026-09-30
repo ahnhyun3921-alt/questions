@@ -77,7 +77,7 @@ def main():
     rw.to_csv(OUT / "rewrites_scored.csv", index=False, encoding="utf-8-sig")
     cols = ["질문 ID", "분류", "조치 유형", "원인 진단", "수정 원칙", "수정안 1 (권장)", "수정안 2 (대안)",
             "예측(기존 문구)", "예측(수정안)", "예측 변화(%p)", "수정안 잔여 위험"]
-    with pd.ExcelWriter(OUT / "question_review.xlsx", mode="a", engine="openpyxl") as w:
+    with pd.ExcelWriter(OUT / "question_review.xlsx", mode="a", engine="openpyxl", if_sheet_exists="replace") as w:
         rw[cols].sort_values("예측 변화(%p)", ascending=False).to_excel(w, sheet_name="수정안 효과 추정", index=False)
         ws = w.book["수정안 효과 추정"]
         ws.freeze_panes = "B2"
