@@ -33,6 +33,7 @@ def num(x, nd=4):
 
 # 신규 후보 세트: (파일, 분류 라벨). 검토 화면에서 '신규 후보'(N)·'신규 연애'(L) 필터로 본다
 NEW_SETS = [("new_questions_love.csv", "L. 신규 연애"),
+            ("new_questions_fun.csv", "N. 신규(재미 보강)"),
             ("new_questions_scraped.csv", "N. 신규(외부 디깅)"),
             ("new_questions.csv", "N. 신규(내부 보강)")]
 
