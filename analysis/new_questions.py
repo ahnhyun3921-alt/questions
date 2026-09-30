@@ -19,6 +19,17 @@ from lint_questions import lint  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def first_question_level(r) -> int:
+    """레벨 1 = 재밌어서 첫 질문으로 주는 질문.
+
+    기존 레벨 1(115개)은 레벨 2보다 가볍고(감정 무게 1.01 vs 1.32) 답변율도 높다(56.5% vs 48.4%).
+    그래서 가볍고(W1) 즉답 가능하고(E1) 경험·시점 전제가 없고(P0·T0) 노출 부담이 낮은(S1)
+    선호·양자택일·상상형만 레벨 1로 둔다(성향·습관형은 자기 관찰이 필요해 레벨 2).
+    """
+    light = r["T"] == 0 and r["P"] == 0 and r["E"] == 1 and r["W"] == 1 and r["S"] <= 1 and r["C"] == 0
+    return 1 if light and r["F"] in ("p", "c", "h") else 2
+
+
 def main():
     import argparse
     ap = argparse.ArgumentParser()
@@ -38,6 +49,7 @@ def main():
     base = s.ans.sum() / s.res.sum()
     c["기존 평균 대비(%p)"] = ((c["예상 답변율(결론 기준)"] - base) * 100).round(1)
     c["형식"] = c.F.map(F_LABEL)
+    c["레벨"] = c.apply(first_question_level, axis=1)
 
     f = pd.read_csv(ROOT / "output" / "final_questions.csv")
     f = f[~f["조치"].astype(str).str.startswith(("비활성", "중복 통합"))]

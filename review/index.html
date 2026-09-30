@@ -61,7 +61,7 @@ kbd{font-family:var(--mono);font-size:.72rem;border:1px solid var(--line);border
 .card.st-applied{border-color:color-mix(in srgb,var(--good) 40%,var(--line))}
 .head{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:.8rem;color:var(--muted)}
 .chip{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:999px;font-weight:500;white-space:nowrap;background:var(--line-2);color:var(--ink-2)}
-.chip.A{background:var(--a);color:var(--a-ink)} .chip.B{background:var(--b);color:var(--b-ink)} .chip.F{background:var(--f);color:var(--f-ink)} .chip.N{background:var(--good-soft);color:var(--good)} .chip.L{background:var(--accent-soft);color:var(--accent)}
+.chip.A{background:var(--a);color:var(--a-ink)} .chip.B{background:var(--b);color:var(--b-ink)} .chip.F{background:var(--f);color:var(--f-ink)} .chip.N{background:var(--good-soft);color:var(--good)} .chip.L{background:var(--accent-soft);color:var(--accent)} .chip.\31{background:var(--good-soft);color:var(--good)}
 .chip.s-chosen{background:var(--accent-soft);color:var(--accent)} .chip.s-applied{background:var(--good-soft);color:var(--good)} .chip.s-skipped{background:var(--line-2);color:var(--muted)}
 .stats{margin-left:auto;font-family:var(--mono);font-size:.76rem}
 .orig{font-size:1.02rem;font-weight:500}
@@ -209,7 +209,7 @@ function renderSummary(){
   $('#markAll').disabled = !chosen.length || !canWrite;
 }
 function renderFilters(){
-  const cls = [['all','전체'],['A','A 교체'],['B','B 패턴'],['C','기타 개선'],['F','수정 후'],['N','신규 후보'],['L','신규 연애']];
+  const cls = [['all','전체'],['A','A 교체'],['B','B 패턴'],['C','기타 개선'],['F','수정 후'],['N','신규 후보'],['L','신규 연애'],['1','레벨1 661~684']];
   $('#clsSeg').innerHTML = cls.map(([k,l]) => `<button type="button" data-cls="${k}" aria-pressed="${F.cls===k}">${l}</button>`).join('');
   const cats = [...new Set(items().map(it => it.cat))];
   $('#catSel').innerHTML = `<option value="all">관심사 전체</option>` + cats.map(c => `<option value="${esc(c)}"${F.cat===c?' selected':''}>${esc(c)}</option>`).join('');

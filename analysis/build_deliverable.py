@@ -93,6 +93,7 @@ def main():
         pd.read_csv(Path(__file__).parent / "axis_tags.csv").to_excel(w, sheet_name="기존 질문 축 태그", index=False)
         exp = OUT / "db_export"
         for fn, name in [("update_existing.csv", "DB 반영(수정)"), ("insert_new.csv", "DB 반영(신규)"),
+                         ("update_level1_block.csv", "DB 반영(레벨1 661~684)"),
                          ("deactivate.csv", "DB 반영(비활성화)"), ("db_issues.csv", "DB 점검")]:
             if (exp / fn).exists():
                 pd.read_csv(exp / fn).to_excel(w, sheet_name=name, index=False)

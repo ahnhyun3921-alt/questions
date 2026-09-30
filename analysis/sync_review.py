@@ -20,6 +20,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
 from lint_questions import lint  # noqa: E402
+from db_questions import INTEREST_ID  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "output"
@@ -67,6 +68,27 @@ def new_rows():
                 "guides": ([str(guides.loc[r["신규 ID"], c]) for c in gcols]
                            if guides is not None and r["신규 ID"] in guides.index else []),
             })
+    return out
+
+
+def level1_block_rows():
+    """DB id 661~684(레벨 1 첫 질문 묶음) 재작성안. id는 'D661'처럼 붙여 기존 통계 ID와 겹치지 않게 한다."""
+    p = Path(__file__).parent / "new" / "level1_block.csv"
+    if not p.exists():
+        return []
+    cat = {v: k for k, v in INTEREST_ID.items()}
+    out = []
+    for _, r in pd.read_csv(p).fillna("").iterrows():
+        out.append({
+            "kind": "new", "id": f"D{int(r['DB id'])}", "q": r["기존 문구"], "cat": cat[int(r["interest_id"])], "level": 1,
+            "cls": "1. 레벨1 첫 질문(DB 661~684)", "rev": 0, "exp": 0, "ans": 0, "rep": 0, "prevExp": 0, "prevAns": 0,
+            "est": None, "vsBase": None, "form": "",
+            "diag": f"DB id {int(r['DB id'])} · 지금 문구: {r['기존 문구']} · {r['판정']}", "principle": "", "src": "",
+            "similar": "", "lint": [m for _, m in lint(r["권장 문구"])],
+            "o1": r["권장 문구"], "o2": "", "action": "레벨 1 재작성", "dPred": None, "needsRewrite": False,
+            "rank": None, "gain": None, "post": None, "pBelow": None, "risk": "",
+            "guides": [r["empathy_guide"], r["hint_guide"], r["leading_question_guide"]],
+        })
     return out
 
 
@@ -122,7 +144,7 @@ def main():
     order = {"A": 0, "B": 1, "F": 2}
     # 기대 이득(v2 우선순위) 순. 우선순위가 없는 항목(유지·오류 수정 등)은 분류 순으로 뒤에
     rows.sort(key=lambda x: (x["rank"] is None, x["rank"] or 0, order.get(x["cls"][0], 3), x["est"] if x["est"] is not None else 1))
-    rows += new_rows()
+    rows += level1_block_rows() + new_rows()
 
     n = math.ceil(len(rows) / CHUNK)
     (SYNC / "qchunks").mkdir(parents=True, exist_ok=True)

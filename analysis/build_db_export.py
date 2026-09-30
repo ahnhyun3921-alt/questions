@@ -5,6 +5,7 @@
   update_existing.csv  문구가 바뀌는 기존 질문 — DB id 기준, 새 문구 + 가이드 3종
   deactivate.csv       중복 통합으로 비활성화할 질문
   insert_new.csv       신규 질문 — DB 열 이름 그대로 + 참고 열
+  update_level1_block.csv  DB id 661~684(레벨 1 첫 질문 묶음) — 가볍게 재작성한 문구 + 가이드
   db_issues.csv        DB 자체의 점검 사항(가이드 누락, 테스트 행, 중복 행)
 """
 import sys
@@ -58,11 +59,19 @@ def main():
             "예상 답변율(결론 기준)", "분석 축", "해석 가이드", "출처", "출처 URL"]
     nw[[c for c in cols if c in nw]].to_csv(EXP / "insert_new.csv", index=False, encoding="utf-8-sig")
 
-    # 4) DB 자체 점검
+    # 4) 레벨 1(첫 질문) 묶음 DB id 661~684: 가볍게 재작성한 문구 + 가이드
+    lb_path = Path(__file__).parent / "new" / "level1_block.csv"
+    lb = pd.read_csv(lb_path) if lb_path.exists() else pd.DataFrame()
+    if len(lb):
+        lb.rename(columns={"DB id": "id", "기존 문구": "기존 question_text", "권장 문구": "question_text"})[
+            ["id", "interest_id", "question_level", "기존 question_text", "question_text", *G, "판정"]
+        ].to_csv(EXP / "update_level1_block.csv", index=False, encoding="utf-8-sig")
+
+    # 5) DB 자체 점검
     live = db[db.deleted_at.isna()].copy()
     issues = []
     for _, r in live[live.empathy_guide.isna()].iterrows():
-        issues.append((r.id, r.question_text, "가이드 3종 없음 (2026-07-19 추가분, 통계 사이트에 안 잡힘)"))
+        issues.append((r.id, r.question_text, "가이드 3종 없음 (레벨 1 첫 질문 묶음, 2026-07-19 추가, 통계 사이트 목록에는 없음)"))
     for _, r in live[live.question_text.str.contains("QA|테스트|test", case=False, na=False)].iterrows():
         issues.append((r.id, r.question_text, "테스트용으로 보이는 행이 활성 상태"))
     norm = live.question_text.str.replace(" ", "").str.strip()
@@ -71,12 +80,20 @@ def main():
             issues.append((",".join(map(str, sorted(g.id))), g.question_text.iloc[0], f"같은 문구가 {len(g)}개 활성"))
     iss = pd.DataFrame(issues, columns=["DB id", "question_text", "점검 사항"])
     fixed = set(up["id"].astype(str)) | set(de["id"].astype(str))
-    iss["수정본에서"] = iss["DB id"].astype(str).map(
-        lambda ids: "해소(한쪽 문구 변경·비활성화)" if "," in ids and any(i in fixed for i in ids.split(",")) else "")
+    block = set(lb["DB id"].astype(str)) if len(lb) else set()
+
+    def resolved(row):
+        ids = str(row["DB id"]).split(",")
+        if len(ids) == 1 and ids[0] in block:
+            return "해소(update_level1_block.csv에 문구·가이드)"
+        if len(ids) > 1 and any(i in fixed | block for i in ids):
+            return "해소(한쪽 문구 변경·비활성화)"
+        return ""
+    iss["수정본에서"] = iss.apply(resolved, axis=1)
     iss.to_csv(EXP / "db_issues.csv", index=False, encoding="utf-8-sig")
 
     print(f"수정 {len(up)}개 (가이드 재작성 {(up['가이드 처리'] == '재작성').sum()}, 유지 {(up['가이드 처리'] == '유지').sum()})"
-          f" · 비활성화 {len(de)}개 · 신규 {len(nw)}개 · DB 점검 {len(issues)}건")
+          f" · 비활성화 {len(de)}개 · 신규 {len(nw)}개 · 레벨1 묶음 {len(lb)}개 · DB 점검 {len(issues)}건")
 
 
 if __name__ == "__main__":
