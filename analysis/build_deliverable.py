@@ -38,6 +38,9 @@ def main():
     ext = pd.read_csv(OUT / "new_questions_scraped.csv")
     love = pd.read_csv(OUT / "new_questions_love.csv")
     fun = pd.read_csv(OUT / "new_questions_fun.csv")
+    selfq = pd.read_csv(OUT / "new_questions_self.csv")
+    axes = (selfq.groupby(["분석 축"]).agg(질문_수=("문구", "size"), 근거_개념=("근거 개념", lambda x: " · ".join(sorted(set(x)))),
+                                        예시=("문구", "first")).reset_index().sort_values("질문_수", ascending=False))
     src = (ext.groupby(["출처", "출처 URL", "인기·검증 근거"]).size().rename("채택 질문 수").reset_index()
            .sort_values("채택 질문 수", ascending=False))
     rw = pd.read_csv(Path(__file__).parent / "rewrites.csv").fillna("")
@@ -69,7 +72,10 @@ def main():
         ("신규(연애)", "예상 답변율 평균(결론 기준)", round(love["예상 답변율(결론 기준)"].mean(), 3)),
         ("신규(재미 보강)", "전 카테고리 재미 질문", len(fun)),
         ("신규(재미 보강)", "예상 답변율 평균(결론 기준)", round(fun["예상 답변율(결론 기준)"].mean(), 3)),
-        ("신규 전체", "기존 풀 대비 최대 글자 유사도", max(x["글자 유사도"].max() for x in (new, ext, love, fun))),
+        ("신규(자아분석)", "공감형 자아분석 질문", len(selfq)),
+        ("신규(자아분석)", "분석 축 수", selfq["분석 축"].nunique()),
+        ("신규(자아분석)", "예상 답변율 평균(결론 기준)", round(selfq["예상 답변율(결론 기준)"].mean(), 3)),
+        ("신규 전체", "기존 풀 대비 최대 글자 유사도", max(x["글자 유사도"].max() for x in (new, ext, love, fun, selfq))),
         ("Drive 자료", "현재 풀에 없던 질문", len(dig)),
         ("Drive 자료", "채택(내부 보강에 포함)", int(dig["판정"].str.startswith("채택").sum())),
     ], columns=["구분", "항목", "값"])
@@ -82,6 +88,8 @@ def main():
         ext.to_excel(w, sheet_name="신규(외부 디깅)", index=False)
         love.to_excel(w, sheet_name="신규(연애)", index=False)
         fun.to_excel(w, sheet_name="신규(재미 보강)", index=False)
+        selfq.sort_values(["분석 축", "신규 ID"]).to_excel(w, sheet_name="신규(자아분석)", index=False)
+        axes.to_excel(w, sheet_name="자아분석 축", index=False)
         src.to_excel(w, sheet_name="디깅 출처", index=False)
         new.to_excel(w, sheet_name="신규(내부 보강)", index=False)
         pd.DataFrame(TONE, columns=["항목", "나답투 규칙"]).to_excel(w, sheet_name="나답투 가이드", index=False)

@@ -56,7 +56,7 @@ def main():
     c["글자 유사도"] = [round(best[i][2], 2) if i in best else 0 for i in range(len(c))]
     c["검수"] = c["문구"].map(lambda q: " / ".join(m.split(" (")[0].split(".")[0] for l, m in lint(q) if l != "가이드") or "통과")
     c.insert(0, "신규 ID", [f"{args.prefix}{i + 1:03d}" for i in range(len(c))])
-    extra = [x for x in ["출처 URL", "원문", "인기·검증 근거", "참고 원문"] if x in c.columns]
+    extra = [x for x in ["출처 URL", "원문", "인기·검증 근거", "참고 원문", "분석 축", "근거 개념", "해석 가이드"] if x in c.columns]
     cols = ["신규 ID", "관심사", "레벨", "문구", "형식", "예상 답변율(결론 기준)", "기존 평균 대비(%p)", "출처", *extra,
             "가장 비슷한 기존 질문", "글자 유사도", "검수", "T", "P", "E", "W", "S", "F", "C"]
     c = c[cols].sort_values(["관심사", "예상 답변율(결론 기준)"], ascending=[True, False])

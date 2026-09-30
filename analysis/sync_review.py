@@ -33,6 +33,7 @@ def num(x, nd=4):
 
 # 신규 후보 세트: (파일, 분류 라벨). 검토 화면에서 '신규 후보'(N)·'신규 연애'(L) 필터로 본다
 NEW_SETS = [("new_questions_love.csv", "L. 신규 연애"),
+            ("new_questions_self.csv", "N. 신규(자아분석)"),
             ("new_questions_fun.csv", "N. 신규(재미 보강)"),
             ("new_questions_scraped.csv", "N. 신규(외부 디깅)"),
             ("new_questions.csv", "N. 신규(내부 보강)")]
@@ -53,8 +54,9 @@ def new_rows():
                 "cls": cls, "rev": 0, "exp": 0, "ans": 0, "rep": 0, "prevExp": 0, "prevAns": 0,
                 "est": num(r["예상 답변율(결론 기준)"]), "vsBase": num(r["기존 평균 대비(%p)"], 1),
                 "form": r.get("형식", ""),
-                "diag": f"{r['출처']}" + (f" · 원문: {src_text}" if src_text else ""),
-                "principle": r.get("인기·검증 근거", ""), "src": r.get("출처 URL", ""),
+                "diag": (f"분석 축: {r['분석 축']} ({r['근거 개념']}) · 해석: {r['해석 가이드']} · 공감 포인트: {r['인기·검증 근거']}"
+                         if r.get("분석 축") else f"{r['출처']}" + (f" · 원문: {src_text}" if src_text else "")),
+                "principle": "" if r.get("분석 축") else r.get("인기·검증 근거", ""), "src": r.get("출처 URL", ""),
                 "similar": f"{r['가장 비슷한 기존 질문']} (유사도 {r['글자 유사도']})",
                 "lint": [m for _, m in lint(r["문구"])],
                 "o1": r["문구"], "o2": "", "action": "신규 추가", "dPred": None, "needsRewrite": False,
