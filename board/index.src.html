@@ -270,6 +270,8 @@ summary.note{cursor:pointer;font-weight:700}
 .gcard textarea{width:100%;min-height:2.6em;font:inherit;font-weight:800;border:1.5px solid var(--line);border-radius:10px;padding:6px 8px;background:var(--surface);color:var(--ink);resize:vertical}
 .gcard .g{font-size:.8rem;color:var(--ink-2)}
 .gcard .w{font-size:.78rem;color:var(--mod);font-weight:700}
+.heat td.na{background:transparent!important;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+.heat td.away{opacity:.75}
 .heat td.zero{background:transparent!important;color:var(--gone);box-shadow:inset 0 0 0 1.5px var(--gone)}
 .dist .bar{display:flex;gap:2px;height:22px;border-radius:8px;overflow:hidden;background:var(--surface)}
 .dist .bar i{display:block;height:100%;min-width:2px}
@@ -414,7 +416,7 @@ a{color:var(--blue)}
     <ol class="steps" id="steps"></ol>
   </section>
   <section class="panel step" data-gmode="fill" aria-labelledby="g1h"><h2 id="g1h"><span class="sn">1</span>축 × 관심사 고르기</h2>
-    <p class="note" style="margin:0">개선 후 활성 질문 수예요(페이지에서 고친 것까지 반영). 빨간 0칸은 그 관심사에서 그 축을 묻는 질문이 없는 곳이에요. 칸을 누르세요.</p>
+    <p class="note" style="margin:0">개선 후 활성 질문 수예요(페이지에서 고친 것까지 반영). 축마다 어울리는 관심사가 따로 있어요 — <b>빨간 0칸</b>은 어울리는 관심사인데 비어 있어 채울 곳, <b>·</b> 칸은 원래 어울리지 않는 조합이에요. 칸을 누르세요.</p>
     <div class="chartbox" style="overflow-x:auto"><div id="heat"></div></div></section>
   <section class="panel step" data-gmode="fill" aria-labelledby="g2h"><h2 id="g2h"><span class="sn">2</span>데이터 근거</h2><div id="gData"><p class="note">먼저 칸을 골라 주세요.</p></div></section>
   <section class="panel step" data-gmode="fill" aria-labelledby="g4h"><h2 id="g4h"><span class="sn">3</span>형식과 조건</h2><div id="gOpt"></div></section>
@@ -650,6 +652,13 @@ const AXES = {
   '결정 방식': ['분석/직관, 최대화/만족화, 후회', '선택하는 방식'],
   '자기 인식': ['자기 자비, 조건부 자기가치', '나를 대하는 태도'],
 };
+// 축마다 자연스럽게 다뤄지는 관심사(질문이 실제로 몰린 곳 + 개념상 어울리는 곳). 빈칸 채우기는 이 안에서만 권한다
+const AXIS_HOME = {
+  '에너지 방향': ['관계', '루틴', '취향'], '계획·실행': ['루틴', '가치관'], '새로움 추구': ['취향', '가치관', '루틴'],
+  '관계 온도': ['관계', '사랑'], '감정 민감도': ['감정', '관계'], '스트레스 대처': ['감정', '루틴'], '친밀감 방식': ['관계', '사랑'],
+  '가치·동기': ['가치관', '루틴'], '결정 방식': ['가치관', '취향'], '자기 인식': ['감정', '가치관'],
+};
+const isHome = (a, c) => (AXIS_HOME[a] || []).includes(c);
 const ORIG_LABEL = '원본 DB(daily_questions_202608141346.csv)';
 const ORIG_BASE = { id: 'orig', orig: true, at: null, by: null };
 const baseline = () => baseId === 'orig' ? ORIG_BASE : (DLS.find(d => d.id === baseId) || null);
@@ -1080,7 +1089,10 @@ function heatUI(){
     axes.map(a => { const vals = cats.map(c => n(a, c));
       return `<tr><th>${esc(a)}</th>${vals.map((v, i) => { const t = v / max, bg = `color-mix(in srgb, var(--chart) ${Math.round(12 + t * 80)}%, var(--surface))`;
         const on = GEN && GEN.axis === a && GEN.cat === cats[i] ? ' sel' : '';
-        return v ? `<td class="hc${on}" data-ax="${esc(a)}" data-cat="${cats[i]}" style="background:${bg};color:${t > 0.5 ? '#fff' : 'var(--ink)'}" title="${esc(a)} × ${cats[i]}: ${v}문항 · 눌러서 새 질문 만들기" tabindex="0" role="button">${v}</td>` : `<td class="hc zero${on}" data-ax="${esc(a)}" data-cat="${cats[i]}" title="${esc(a)} × ${cats[i]}: 없음 · 눌러서 새 질문 만들기" tabindex="0" role="button">0</td>`; }).join('')}<td>${vals.reduce((x, y) => x + y, 0)}</td></tr>`; }).join('') + '</tbody></table>';
+        const home = isHome(a, cats[i]);
+        if (v) return `<td class="hc${on}${home ? '' : ' away'}" data-ax="${esc(a)}" data-cat="${cats[i]}" style="background:${bg};color:${t > 0.5 ? '#fff' : 'var(--ink)'}" title="${esc(a)} × ${cats[i]}: ${v}문항${home ? '' : ' · 이 축이 보통 다뤄지는 관심사는 아니에요'} · 눌러서 새 질문 만들기" tabindex="0" role="button">${v}</td>`;
+        return home ? `<td class="hc zero${on}" data-ax="${esc(a)}" data-cat="${cats[i]}" title="${esc(a)} × ${cats[i]}: 없음 · 이 축이 어울리는 관심사라 채울 곳이에요" tabindex="0" role="button">0</td>`
+          : `<td class="hc na${on}" data-ax="${esc(a)}" data-cat="${cats[i]}" title="${esc(a)} × ${cats[i]}: 없음 · 이 관심사와는 잘 어울리지 않는 축이에요" tabindex="0" role="button">·</td>`; }).join('')}<td>${vals.reduce((x, y) => x + y, 0)}</td></tr>`; }).join('') + '</tbody></table>';
 }
 function lenUI(){
   const b = INS.length, W = 640, H = 220, L = 40, Bm = 40, T = 14, bw = (W - L) / b.length;
@@ -1112,7 +1124,7 @@ const HYP = /(한다면|하다면|이라면|라면|있다면|없다면|만약|�
 function predict(c){
   const r = modelPred(c.tags || {}, c.form, GEN.cat, c.text.length, c.level); if (!r) return null;
   const cellN = rows().filter(x => !x.deleted && x.axis === GEN.axis && x.cat === GEN.cat).length;
-  const gap = cellN === 0 ? 0.05 : cellN <= 2 ? 0.03 : 0;
+  const gap = !isHome(GEN.axis, GEN.cat) ? 0 : cellN === 0 ? 0.05 : cellN <= 2 ? 0.03 : 0;   // 어울리는 칸만 빈 곳 보너스
   const sim = similarTo('', c.text), ov = c.topic ? topicOverlap(c.topic).level : 'new';
   const pen = (sim ? 0.10 : 0) + (ov === 'many' ? 0.05 : ov === 'some' ? 0.02 : 0) + (HYP.test(c.text) ? 0.03 : 0);
   c.lo = r.lo; c.hi = r.hi; c.score = r.p + gap - pen;
@@ -1139,6 +1151,7 @@ function gDataUI(){
   const li = x => `<li>${esc(x.r.text)} <span class="r">추정 ${P(x.q.est)} · 답변 ${x.q.ans}/${x.q.res}</span></li>`;
   const sig = INS ? INS.model.terms.filter(t => t.p < 0.05) : [];
   $('#gData').innerHTML = `<p class="note" style="margin:0"><b>${esc(GEN.axis)} × ${esc(GEN.cat)}</b> — 이 축은 ${esc(ax[1])}를 봐요 (근거 ${esc(ax[0])}). 지금 이 칸 질문 ${ev.cell.length}개${ev.cell.length ? ': ' + ev.cell.slice(0, 5).map(r => esc(r.text)).join(' / ') : ''}.</p>
+    ${isHome(GEN.axis, GEN.cat) ? '' : `<p class="note" style="margin:0;color:var(--mod);font-weight:700">이 축은 보통 ${esc((AXIS_HOME[GEN.axis] || []).join('·'))}에서 다뤄요. ${esc(GEN.cat)}에서 억지로 만들면 질문이 어색해지기 쉬워요 — 빈 곳 보너스도 붙지 않아요.</p>`}
     <div class="gcols">
       <div class="gbox"><h3>${esc(GEN.cat)}에서 잘 되는 질문 (평균 ${P(avg)})</h3><span class="note" style="margin:0">노출 5회 이상 · 추정 = 표본이 적을수록 평균 쪽으로 당긴 답변율</span><ol>${ev.top.map(li).join('') || '<li>실적이 아직 적어요</li>'}</ol></div>
       ${ev.thin ? `<div class="gbox" style="grid-column:1/-1"><span class="note" style="margin:0">${esc(GEN.cat)}에서 노출 5회 이상인 질문이 ${ev.nEl}개뿐이라 근거가 얇아요. 매달 통계가 쌓이면 늘어나요.</span></div>` : ''}
@@ -1379,7 +1392,7 @@ function eqUI(){
         <li><b>수정 대상</b>: 결론 ${MIN_EXP}회 이상이고, 진짜 답변율이 평균보다 10%p 넘게 낮을 확률 ≥ ${Math.round((pol.fix_p || 0.8) * 100)}% → 고쳐야 할 것 · 월간 골라 주세요</li>
         <li><b>우수</b>: 평균보다 10%p 넘게 높을 확률 ≥ ${Math.round((pol.good_p || 0.8) * 100)}% → 첫 질문(레벨 1) 후보</li>
         <li><b>탐색</b>: 신규 질문은 결론 ${pol.explore_n || 20}회가 모일 때까지 판정 보류(예측만 참고)</li>
-        <li><b>제작 점수</b> = 예상 답변율 + 빈 곳 보너스(0칸 +5, 1~2칸 +3) − 중복 10 − 소재 겹침 5/2 − 가정형 3</li>
+        <li><b>제작 점수</b> = 예상 답변율 + 빈 곳 보너스(어울리는 칸만: 0칸 +5, 1~2칸 +3) − 중복 10 − 소재 겹침 5/2 − 가정형 3</li>
         <li><b>재학습</b>: 매달 통계로 λ·φ·계수를 다시 맞추고 검증 결과를 갱신</li></ul></div>
     </div>
     <h3 style="margin:6px 0 0;font-size:.9rem">예측식</h3>
