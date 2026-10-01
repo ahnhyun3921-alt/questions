@@ -62,6 +62,18 @@ def load():
         rows.append(dict(key=k, ans=v[1], rep=v[2], exp=v[0], L=len(str(db.loc[k, "question_text"])), level=int(db.loc[k, "question_level"]),
                          cat=CAT.get(int(db.loc[k, "interest_id"]), ""), axis=axis.loc[sid, "분석 축"] if sid in axis.index else "",
                          **{c: t[c] for c in "TPEWSFC"}))
+    # 개선함 페이지에서 만든 질문도 통계가 쌓이면 학습에 넣는다(태그는 page_added.csv)
+    pa_path = Path(__file__).parent / "new" / "page_added.csv"
+    if pa_path.exists():
+        have = {r["key"] for r in rows}
+        for _, r in pd.read_csv(pa_path, dtype={"DB id": str}).iterrows():
+            k = r["DB id"]
+            if k in have or k not in st["q"]:
+                continue
+            v = st["q"][k]
+            rows.append(dict(key=k, ans=v[1], rep=v[2], exp=v[0], L=len(str(r["문구"])), level=int(r["question_level"]),
+                             cat=CAT.get(int(r["interest_id"]), ""), axis=r["분석 축"] if isinstance(r["분석 축"], str) else "",
+                             **{c: int(r[c]) for c in "TPEWSC"}, F=r["F"]))
     return snap.stem, pd.DataFrame(rows)
 
 
@@ -309,10 +321,15 @@ def levels(d, mdl):
         for r in rows:
             if r["newId"] in n.index:
                 T[r["key"]] = n.loc[r["newId"], list("TPEWSFC")].to_dict()
+    pa_path = Path(__file__).parent / "new" / "page_added.csv"
+    if pa_path.exists():
+        for _, r in pd.read_csv(pa_path, dtype={"DB id": str}).iterrows():
+            T[r["DB id"]] = {**{c: int(r[c]) for c in "TPEWSC"}, "F": r["F"]}
     stq = {k: (a, rp) for k, a, rp in zip(d.key, d.ans, d.rep)}
     post = mdl.get("post", {})
-    live = [r for r in rows if not r["deleted"] and r["key"] in T]
-    lv = {r["key"]: level_of(T[r["key"]], r["level"]) for r in live}
+    # 태그가 없어도 원래 레벨 1이면 입문으로 정해진다(661~684 첫 질문 묶음 등)
+    live = [r for r in rows if not r["deleted"] and (r["key"] in T or r["level"] == 1)]
+    lv = {r["key"]: 1 if r["level"] == 1 else level_of(T[r["key"]], r["level"]) for r in live}
     out = []
     for L, name, desc, when in LEVELS:
         ks = [k for k, v in lv.items() if v == L]

@@ -673,13 +673,26 @@ let BASE0 = [], UPMETA = null, UPROWS = null, UPLOG = [], upPending = null;
 const UPCOLS = ['id','interest_id','question_text','question_level','empathy_guide','hint_guide','leading_question_guide','created_at','updated_at','deleted_at'];
 // 페이지에서 만든 신규 질문(added 컬렉션)을 개선본 행 모양으로 바꾼다
 let ADDED = new Map();
+const PURPOSE_CAT = { 취향: '좋아하는 것을 꺼내 나의 취향 지도를 그리게 해요.', 감정: '감정을 알아차리고 다루는 방식을 돌아보게 해요.', 루틴: '생활 습관과 시간을 쓰는 방식을 돌아보게 해요.',
+  관계: '사람들 사이에서의 나를 돌아보게 해요.', 사랑: '연애와 좋아하는 사람 앞의 나를 돌아보게 해요.', 가치관: '삶의 기준과 선택을 정리하게 해요.' };
+const PURPOSE_FORM = { c: '둘 중 고르게 해서 바로 답할 수 있어요.', p: '좋아하는 것 하나를 떠올리게 해서 부담이 적어요.', h: '상상으로 답하게 해서 경험이 없어도 답할 수 있어요.',
+  t: '평소 패턴을 관찰하게 해요.', r: '기억 속 장면을 꺼내게 해요.', d: '생각을 한 문장으로 정리하게 해요.', n: '떠오르는 사람을 통해 관계를 돌아보게 해요.' };
+// 제안 레벨(analysis/build_insights.level_of 과 같은 규칙) — 아직 저장소로 가져오지 않은 페이지 질문용
+function levelOf(t, f, cur){
+  if (Number(cur) === 1) return 1;
+  if (!t) return null;
+  if (t.W === 3 || t.S === 3) return 4;
+  if (t.E === 3 || (t.W >= 2 && t.S >= 2) || ['r', 'd'].includes(f) || t.P === 2) return 3;
+  if (t.T === 0 && t.P === 0 && t.E === 1 && t.W === 1 && t.S <= 1 && t.C === 0 && ['p', 'c', 'h'].includes(f)) return 1;
+  return 2;
+}
 function addedRows(){
   const have = new Set(BASE0.map(r => r.key));
   return [...ADDED.values()].filter(a => !have.has(String(a.id))).map(a => ({ key: String(a.id), id: String(a.id), newId: 'P' + a.id, statsId: null,
     interest_id: a.interest_id, cat: CAT[a.interest_id], level: a.level, text: a.text, oldText: '', g: [a.g0, a.g1, a.g2], deleted: false, deletedAt: '',
     created_at: dbTime(a.at), updated_at: dbTime(a.at), change: '신규', catChange: '', set: '페이지에서 생성', form: a.form || '', axis: a.axis || '', axisNote: AXES[a.axis]?.[1] || '',
-    purpose: [a.level === 1 ? '첫 질문용이에요.' : '', a.axis ? `자아분석 '${a.axis}' 축의 신호를 모아요.` : ''].filter(Boolean).join(' ') || '페이지에서 직접 추가한 질문이에요.', why: a.why || '', source: '새 질문 만들기', srcUrl: '',
-    pred: null, exp: null, ans: null, rep: null, alts: [], decided: '', orig: null, made: a }));
+    purpose: [a.level === 1 ? '첫 질문용이에요. 가볍고 바로 답할 수 있어 기록을 시작하게 해요.' : '', PURPOSE_CAT[CAT[a.interest_id]] || '', PURPOSE_FORM[a.formCode || ''] || '', a.axis ? `자아분석 '${a.axis}' 축의 신호를 모아요.` : ''].filter(Boolean).join(' '), why: a.why || '', source: '새 질문 만들기', srcUrl: '',
+    pred: a.pred?.p ?? null, exp: null, ans: null, rep: null, alts: [], decided: '', orig: null, made: a, tags: a.tags || null, formCode: a.formCode || '' }));
 }
 function mergeUpload(){
   const base = BASE0.concat(addedRows());
@@ -1264,16 +1277,18 @@ async function genAdd(i){
   const id = Math.max(...ids) + 1;
   try {
     await db.doc('added/' + id).set({ id, interest_id: catId(GEN.cat), axis: GEN.axis, text: c.text.trim(), g0: c.empathy, g1: c.hint, g2: c.leading,
-      level: c.level, form: FORMN[c.form] || '', why: [c.why, c.topic && '소재 ' + c.topic, c.pred != null && '예상 답변율 ' + P(c.pred)].filter(Boolean).join(' · '),
+      level: c.level, form: FORMN[c.form] || '', formCode: c.form || '', tags: c.tags || null, pred: c.pred != null ? { p: c.pred, lo: c.lo, hi: c.hi } : null,
+      why: [c.why, c.topic && '소재 ' + c.topic, c.pred != null && '예상 답변율 ' + P(c.pred)].filter(Boolean).join(' · '),
       by: me?.id || null, at: new Date().toISOString() });
     c.done = String(id); genUI(); toast(`Q.${id}로 추가했어요. 다운로드에 신규로 들어가요.`);
   } catch { toast('추가하지 못했어요.'); }
 }
 // 질문 카드 수정 칸의 예상 답변율(문구로 태그·형식을 자동 추정)
-function cardPred(text, cat, level = 2){
+function cardPred(text, cat, level = 2, made = null){
   if (!INS?.model?.coef || !text) return '';
-  const f = guessForm(text), r = modelPred(guessTags(text, f), f, cat, text.length, level); if (!r) return '';
-  return `예상 답변율 ${P(r.p)} (80% 범위 ${P(r.lo)}~${P(r.hi)}) · 평균 대비 ${pp(r.p - INS.model.base)} <span class="note">(문구로 자동 추정 · ${FORMN[f]})</span>`;
+  const saved = made && made.tags && made.text === text;   // 만들 때 저장한 태그가 있고 문구가 그대로면 그 태그로
+  const f = saved ? (made.formCode || guessForm(text)) : guessForm(text), r = modelPred(saved ? made.tags : guessTags(text, f), f, cat, text.length, level); if (!r) return '';
+  return `예상 답변율 ${P(r.p)} (80% 범위 ${P(r.lo)}~${P(r.hi)}) · 평균 대비 ${pp(r.p - INS.model.base)} <span class="note">(${saved ? '만들 때 태그' : '문구로 자동 추정'} · ${FORMN[f]})</span>`;
 }
 // ---- 질문 모델: 구조도 · 진단기 · 예측식 ----
 const TAGDEF = [
@@ -1508,7 +1523,7 @@ function card(r){
     `<span class="chip">${esc(r.change)}</span>`,
     `<span class="chip">${esc(r.cat)}${r.catChange ? ` · ${esc(r.catChange)}` : ''}</span>`,
     r.level === 1 ? `<span class="chip mint">레벨 1 · 첫 질문</span>` : `<span class="chip">레벨 2</span>`,
-    INS?.levels?.lv?.[r.key] ? `<span class="chip" title="레벨 구조 제안(분석 탭)">제안 L${INS.levels.lv[r.key]} ${['', '입문', '일상', '성찰', '깊이'][INS.levels.lv[r.key]]}</span>` : '',
+    (lvp => lvp ? `<span class="chip" title="레벨 구조 제안(분석 탭)">제안 L${lvp} ${['', '입문', '일상', '성찰', '깊이'][lvp]}</span>` : '')(INS?.levels?.lv?.[r.key] || (r.made ? levelOf(r.made.tags || guessTags(r.text, r.made.formCode || guessForm(r.text)), r.made.formCode || guessForm(r.text), r.level) : null)),
     r.form ? `<span class="chip">${esc(r.form)}</span>` : '',
     r.axis ? `<span class="chip mint">${esc(r.axis)}</span>` : '',
     rateChip(r.key),
@@ -1556,7 +1571,7 @@ function detail(r){
     </div>
     <form class="form" data-form="${k}">
       <h3 style="margin:0">직접 고쳐 쓰기</h3>
-      <div><div class="lbl">질문 문구 · 자유롭게 고쳐 쓰고 저장하면 돼요</div><textarea id="t-${k}" name="text" rows="2">${esc(r.text)}</textarea><div class="warn" id="w-${k}">${esc(lint(r.text).join(' '))}</div><div class="simwarn" id="sw-${k}"></div><div class="cardpred" id="pr-${k}">${cardPred(r.text, r.cat, r.level)}</div></div>
+      <div><div class="lbl">질문 문구 · 자유롭게 고쳐 쓰고 저장하면 돼요</div><textarea id="t-${k}" name="text" rows="2">${esc(r.text)}</textarea><div class="warn" id="w-${k}">${esc(lint(r.text).join(' '))}</div><div class="simwarn" id="sw-${k}"></div><div class="cardpred" id="pr-${k}">${cardPred(r.text, r.cat, r.level, r.made)}</div></div>
       <div><div class="lbl">공감 가이드 · empathy_guide</div><textarea id="g0-${k}" name="g0" rows="2">${esc(r.g[0])}</textarea></div>
       <div><div class="lbl">힌트 가이드 · hint_guide</div><textarea id="g1-${k}" name="g1" rows="2">${esc(r.g[1])}</textarea></div>
       <div><div class="lbl">유도 질문 · leading_question_guide</div><textarea id="g2-${k}" name="g2" rows="2">${esc(r.g[2])}</textarea></div>
@@ -1846,7 +1861,8 @@ $('#dgAdd').addEventListener('click', async () => {
   const btn = $('#dgAdd'); btn.disabled = true;
   try {
     await db.doc('added/' + id).set({ id, interest_id: catId(cat), axis: $('#dgAx').value, text, g0: g[0], g1: g[1], g2: g[2], level: Number($('#dgLv').value),
-      form: FORMN[form] || '', why: ['직접 작성', r && '예상 답변율 ' + P(r.p)].filter(Boolean).join(' · '), by: me?.id || null, at: new Date().toISOString() });
+      form: FORMN[form] || '', formCode: form, tags: { ...guessTags(text, form), ...DG.manual }, pred: r ? { p: r.p, lo: r.lo, hi: r.hi } : null,
+      why: ['직접 작성', r && '예상 답변율 ' + P(r.p)].filter(Boolean).join(' · '), by: me?.id || null, at: new Date().toISOString() });
     toast(`Q.${id}로 추가했어요. 다운로드에 신규로 들어가요.`);
     ['dgText', 'dgG0', 'dgG1', 'dgG2'].forEach(x => $('#' + x).value = ''); DG.manual = {}; dgUI();
   } catch { toast('추가하지 못했어요.'); } finally { dgAddState(); }

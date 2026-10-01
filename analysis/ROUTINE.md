@@ -165,5 +165,10 @@ AI 추천은 db `ai/{id}`에 쌓인다.
   - 추가한 질문은 `added/<id>`에 저장돼요.
   - id는 페이지에 있는 가장 큰 id 다음 번호예요.
   - 질문 목록과 다운로드에 '신규'로 들어가요.
-- 8단계에서 `build_full_db.py`를 돌리기 전에, ArtifactData `list`로 `added`의 id를 모아 `analysis/new/page_added_ids.txt`에 한 줄에 하나씩 적어요. 그래야 루틴이 매기는 새 id가 페이지에서 만든 id와 겹치지 않아요.
+- 8단계에서 `build_full_db.py`를 돌리기 전에 페이지 질문을 저장소로 가져와요.
+  1. ArtifactData `list`(out_dir 지정)로 `added`를 받아요.
+  2. `python analysis/import_page_added.py <out_dir>/added`를 돌려요.
+- 그러면 `analysis/new/page_added.csv`(문구·가이드·레벨·형식·축·태그)와 `page_added_ids.txt`가 갱신돼요.
+- 이후 단계에서 이 질문들이 들어가는 곳: 전체본(신규 ID `P<id>`), 개선함 데이터, 중복 판정, 레벨 판정, 그리고 통계가 쌓이면 모델 학습까지.
+- 태그를 저장하지 않은 예전 문서는 문구로 자동 추정해 채우고 '태그 출처'에 표시돼요. 월간 루틴에서 이 태그를 직접 검토해 고쳐 두면 좋아요.
 - 루틴은 `added`에 쓰지 않아요.

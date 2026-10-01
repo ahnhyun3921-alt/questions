@@ -88,6 +88,8 @@ def main():
                           "new_questions_fun.csv", "new_questions_self.csv"]]).set_index("신규 ID")
 
     rw = pd.read_csv(Path(__file__).parent / "rewrites.csv").fillna("").set_index("질문 ID")
+    pa_path = NEW / "page_added.csv"
+    page_added = pd.read_csv(pa_path, dtype={"DB id": str}).fillna("").set_index("DB id") if pa_path.exists() else pd.DataFrame()
     dec_path = ROOT / "data" / "decisions.csv"
     dec = pd.read_csv(dec_path, dtype=str).fillna("").set_index("id") if dec_path.exists() else pd.DataFrame()
     clean = lambda t: re.sub(r"^\([^)]*\)\s*", "", t).strip()
@@ -128,7 +130,12 @@ def main():
         level = int(float(r["question_level"]))
         form, ax, axnote, why, source, src_url, pred = "", "", "", "", "", "", None
         exp = ans = rep = None
-        if r["신규 ID"]:
+        if r["신규 ID"].startswith("P") and r["신규 ID"][1:] in page_added.index:   # 개선함 페이지에서 만든 질문
+            pa = page_added.loc[r["신규 ID"][1:]]
+            form, ax, source = s(pa["F"]), s(pa["분석 축"]), "개선함 '새 질문 만들기'"
+            why = " · ".join(x for x in [s(pa["근거"]), f"태그: {s(pa['태그 출처'])}"] if x)
+            pred = float(pa["예상 답변율"]) if s(pa["예상 답변율"]) else None
+        elif r["신규 ID"]:
             n = newsets.loc[r["신규 ID"]]
             form = s(n.get("F"))
             ax, axnote = s(n.get("분석 축")), s(n.get("해석 가이드"))

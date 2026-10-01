@@ -124,6 +124,17 @@ def main():
                      "created_at": now, "updated_at": now, "deleted_at": "", "변경 구분": "신규",
                      "신규 ID": r["신규 ID"], "세트": r["세트"], "분석 축": r.get("분석 축", "") if isinstance(r.get("분석 축"), str) else ""})
     pd.DataFrame(sorted(idmap.items(), key=lambda kv: int(kv[1])), columns=["신규 ID", "DB id"]).to_csv(idmap_path, index=False, encoding="utf-8-sig")
+    # 5) 개선함 페이지에서 만든 신규(analysis/new/page_added.csv — import_page_added.py로 가져옴). id는 페이지가 매긴 그대로
+    pa_path = Path(__file__).parent / "new" / "page_added.csv"
+    if pa_path.exists():
+        have = {str(k["id"]) for k in keep} | {str(x) for x in db["id"]}
+        for _, r in pd.read_csv(pa_path, dtype={"DB id": str}).fillna("").iterrows():
+            if r["DB id"] in have:
+                continue
+            keep.append({"id": r["DB id"], "interest_id": int(r["interest_id"]), "question_text": r["문구"], "question_level": int(r["question_level"]),
+                         "empathy_guide": r["empathy_guide"], "hint_guide": r["hint_guide"], "leading_question_guide": r["leading_question_guide"],
+                         "created_at": r["만든 시각"] or now, "updated_at": r["만든 시각"] or now, "deleted_at": "", "변경 구분": "신규",
+                         "신규 ID": "P" + r["DB id"], "세트": "페이지에서 생성", "분석 축": r["분석 축"]})
     out = pd.concat([db, pd.DataFrame(keep)], ignore_index=True)
     out["deleted_at"] = out["deleted_at"].fillna("")
 
