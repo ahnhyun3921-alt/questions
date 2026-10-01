@@ -1003,11 +1003,27 @@ function gOptUI(){
       <select id="gTone" ${dis} aria-label="톤">${['가볍게', '보통', '깊게'].map(t => `<option${g.tone === t ? ' selected' : ''}>${t}</option>`).join('')}</select>
       <input type="search" id="gReq" ${dis} value="${esc(g.req)}" placeholder="바라는 점 (예: 10대도 답하기 쉽게, 직장인 소재)" style="flex:1;min-width:200px" aria-label="바라는 점"></div></div>`;
 }
+// 소재가 기존 질문과 겹치는지: 소재 단어(조사 뗀 2자 이상)가 기존 활성 질문 문구에 몇 번 나오는지 센다
+const JOSA = /(으로|에서|에게|까지|부터|처럼|이랑|하고|은|는|이|가|을|를|의|에|와|과|로|도|만)$/;
+function topicTokens(t){ return [...new Set(String(t).split(/[\s·,/()]+/).map(w => w.replace(JOSA, '')).filter(w => w.length >= 2))]; }
+function topicOverlap(topic){
+  const tk = topicTokens(topic); if (!tk.length) return { level: 'new', all: [], some: [] };
+  const live = rows().filter(r => !r.deleted);
+  const hit = r => tk.filter(w => r.text.includes(w)).length;
+  // 단어가 모두 나오면 같은 소재, 3단어 이상 소재에서 2단어 이상 나오면 비슷한 소재(흔한 단어 하나로는 겹침으로 안 본다)
+  const all = live.filter(r => hit(r) === tk.length), some = tk.length >= 3 ? live.filter(r => !all.includes(r) && hit(r) >= 2) : [];
+  const inCat = all.filter(r => r.cat === GEN.cat).length;
+  const level = all.length >= 2 || inCat >= 1 ? 'many' : all.length === 1 || some.length >= 2 ? 'some' : 'new';
+  return { level, all, some, tk };
+}
+const OVL = { new: ['mint', '새 소재'], some: ['d-mod', '일부 겹침'], many: ['low', '이미 많이 다룸'] };
 function gTopUI(){
   if (!GEN){ $('#gTop').innerHTML = '<p class="note">칸을 고르면 소재를 뽑을 수 있어요.</p>'; return; }
   $('#gTop').innerHTML = `<p class="note" style="margin:0">2단계 데이터(잘 되는 질문·안 되는 패턴·빈 곳)를 근거로 이 칸에 맞는 소재를 먼저 뽑아요. 쓸 소재만 골라 5단계로 넘어가요.</p>
     <div class="row"><button class="btn primary" type="button" data-gtop ${sample && !GEN.busyT ? '' : 'disabled'}>${GEN.busyT ? '소재 뽑는 중…' : GEN.topics.length ? '소재 다시 뽑기' : 'AI로 소재 뽑기'}</button>${sample ? '' : '<span class="note">이 화면에서는 AI를 쓸 수 없어요.</span>'}</div>
-    <div class="tops">${GEN.topics.map((t, i) => `<label><input type="checkbox" data-top="${i}" ${GEN.sel.has(i) ? 'checked' : ''}><b>${esc(t.topic)}</b><small>${esc(t.why)}</small></label>`).join('')}</div>`;
+    ${GEN.topics.length ? `<p class="note" style="margin:0">겹침 판정: 소재 단어가 모두 들어간 기존 질문이 2개 이상이거나 같은 관심사에 1개라도 있으면 '이미 많이 다룸', 1개면 '일부 겹침'이에요(3단어 이상 소재는 2단어 이상 겹치는 질문이 2개 이상일 때도). 새 소재를 먼저 골라 뒀어요.</p>` : ''}
+    <div class="tops">${GEN.topics.map((t, i) => { const o = t.ovl || { level: 'new', all: [], some: [] }, ex = o.level === 'new' ? [] : (o.all.length ? o.all : o.some);
+      return `<label><input type="checkbox" data-top="${i}" ${GEN.sel.has(i) ? 'checked' : ''}><b>${esc(t.topic)} <span class="chip ${OVL[o.level][0]}">${OVL[o.level][1]}${ex.length ? ` · ${ex.length}개` : ''}</span></b><small>${esc(t.why)}</small>${ex.length ? `<small>겹치는 기존 질문: ${ex.slice(0, 2).map(r => `Q.${esc(r.key)} ${esc(r.text)}`).join(' / ')}${ex.length > 2 ? ' …' : ''}</small>` : ''}</label>`; }).join('')}</div>`;
 }
 function readOpts(){
   if (!GEN) return;
@@ -1033,13 +1049,17 @@ async function genTopics(){
   const prompt = `당신은 셀프 저널링 앱 '나답'의 데일리 질문 기획자입니다. 아래 칸에 새 질문을 만들기 전에, 쓸 만한 소재 10개를 뽑으세요.
 ${promptContext()}
 
-소재 조건: ${GEN.cat}의 일상 소재로 구체적일 것(예: '주말 아침', '단톡방', '여행 계획'). 이미 있는 질문의 소재와 겹치지 않게. 잘 되는 질문의 공통점을 살리고, 안 되는 질문의 패턴은 피한다. 톤: ${GEN.tone}. ${GEN.req ? '편집자 요청: ' + GEN.req : ''}
+소재 조건: ${GEN.cat}의 일상 소재로 구체적일 것(예: '주말 아침', '단톡방', '여행 계획'). 아래 '${GEN.cat}' 기존 질문들이 이미 다룬 소재는 쓰지 않는다 — 새 소재만.
+'${GEN.cat}' 기존 질문 전체: ${rows().filter(r => !r.deleted && r.cat === GEN.cat).map(r => r.text).join(' / ')} 잘 되는 질문의 공통점을 살리고, 안 되는 질문의 패턴은 피한다. 톤: ${GEN.tone}. ${GEN.req ? '편집자 요청: ' + GEN.req : ''}
 각 소재마다 왜 고른지(데이터 근거, 25자 이내)를 붙인다.
 JSON만 출력: {"topics":[{"topic":"","why":""}]}`;
   try {
     const out = await sample.json(prompt, { modelTier: 'default', cache: false });
     GEN.topics = (out?.topics || []).filter(t => t && t.topic).slice(0, 12).map(t => ({ topic: String(t.topic).slice(0, 30), why: String(t.why || '').slice(0, 50) }));
-    GEN.sel = new Set(GEN.topics.map((_, i) => i).slice(0, 5));
+    GEN.topics.forEach(t => t.ovl = topicOverlap(t.topic));
+    GEN.topics.sort((a, b) => ['new', 'some', 'many'].indexOf(a.ovl.level) - ['new', 'some', 'many'].indexOf(b.ovl.level));
+    const pick = lv => GEN.topics.map((t, i) => t.ovl.level === lv ? i : -1).filter(i => i >= 0);
+    GEN.sel = new Set((pick('new').length ? pick('new') : pick('some')).slice(0, 5));   // 새 소재가 없으면 일부 겹침에서
     if (!GEN.topics.length) throw { code: 'empty' };
   } catch (e) { GEN.err = e?.code === 'not_granted' ? 'AI를 쓸 수 없는 화면이에요.' : e?.code === 'rate_limited' ? '요청이 많아요. 잠시 후 다시 해 주세요.' : '소재를 뽑지 못했어요. 다시 눌러 주세요.'; if (e?.code === 'not_granted') sample = null; }
   finally { GEN.busyT = false; gTopUI(); genUI(); stepsUI(); }
@@ -1087,6 +1107,7 @@ function genUI(){
         <span class="g">레벨 ${c.level} · ${esc(FORMN[c.form] || c.form || '')}${c.topic ? ' · 소재 ' + esc(c.topic) : ''}${c.why ? ' · ' + esc(c.why) : ''}</span>
         <span class="g">태그 · ${Object.entries(c.tags || {}).map(([k, v]) => `${TG[k]} ${v}`).join(' · ')}</span>
         <span class="g">가이드 · ${esc([c.empathy, c.hint, c.leading].join(' / '))}</span>
+        ${c.topic && !c.done ? (o => o.level !== 'new' ? `<span class="w">소재 '${esc(c.topic)}'을 다룬 기존 질문 ${o.all.length || o.some.length}개: ${(o.all.length ? o.all : o.some).slice(0, 2).map(r => 'Q.' + esc(r.key) + ' ' + esc(r.text)).join(' / ')}</span>` : '')(topicOverlap(c.topic)) : ''}
         ${sim ? `<span class="w">비슷한 질문이 있어요: Q.${sim.r.key} "${esc(sim.r.text)}" (${Math.round(sim.v * 100)}%)</span>` : ''}${w.length ? `<span class="w">${esc(w.join(' '))}</span>` : ''}
         <div class="row">${c.done ? `<span class="chip mint">Q.${esc(c.done)}로 추가했어요</span>` : `<button class="btn primary" type="button" data-gadd="${i}" ${db && canWrite ? '' : 'disabled'}>신규 질문으로 추가</button>`}</div></div>`; }).join('')}</div></div>`;
 }
