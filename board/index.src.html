@@ -67,6 +67,8 @@ select{max-width:100%;min-width:0}
 .btn{font-size:.9rem;font-weight:700;border:1.5px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:9px 18px;cursor:pointer}
 .btn:hover{border-color:var(--blue);color:var(--blue)}
 .btn.primary{background:var(--blue);border-color:var(--blue);color:var(--blue-ink)}
+.btn.danger{background:var(--gone-soft);color:var(--gone)}
+.btn.danger.armed{background:var(--gone);color:#fff}
 .btn.primary:hover{filter:brightness(1.07);color:var(--blue-ink)}
 .btn.mint{border-color:var(--mint);color:var(--mint-ink);background:var(--surface)}
 .btn.mint:hover{background:var(--mint-soft)}
@@ -320,7 +322,13 @@ function eff(r){
   const e = EDITS.get(r.key);
   if (!e) return r;
   return { ...r, text: e.text ?? r.text, g: [e.g0 ?? r.g[0], e.g1 ?? r.g[1], e.g2 ?? r.g[2]],
-    level: e.level ?? r.level, interest_id: e.interest_id ?? r.interest_id, cat: CAT[e.interest_id ?? r.interest_id], edited: e };
+    level: e.level ?? r.level, interest_id: e.interest_id ?? r.interest_id, cat: CAT[e.interest_id ?? r.interest_id], edited: e,
+    ...(typeof e.deleted === 'boolean' && e.deleted !== r.deleted ? { deleted: e.deleted, deletedAt: e.deleted ? dbTime(e.at) : '' } : {}) };
+}
+// 관리자 DB의 deleted_at 형식(2026-10-01 14:57:00.000 +0900)
+function dbTime(iso){
+  const d = new Date(new Date(iso).getTime() + 9 * 3600e3).toISOString();
+  return `${d.slice(0, 10)} ${d.slice(11, 19)}.000 +0900`;
 }
 function hash(r){
   const s = JSON.stringify([r.interest_id, r.text, r.level, r.g[0], r.g[1], r.g[2], r.deleted ? 1 : 0]);
@@ -636,6 +644,7 @@ function detail(r){
         <button class="btn primary" type="submit" ${db && canWrite ? '' : 'disabled'}>고친 내용 저장</button>
         <button class="btn mint" type="button" data-guide="${k}" ${sample ? '' : 'hidden'}>이 문구로 가이드 채우기</button>
         ${e ? `<button class="btn mint" type="button" data-revert="${k}" ${db && canWrite ? '' : 'disabled'}>개선본으로 되돌리기</button>` : ''}
+        <button class="btn ${r.deleted ? 'mint' : 'danger'}" type="button" data-off="${k}" data-to="${r.deleted ? 0 : 1}" ${db && canWrite ? '' : 'disabled'}>${r.deleted ? '다시 활성화' : '이 질문 비활성화'}</button>
         <span class="note">${db ? (canWrite ? '저장하면 모두에게 바로 보이고 다음 다운로드에 들어가요.' : '이 화면에서는 저장 권한이 없어요.') : '저장 기능을 쓸 수 없는 화면이에요.'}</span>
       </div>
     </form>
@@ -796,7 +805,9 @@ list.addEventListener('submit', async e => {
   const f = e.target, k = f.dataset.form, r = BASE.find(x => x.key === k);
   const v = { text: f.text.value.trim(), g0: f.g0.value.trim(), g1: f.g1.value.trim(), g2: f.g2.value.trim(), level: Number(f.level.value), interest_id: Number(f.interest_id.value) };
   if (!v.text) return toast('문구가 비어 있어요.');
-  const same = v.text === r.text && v.g0 === r.g[0] && v.g1 === r.g[1] && v.g2 === r.g[2] && v.level === r.level && v.interest_id === r.interest_id;
+  const ex = EDITS.get(k);
+  if (ex && typeof ex.deleted === 'boolean' && ex.deleted !== r.deleted) v.deleted = ex.deleted;
+  const same = v.deleted === undefined && v.text === r.text && v.g0 === r.g[0] && v.g1 === r.g[1] && v.g2 === r.g[2] && v.level === r.level && v.interest_id === r.interest_id;
   const btn = f.querySelector('[type=submit]'); btn.disabled = true;
   try {
     if (same) {
@@ -815,6 +826,25 @@ list.addEventListener('submit', async e => {
 list.addEventListener('click', async e => {
   const ai = e.target.closest('[data-ai]'); if (ai) return genAI(ai.dataset.ai);
   const gd = e.target.closest('[data-guide]'); if (gd) return fillGuides(gd.dataset.guide, gd);
+  const off = e.target.closest('[data-off]');
+  if (off && db){
+    const k = off.dataset.off, toOff = off.dataset.to === '1';
+    if (toOff && !off.classList.contains('armed')){   // 실수 방지: 한 번 더 눌러야 비활성화
+      off.classList.add('armed'); off.textContent = '한 번 더 누르면 비활성화돼요';
+      setTimeout(() => { if (off.isConnected){ off.classList.remove('armed'); off.textContent = '이 질문 비활성화'; } }, 4000);
+      return;
+    }
+    off.disabled = true;
+    const base = BASE.find(x => x.key === k), ex = { ...(EDITS.get(k) || {}) };
+    delete ex.deleted; delete ex.by; delete ex.at;
+    const onlyFlag = !Object.keys(ex).length;
+    try {
+      if (toOff === base.deleted && onlyFlag) await db.doc('edits/' + k).delete();
+      else await db.doc('edits/' + k).set({ ...ex, ...(toOff === base.deleted ? {} : { deleted: toOff }), by: me?.id || null, at: new Date().toISOString() });
+      toast(toOff ? '비활성화했어요. 다음 다운로드에 deleted_at이 채워져요.' : '다시 활성화했어요.');
+    } catch { toast('저장하지 못했어요.'); off.disabled = false; }
+    return;
+  }
   const kp = e.target.closest('[data-keep],[data-unkeep]');
   if (kp && db){ kp.disabled = true; const k = kp.dataset.keep || kp.dataset.unkeep;
     try { if (kp.dataset.keep){ await db.doc('keeps/' + k).set({ by: me?.id || null, at: new Date().toISOString() }); toast('지금 문구 그대로 두기로 했어요.'); }
