@@ -8,6 +8,7 @@
   --blue:#4e5ff0; --blue-ink:#ffffff; --blue-soft:#eef0ff; --on-blue:rgba(255,255,255,.16);
   --mint:#63d2c6; --mint-soft:#e4f7f4; --mint-ink:#12857a;
   --new:#12857a; --new-soft:#e4f7f4; --mod:#c46a00; --mod-soft:#fff2df; --gone:#d2453e; --gone-soft:#fde8e6;
+  --c1:#2a78d6; --c2:#eb6834; --c3:#1baf7a; --c4:#eda100; --c5:#e87ba4; --c6:#008300;
   --chart:#4e5ff0; --track:#e9ebf3; --low:#c4501f; --low-soft:#fdeee6; --high:#12857a; --high-soft:#e4f7f4;
   --shadow:0 8px 28px rgba(46,58,140,.07);
   --font:"NanumSquare","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
@@ -17,6 +18,7 @@
   --blue:#5d6cf5; --blue-ink:#ffffff; --blue-soft:#2a2f62; --on-blue:rgba(255,255,255,.13);
   --mint:#63d2c6; --mint-soft:#183b3a; --mint-ink:#7fe3d7;
   --new:#7fe3d7; --new-soft:#183b3a; --mod:#f0b45c; --mod-soft:#3a2c14; --gone:#ff8d86; --gone-soft:#3d1c1d;
+  --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500; --c5:#d55181; --c6:#008300;
   --chart:#6f7df5; --track:#2b3054; --low:#ff9a6b; --low-soft:#3b2418; --high:#7fe3d7; --high-soft:#183b3a;
   --shadow:0 8px 28px rgba(0,0,0,.35); color-scheme:dark } }
 :root[data-theme="dark"]{
@@ -24,6 +26,7 @@
   --blue:#5d6cf5; --blue-ink:#ffffff; --blue-soft:#2a2f62; --on-blue:rgba(255,255,255,.13);
   --mint:#63d2c6; --mint-soft:#183b3a; --mint-ink:#7fe3d7;
   --new:#7fe3d7; --new-soft:#183b3a; --mod:#f0b45c; --mod-soft:#3a2c14; --gone:#ff8d86; --gone-soft:#3d1c1d;
+  --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500; --c5:#d55181; --c6:#008300;
   --chart:#6f7df5; --track:#2b3054; --low:#ff9a6b; --low-soft:#3b2418; --high:#7fe3d7; --high-soft:#183b3a;
   --shadow:0 8px 28px rgba(0,0,0,.35); color-scheme:dark }
 body{background:var(--bg);color:var(--ink);font:400 15px/1.65 var(--font);-webkit-font-smoothing:antialiased}
@@ -126,6 +129,18 @@ summary.note{cursor:pointer;font-weight:700}
 .top5 button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .top5 .t{font-weight:700;font-size:.9rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .top5 .n{font-size:.8rem;font-weight:800;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.dist{display:grid;gap:10px}
+.dist .bar{display:flex;gap:2px;height:22px;border-radius:8px;overflow:hidden;background:var(--surface)}
+.dist .bar i{display:block;height:100%;min-width:2px}
+.dist .bl{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:center;font-size:.8rem;font-weight:800;color:var(--ink-2)}
+.dist table{width:100%;border-collapse:collapse;font-size:.84rem;font-variant-numeric:tabular-nums}
+.dist th{font-size:.72rem;color:var(--muted);font-weight:800;text-align:right;padding:6px 8px}
+.dist th:first-child,.dist td:first-child{text-align:left}
+.dist td{padding:7px 8px;border-top:1px solid var(--line);text-align:right;font-weight:700}
+.dist td em{font-style:normal;color:var(--muted);font-weight:700;margin-left:4px}
+.dist .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+.dist tr[data-cat]{cursor:pointer} .dist tr[data-cat]:hover td{background:var(--surface)}
+@media (max-width:560px){.dist .hide-m{display:none}}
 .brk-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;margin-bottom:8px}
 .seg2{display:inline-flex;background:var(--surface);border-radius:999px;padding:3px;gap:2px}
 .seg2 button{all:unset;cursor:pointer;font-size:.8rem;font-weight:800;color:var(--ink-2);padding:6px 14px;border-radius:999px}
@@ -260,6 +275,10 @@ a{color:var(--blue)}
     <div class="grid2">
       <div class="chartbox"><div class="ttl">전체 답변율 추이</div><div id="trend"></div></div>
       <div class="chartbox"><div class="ttl">교체가 가장 많은 질문</div><div class="top5" id="top5"></div></div>
+    </div>
+    <div class="chartbox">
+      <div class="ttl">카테고리(관심사) 분포 · 활성 질문 기준</div>
+      <div class="dist" id="dist"></div>
     </div>
     <div class="chartbox">
       <div class="brk-head">
@@ -569,6 +588,24 @@ function similarTo(k, text){
   rows().forEach(r => { if (r.key === k || r.deleted) return; const v = dice(g, grams(r.text)); if (v >= 0.6 && (!best || v > best.v)) best = { r, v }; });
   return best;
 }
+// ---- 카테고리 분포 ----
+function distUI(){
+  if (!BASE.length) return;
+  const all = rows(), nowCat = r => r.catChange ? r.catChange.split('→')[0] : r.cat;
+  const now = all.filter(r => !r.newId && !(r.orig ? r.orig[6] : r.change.startsWith('이미 삭제')));
+  const aft = all.filter(r => !r.deleted);
+  const cats = Object.values(CAT), col = i => `var(--c${i + 1})`;
+  const cnt = (list, f) => cats.map(c => list.filter(r => f(r) === c).length);
+  const n0 = cnt(now, nowCat), n1 = cnt(aft, r => r.cat), lv1 = cnt(aft.filter(r => Number(r.level) === 1), r => r.cat), nw = cnt(aft.filter(r => r.newId), r => r.cat);
+  const t0 = now.length, t1 = aft.length;
+  const bar = (n, t, label) => `<div class="bl"><span>${label}</span><div class="bar" role="img" aria-label="${label} ${cats.map((c, i) => `${c} ${n[i]}개`).join(', ')}">${cats.map((c, i) => `<i style="width:${n[i] / t * 100}%;background:${col(i)}" title="${c} ${n[i]}개 (${P(n[i] / t)})"></i>`).join('')}</div></div>`;
+  $('#dist').innerHTML = bar(n0, t0, `지금 DB ${t0}`) + bar(n1, t1, `개선 후 ${t1}`) +
+    `<table><thead><tr><th>관심사</th><th>지금 DB</th><th>개선 후</th><th>증감</th><th class="hide-m">신규</th><th class="hide-m">레벨 1</th></tr></thead><tbody>` +
+    cats.map((c, i) => { const d = n1[i] - n0[i];
+      return `<tr data-cat="${c}"><td><span class="sw" style="background:${col(i)}"></span>${c}</td><td>${n0[i]}<em>${P(n0[i] / t0)}</em></td><td>${n1[i]}<em>${P(n1[i] / t1)}</em></td><td>${d > 0 ? '+' : ''}${d}</td><td class="hide-m">${nw[i]}</td><td class="hide-m">${lv1[i]}</td></tr>`; }).join('') +
+    `<tr><td>합계</td><td>${t0}</td><td>${t1}</td><td>${t1 - t0 > 0 ? '+' : ''}${t1 - t0}</td><td class="hide-m">${nw.reduce((a, b) => a + b, 0)}</td><td class="hide-m">${lv1.reduce((a, b) => a + b, 0)}</td></tr></tbody></table>
+    <p class="note" style="margin:0">페이지에서 고친 관심사·비활성화·삭제까지 반영해요. 줄을 누르면 그 관심사 질문만 걸러 보여 줘요.</p>`;
+}
 let BRK = 'form';
 function breakdown(){
   const s = latest(), avg = avgRate(s), all = rows();
@@ -599,7 +636,7 @@ function breakdown(){
   }).join('');
 }
 function dataUI(){
-  breakdown();
+  breakdown(); distUI();
   const s = latest(), p = prevSnap();
   if (!s){ $('#dataAt').textContent = '아직 받아온 통계가 없어요.'; return; }
   const avg = avgRate(s), pavg = avgRate(p);
@@ -950,6 +987,7 @@ $('#more').addEventListener('click', () => { limit += 40; render(); });
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (b) go(b.dataset.page); });
 go(PAGE, false);
 $('#brkSeg').addEventListener('click', e => { const b = e.target.closest('[data-by]'); if (!b) return; BRK = b.dataset.by; document.querySelectorAll('#brkSeg button').forEach(x => x.setAttribute('aria-pressed', x === b)); breakdown(); });
+$('#dist').addEventListener('click', e => { const t = e.target.closest('tr[data-cat]'); if (!t) return; resetFilters(); F.view = 'all'; F.cat = t.dataset.cat; limit = 40; saveF(); filters(); render(); go('q'); });
 $('#brk').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; const k = b.dataset.k;
   if (BRK === 'form') F.form = k; else if (BRK === 'cat') F.cat = k; else F.level = k.replace('레벨 ', '');
   F.view = 'all'; limit = 40; saveF(); filters(); render(); go('q'); });
