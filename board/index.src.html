@@ -145,6 +145,41 @@ summary.note{cursor:pointer;font-weight:700}
 .dist .lg button:hover,.dist .lg button[aria-pressed="true"]{background:var(--soft);color:var(--ink)}
 .dist .lg button:focus-visible{outline:2px solid var(--blue)}
 #forest{position:relative}
+.flow{display:grid;gap:14px}
+.flane{display:grid;gap:6px}
+.flane h3{margin:0;font-size:.84rem;color:var(--ink-2)}
+.fsteps{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px}
+.fstep{background:var(--soft);border-radius:16px;padding:10px 12px;display:grid;gap:3px;min-width:0;flex:1 1 150px;max-width:230px;position:relative}
+.fstep b{font-size:.86rem} .fstep span{font-size:.76rem;color:var(--ink-2);line-height:1.45}
+.fstep i{font-style:normal;font-size:.7rem;font-weight:800;color:var(--blue)}
+.farr{align-self:center;color:var(--muted);font-weight:800}
+.floop{font-size:.8rem;font-weight:700;color:var(--ink-2);background:var(--mint-soft);border-radius:12px;padding:8px 12px}
+.dg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media (max-width:760px){.dg{grid-template-columns:minmax(0,1fr)}}
+.dgin{display:grid;gap:8px;align-content:start}
+.dgin textarea{width:100%;font:inherit;font-weight:800;font-size:1rem;border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--surface);color:var(--ink);resize:vertical}
+.dgtags{display:grid;gap:6px}
+.dgtag{display:grid;grid-template-columns:86px minmax(0,1fr);gap:8px;align-items:center;font-size:.8rem}
+.dgtag b{color:var(--ink-2)}
+.dgtag .opts2{display:flex;flex-wrap:wrap;gap:4px}
+.dgtag button{all:unset;cursor:pointer;font-size:.76rem;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--soft);color:var(--ink-2)}
+.dgtag button[aria-pressed="true"]{background:var(--blue);color:#fff}
+.dgtag button:focus-visible{outline:2px solid var(--blue)}
+.dgout{background:var(--soft);border-radius:18px;padding:14px 16px;display:grid;gap:10px;align-content:start}
+.dgbig{display:flex;align-items:baseline;gap:10px}
+.dgbig .v{font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums}
+.contrib{display:grid;gap:4px}
+.cb{display:grid;grid-template-columns:96px minmax(0,1fr) 54px;gap:8px;align-items:center;font-size:.78rem}
+.cb .bar2{position:relative;height:10px}
+.cb .bar2 .mid{position:absolute;left:50%;top:-3px;bottom:-3px;width:1.5px;background:var(--ink);opacity:.5}
+.cb .bar2 i{position:absolute;top:0;bottom:0;border-radius:3px}
+.cb .n{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.eqf{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem;background:var(--soft);border-radius:12px;padding:10px 12px;overflow-x:auto;white-space:nowrap}
+.coef{width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}
+.coef th{font-size:.72rem;color:var(--muted);text-align:right;padding:6px 8px;font-weight:800}
+.coef th:first-child,.coef td:first-child{text-align:left}
+.coef td{border-top:1px solid var(--line);padding:6px 8px;text-align:right}
+.coef td.g{color:var(--muted);font-size:.74rem}
 .finds{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
 .find{background:var(--soft);border-radius:20px;padding:14px 16px;display:grid;gap:6px;align-content:start;border-left:5px solid var(--muted)}
 .find.neg{border-left-color:var(--low)} .find.pos{border-left-color:var(--high)} .find.gap{border-left-color:var(--mod)}
@@ -360,6 +395,27 @@ a{color:var(--blue)}
   <section class="panel step" aria-labelledby="g6h"><h2 id="g6h"><span class="sn">5</span>질문 만들기 · 검토 · 추가</h2><div id="gen"></div></section>
   </div>
   <div class="pg" id="pg-ana" role="tabpanel" data-page="ins" hidden>
+  <section class="panel" aria-labelledby="mdh">
+    <h2 id="mdh">나답 질문 모델</h2>
+    <p class="note" style="margin:0">질문을 <b>분석</b>하는 흐름과 <b>만드는</b> 흐름이 하나의 모델로 이어져요. 매달 새 통계가 들어오면 모델이 다시 학습되고, 진단기와 생성기의 예측도 같이 바뀌어요.</p>
+    <div class="flow" id="flow"></div>
+  </section>
+  <section class="panel" aria-labelledby="dgh">
+    <h2 id="dgh">질문 진단기</h2>
+    <p class="note" style="margin:0">문구를 넣으면 모델로 예상 답변율과 요인별 기여를 계산해요. 태그는 문구에서 자동으로 추정하고, 틀리면 직접 바꾸거나 AI로 붙일 수 있어요.</p>
+    <div class="dg">
+      <div class="dgin">
+        <textarea id="dgText" rows="2" placeholder="예: 주말에는 집에서 쉬는 편인가요, 밖에 나가는 편인가요?" aria-label="진단할 질문"></textarea>
+        <div class="row"><select id="dgCat" aria-label="관심사"></select><select id="dgForm" aria-label="형식"></select><button class="btn mint" type="button" id="dgAI" hidden>AI로 태그 붙이기</button></div>
+        <div class="dgtags" id="dgTags"></div>
+      </div>
+      <div class="dgout" id="dgOut"><p class="note">문구를 넣어 보세요.</p></div>
+    </div>
+  </section>
+  <section class="panel" aria-labelledby="eqh">
+    <h2 id="eqh">예측식과 계수</h2>
+    <div id="eq"></div>
+  </section>
   <section class="panel" aria-labelledby="dth">
     <div class="data-head"><h2 id="dth">데이터로 보는 지금</h2><span class="note" id="dataAt">통계를 불러오는 중이에요.</span></div>
     <div class="kpis">
@@ -1136,6 +1192,109 @@ async function genAdd(i){
     c.done = String(id); genUI(); toast(`Q.${id}로 추가했어요. 다운로드에 신규로 들어가요.`);
   } catch { toast('추가하지 못했어요.'); }
 }
+// ---- 질문 모델: 구조도 · 진단기 · 예측식 ----
+const TAGDEF = [
+  ['T', '시점 고정', [[0, '없음'], [1, '요즘'], [2, '특정 날']]],
+  ['P', '경험 전제', [[0, '누구나'], [1, '대부분'], [2, '특정 경험']]],
+  ['E', '인지 노력', [[1, '즉답'], [2, '잠깐 생각'], [3, '깊은 성찰']]],
+  ['W', '감정 무게', [[1, '가벼움'], [2, '보통'], [3, '무거움']]],
+  ['S', '자기노출', [[1, '낮음'], [2, '보통'], [3, '높음']]],
+  ['C', '은유·모호', [[0, '명료'], [1, '은유']]],
+];
+let DG = { tags: null, form: 'auto', manual: {} };
+function guessForm(t){
+  if (/한다면|라면|있다면|만약/.test(t) && !/적이/.test(t)) return 'h';
+  if (/(인가요|나요|가요)[,\s].*(인가요|나요|가요)\?*$/.test(t) || /\s중\s.*(뭐가|어느|무엇이) 더/.test(t) || /호인가요|파인가요/.test(t)) return 'c';
+  if (/가장 좋아하는|최애|좋아하는 .*(무엇|뭔)/.test(t)) return 'p';
+  if (/편인가요|편이에요/.test(t)) return 't';
+  if (/누구/.test(t)) return 'n';
+  if (/적이|기억에 남는|언제였|했던/.test(t)) return 'r';
+  if (/의미|정의|생각하는 .*(은|는) 무엇|이란/.test(t)) return 'd';
+  return 't';
+}
+function guessTags(t, f){
+  return { T: /오늘|어제|이번 ?주|내일|올해/.test(t) ? 2 : /요즘|최근/.test(t) ? 1 : 0,
+    P: /적이 있|있다면|했던|해 본|해봤/.test(t) ? 2 : 0,
+    E: (['p', 'c'].includes(f) && t.length <= 35) ? 1 : /의미|정의|가치|어떤 사람/.test(t) ? 3 : 2,
+    W: /상처|죽음|실패|비밀|후회|외로|슬픔|불안|두려/.test(t) ? 2 : 1,
+    S: /약점|비밀|부끄|고백|콤플렉스/.test(t) ? 2 : 1,
+    C: /온도|날씨로|색깔로|모양|맛으로|계절로/.test(t) ? 1 : 0 };
+}
+function modelPred(tags, form, cat, len){
+  const k = INS?.model?.coef; if (!k) return null;
+  const f = FORMN[form] || '';
+  const terms = [['시점 고정', tags.T > 0], ['경험 전제', tags.P > 0], ['즉답 가능', tags.E === 1], ['감정 무게', tags.W >= 2], ['자기노출', tags.S >= 2], ['은유·모호', tags.C === 1],
+    ['40자 초과', len > 40], ['형식: ' + f, true], ['관심사: ' + cat, true]].filter(([n, on]) => on && k[n] != null).map(([n]) => [n, k[n]]);
+  const z = k.const + terms.reduce((a, [, b]) => a + b, 0), sig = x => 1 / (1 + Math.exp(-x)), p = sig(z);
+  return { p, parts: terms.map(([n, b]) => ({ n: n.replace(/^(형식|관심사): /, '$1 '), pp: p - sig(z - b) })) };
+}
+function flowUI(){
+  const m = INS?.model, st = (n, t, d, i) => `<div class="fstep"><i>${i}</i><b>${t}</b><span>${d}</span></div>`, ar = '<span class="farr" aria-hidden="true">→</span>';
+  $('#flow').innerHTML = `
+    <div class="flane"><h3>분석 — 질문이 왜 답을 받는지</h3><div class="fsteps">
+      ${st(1, '통계 수집', `문항별 노출·답변·교체 (월 1회, 최신 ${esc(INS?.snapshot || '')})`, 'A1')}${ar}
+      ${st(2, '특성 태깅', '시점·경험 전제·인지 노력·감정 무게·자기노출·은유 + 형식·관심사·길이 + 자아분석 축', 'A2')}${ar}
+      ${st(3, '축소 추정', `문항 답변율을 평균 쪽으로 당겨(K=10) 표본이 적은 문항의 우연을 줄임`, 'A3')}${ar}
+      ${st(4, '다변량 모델', `이항 로지스틱 회귀 — 문항 ${m ? m.n_q : '–'}개, 결론 ${m ? m.n_res.toLocaleString() : '–'}회로 특성별 효과 추정`, 'A4')}${ar}
+      ${st(5, '진단·우선순위', '예상 답변율, 낮은 문항 → 고쳐야 할 것·월간 골라 주세요', 'A5')}
+    </div></div>
+    <div class="flane"><h3>제작 — 무엇을 어떻게 새로 만들지</h3><div class="fsteps">
+      ${st(1, '빈 곳 찾기', '축 × 관심사 문항 수, 얇은 축·0칸', 'B1')}${ar}
+      ${st(2, '근거 추출', '그 칸·관심사의 잘 되는/안 되는 질문, 형식별 답변율, 확실한 효과', 'B2')}${ar}
+      ${st(3, '소재 뽑기', 'AI가 근거로 넓은 일상 소재 제안 → 기존 질문과 겹침 판정', 'B3')}${ar}
+      ${st(4, '생성', '형식·레벨·톤 조건으로 질문 + 가이드 + 태그 작성', 'B4')}${ar}
+      ${st(5, '예측·필터', 'A4 모델로 예상 답변율, 비슷한 질문·가정형·규칙 검사', 'B5')}${ar}
+      ${st(6, '검토·배포', '사람이 고르고 고쳐 신규 추가 → CSV → DB', 'B6')}
+    </div></div>
+    <div class="floop">↻ 배포한 질문이 노출되면 다음 달 A1 통계로 들어가 모델이 다시 학습돼요. 예측과 실제의 차이가 모델을 고쳐 가요.</div>`;
+}
+function eqUI(){
+  const m = INS?.model; if (!m) return;
+  const k = m.coef, t = m.terms;
+  $('#eq').innerHTML = `<div class="eqf">logit(답변율) = ${k.const.toFixed(2)} ${t.map(x => `${x.beta >= 0 ? '+' : '−'} ${Math.abs(x.beta).toFixed(2)}·[${esc(x.name)}]`).join(' ')}</div>
+    <p class="note" style="margin:0">[ ]는 그 특성이 있으면 1, 없으면 0. 답변율 = 1 / (1 + e<sup>−logit</sup>). 기준은 ${esc(m.ref)}이에요. 오즈비가 1보다 크면 답변율을 올리고, 작으면 낮춰요.</p>
+    <table class="coef"><thead><tr><th>특성</th><th>계수(β)</th><th>오즈비 (95% CI)</th><th>평균에서 %p</th><th>p</th></tr></thead><tbody>${t.map(x => `<tr><td>${esc(x.name)} <span class="g">${esc(x.group)}</span></td><td>${x.beta >= 0 ? '+' : ''}${x.beta.toFixed(2)}</td><td>${x.or_.toFixed(2)} (${x.or_lo.toFixed(2)}~${x.or_hi.toFixed(2)})</td><td style="font-weight:${x.p < 0.05 ? 800 : 400}">${pp(x.pp)}</td><td>${x.p < 0.001 ? '<0.001' : x.p.toFixed(3)}</td></tr>`).join('')}</tbody></table>`;
+}
+function dgInit(){
+  $('#dgCat').innerHTML = Object.values(CAT).map(c => `<option>${c}</option>`).join('');
+  $('#dgForm').innerHTML = `<option value="auto">형식 자동</option>` + Object.entries(FORMN).map(([k, n]) => `<option value="${k}">${n}</option>`).join('');
+  $('#dgAI').hidden = !sample;
+}
+function dgUI(){
+  const text = ($('#dgText').value || '').trim(), cat = $('#dgCat').value, form = $('#dgForm').value === 'auto' ? guessForm(text) : $('#dgForm').value;
+  const auto = guessTags(text, form), tags = { ...auto, ...DG.manual };
+  $('#dgTags').innerHTML = TAGDEF.map(([k, n, opts]) => `<div class="dgtag"><b>${n}${k in DG.manual ? '' : ' <span class="note">자동</span>'}</b><div class="opts2">${opts.map(([v, l]) => `<button type="button" data-tk="${k}" data-tv="${v}" aria-pressed="${tags[k] === v}">${l}</button>`).join('')}</div></div>`).join('')
+    + `<div class="dgtag"><b>형식</b><span>${esc(FORMN[form])}${$('#dgForm').value === 'auto' ? ' <span class="note">자동</span>' : ''}</span></div>`;
+  if (!text){ $('#dgOut').innerHTML = '<p class="note">문구를 넣어 보세요.</p>'; return; }
+  const r = modelPred(tags, form, cat, text.length), avg = INS?.model?.base;
+  if (!r){ $('#dgOut').innerHTML = '<p class="note">모델을 불러오는 중이에요.</p>'; return; }
+  const max = Math.max(0.05, ...r.parts.map(x => Math.abs(x.pp))), sim = similarTo('', text), w = lint(text);
+  const tips = [];
+  if (tags.P > 0) tips.push("'~한 적 있다면' 같은 경험 전제를 빼면 누구나 답할 수 있어요.");
+  if (tags.E !== 1) tips.push('바로 답할 수 있게 선택지를 주거나(양자택일) 대상을 좁혀 보세요.');
+  if (tags.C === 1) tips.push('은유를 걷어내고 구체적으로 물어보세요.');
+  if (form === 'h') tips.push('가정형보다 지금의 나를 바로 묻는 문장이 좋아요.');
+  if (form === 'o') tips.push('예/아니오 질문은 선호·양자택일로 바꿔요.');
+  $('#dgOut').innerHTML = `<div class="dgbig"><span class="v">${P(r.p)}</span><span class="note">예상 답변율 · 평균 ${P(avg)} 대비 ${pp(r.p - avg)}</span></div>
+    <div class="contrib">${r.parts.sort((a, b) => a.pp - b.pp).map(x => `<div class="cb"><span>${esc(x.n)}</span><span class="bar2"><span class="mid"></span><i style="${x.pp < 0 ? `right:50%;width:${Math.abs(x.pp) / max * 50}%;background:var(--low)` : `left:50%;width:${x.pp / max * 50}%;background:var(--high)`}"></i></span><span class="n">${pp(x.pp)}</span></div>`).join('') || '<span class="note">기준 질문과 같아요.</span>'}</div>
+    <span class="note" style="margin:0">막대 = 다른 조건은 그대로 두고 그 특성만 없앴을 때와의 차이</span>
+    ${sim ? `<span class="w" style="font-size:.8rem;color:var(--mod);font-weight:700">비슷한 질문: Q.${esc(sim.r.key)} "${esc(sim.r.text)}" (${Math.round(sim.v * 100)}%)</span>` : ''}
+    ${w.length ? `<span style="font-size:.8rem;color:var(--mod);font-weight:700">${esc(w.join(' '))}</span>` : ''}
+    ${tips.length ? `<div class="act" style="font-size:.82rem;background:var(--surface);border-radius:12px;padding:8px 10px"><b>고치면 좋은 점</b><br>${tips.map(esc).join('<br>')}</div>` : ''}`;
+}
+async function dgAI(){
+  const text = ($('#dgText').value || '').trim(); if (!sample || !text) return;
+  const b = $('#dgAI'); b.disabled = true; b.textContent = 'AI가 태그 붙이는 중…';
+  try {
+    const o = await sample.json(`나답 데일리 질문에 태그를 붙이세요. 질문: ${text}
+T 시점 고정(0 없음,1 요즘,2 오늘·이번 주처럼 특정 날), P 경험 전제(0 누구나,1 대부분,2 특정 경험이 있어야), E 인지 노력(1 즉답,2 잠깐 생각,3 깊은 성찰), W 감정 무게(1 가벼움,2 보통,3 무거움), S 자기노출(1 낮음,2 보통,3 높음), C 은유(0 명료,1 은유·모호), F 형식(p 선호, c 양자택일, t 성향·습관, h 상상·가정, r 일화 회상, d 개념·가치, n 특정 인물, o 기타).
+JSON만: {"T":0,"P":0,"E":1,"W":1,"S":1,"C":0,"F":"c"}`, { modelTier: 'quick', cache: false });
+    DG.manual = {}; ['T', 'P', 'E', 'W', 'S', 'C'].forEach(k => { if (Number.isFinite(Number(o?.[k]))) DG.manual[k] = Number(o[k]); });
+    if (FORMN[o?.F]) $('#dgForm').value = o.F;
+    dgUI(); toast('AI가 태그를 붙였어요.');
+  } catch (e) { if (e?.code === 'not_granted'){ sample = null; b.hidden = true; } toast('태그를 붙이지 못했어요.'); }
+  finally { b.disabled = false; b.textContent = 'AI로 태그 붙이기'; }
+}
 let BRK = 'form';
 function breakdown(){
   const s = latest(), avg = avgRate(s), all = rows();
@@ -1517,6 +1676,10 @@ $('#more').addEventListener('click', () => { limit += 40; render(); });
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (b) go(b.dataset.page); });
 $('#revSeg').addEventListener('click', e => { const b = e.target.closest('[data-rev]'); if (b) go(b.dataset.rev, false); });
 go(PAGE, false);
+$('#dgText').addEventListener('input', () => { DG.manual = {}; dgUI(); });
+$('#dgCat').addEventListener('change', dgUI); $('#dgForm').addEventListener('change', dgUI);
+$('#dgTags').addEventListener('click', e => { const b = e.target.closest('[data-tk]'); if (!b) return; DG.manual[b.dataset.tk] = Number(b.dataset.tv); dgUI(); });
+$('#dgAI').addEventListener('click', dgAI);
 $('#heat').addEventListener('click', e => { const td = e.target.closest('td.hc'); if (td) genNew(td.dataset.ax, td.dataset.cat); });
 $('#heat').addEventListener('keydown', e => { const td = e.target.closest('td.hc'); if (td && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); genNew(td.dataset.ax, td.dataset.cat); } });
 $('#gOpt').addEventListener('change', e => { if (!GEN) return; const f = e.target.closest('[data-form]'); if (f){ f.checked ? GEN.forms.add(f.dataset.form) : GEN.forms.delete(f.dataset.form); } readOpts(); genUI(); });
@@ -1593,10 +1756,10 @@ $('#upHist').addEventListener('click', async e => {
     BASE0 = j.rows.slice().sort((a, b) => Number(a.key) - Number(b.key)); BASE = BASE0; BUILT = j.builtAt; DUPS = j.dups || [];
     $('#built').textContent = `개선본 ${j.builtAt} 기준 · 전체 ${BASE.length.toLocaleString()}행`;
     filters(); render();
-    fetch('data/insights.json').then(r => r.json()).then(j => { INS = j; insUI(); heatUI(); genAll(); }).catch(() => { $('#insMeta').textContent = '분석 결과를 불러오지 못했어요.'; });
+    fetch('data/insights.json').then(r => r.json()).then(j => { INS = j; insUI(); heatUI(); genAll(); flowUI(); eqUI(); dgInit(); dgUI(); }).catch(() => { $('#insMeta').textContent = '분석 결과를 불러오지 못했어요.'; });
   } catch { $('#list').innerHTML = '<div class="empty">질문 데이터를 불러오지 못했어요. 새로고침해 주세요.</div>'; return; }
   cuse('downloads').then(d => { downloads = d; $('#dlAll').disabled = $('#dlDiff').disabled = !d; });
-  cuse('sample').then(s => { sample = s; if (s) document.querySelectorAll('[data-guide]').forEach(b => b.hidden = false); document.querySelectorAll('details.q[open]').forEach(el => refreshOpts(el.dataset.key)); });
+  cuse('sample').then(s => { sample = s; if ($('#dgAI')) $('#dgAI').hidden = !s; if (s) document.querySelectorAll('[data-guide]').forEach(b => b.hidden = false); document.querySelectorAll('details.q[open]').forEach(el => refreshOpts(el.dataset.key)); });
   cuse('user').then(async u => { user = u; if (u){ me = await u.me(); if (await u.can('data.write') === false) canWrite = false; historyUI(); render(); } });
   db = await cuse('db');
   if (!db){ baseId = 'orig'; historyUI(); $('#baseInfo').textContent = '이 화면에서는 다운로드 기록과 수정 저장을 쓸 수 없어요. 파일 받기는 돼요.'; render(); return; }
