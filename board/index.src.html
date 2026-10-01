@@ -96,6 +96,30 @@ summary.note{cursor:pointer;font-weight:700}
 .top5 button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .top5 .t{font-weight:700;font-size:.9rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .top5 .n{font-size:.8rem;font-weight:800;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.brk-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;margin-bottom:8px}
+.seg2{display:inline-flex;background:var(--surface);border-radius:999px;padding:3px;gap:2px}
+.seg2 button{all:unset;cursor:pointer;font-size:.8rem;font-weight:800;color:var(--ink-2);padding:6px 14px;border-radius:999px}
+.seg2 button[aria-pressed="true"]{background:var(--blue);color:#fff}
+.seg2 button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.legend{display:flex;gap:12px;font-size:.75rem;font-weight:700;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.brk{display:grid;gap:6px}
+.brk-row,.brk-cols{display:grid;grid-template-columns:minmax(90px,1.1fr) minmax(0,1.6fr) minmax(0,1.6fr);gap:6px 16px;align-items:center}
+.brk-cols{font-size:.72rem;font-weight:800;color:var(--muted);padding:0 14px}
+.brk-row{all:unset;box-sizing:border-box;display:grid;grid-template-columns:minmax(90px,1.1fr) minmax(0,1.6fr) minmax(0,1.6fr);gap:6px 16px;align-items:center;cursor:pointer;background:var(--surface);border-radius:16px;padding:10px 14px}
+.brk-row:hover{box-shadow:inset 0 0 0 1.5px var(--mint)}
+.brk-row:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.brk-row .nm{font-weight:800;font-size:.9rem}
+.brk-row .nm small{display:block;font-size:.72rem;color:var(--muted);font-weight:700}
+.brk-row .cell{display:grid;gap:4px;min-width:0}
+.brk-row .num{font-size:.8rem;font-weight:800;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.brk-row .num em{font-style:normal;color:var(--muted);font-weight:700}
+.share{display:grid;gap:3px}
+.share span{display:block;height:6px;border-radius:999px;background:var(--track);position:relative}
+.share span i{position:absolute;left:0;top:0;bottom:0;border-radius:999px}
+.share .now i{background:var(--muted)} .share .aft i{background:var(--chart)}
+@media (max-width:720px){.brk-cols{display:none}.brk-row{grid-template-columns:1fr 1fr}.brk-row .nm{grid-column:1/-1}}
+.m-only{display:none}@media (max-width:720px){.m-only{display:flex}}
 .rate{position:relative;height:8px;border-radius:999px;background:var(--track);grid-column:1/-1}
 .rate i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--chart)}
 .rate b{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);border-radius:2px}
@@ -187,6 +211,18 @@ a{color:var(--blue)}
       <div class="chartbox"><div class="ttl">전체 답변율 추이</div><div id="trend"></div></div>
       <div class="chartbox"><div class="ttl">교체가 가장 많은 질문</div><div class="top5" id="top5"></div></div>
     </div>
+    <div class="chartbox">
+      <div class="brk-head">
+        <div class="ttl" style="margin:0">유형별 비중과 답변율</div>
+        <span class="legend m-only"><span><i style="background:var(--muted)"></i>지금 DB</span><span><i style="background:var(--chart)"></i>개선 후</span></span>
+        <div class="seg2" id="brkSeg" role="group" aria-label="나눠 보기">
+          <button type="button" data-by="form" aria-pressed="true">질문 형식</button><button type="button" data-by="cat" aria-pressed="false">관심사</button><button type="button" data-by="level" aria-pressed="false">레벨</button>
+        </div>
+      </div>
+      <div class="brk-cols" aria-hidden="true"><span>유형 · 질문 수</span><span>비중 <span class="legend" style="display:inline-flex;margin-left:6px"><span><i style="background:var(--muted)"></i>지금 DB</span><span><i style="background:var(--chart)"></i>개선 후</span></span></span><span>답변율 (세로선 = 전체 평균)</span></div>
+      <div class="brk" id="brk"></div>
+      <p class="note" style="margin:8px 2px 4px">답변율은 지금 DB 문구가 실제로 받은 실적(답변 ÷ 답변+교체)이에요. 신규 질문은 실적이 없어서 비중에만 들어가요. 누르면 아래 목록이 그 유형으로 걸러져요.</p>
+    </div>
   </section>
   <section class="panel" aria-labelledby="dlh">
     <h2 id="dlh">다운로드</h2>
@@ -211,6 +247,7 @@ a{color:var(--blue)}
       <select id="fCat" aria-label="관심사"></select>
       <select id="fLevel" aria-label="레벨"><option value="all">레벨 전체</option><option value="1">레벨 1 · 첫 질문</option><option value="2">레벨 2</option></select>
       <select id="fAxis" aria-label="자아분석 축"></select>
+      <select id="fForm" aria-label="질문 형식"></select>
     </div>
     <div class="row">
       <label class="pill" for="fDiff"><input type="checkbox" id="fDiff">지난 다운로드 이후 바뀐 것</label>
@@ -235,7 +272,7 @@ const fmt = iso => { try { return new Date(iso).toLocaleString('ko-KR',{dateStyl
 
 let STATS = [], BASE = [], BUILT = '', EDITS = new Map(), AIS = new Map(), DLS = [], baseId = null;
 let db = null, downloads = null, user = null, sample = null, me = null, canWrite = true;
-let F = { q:'', view:'all', change:'all', cat:'all', level:'all', axis:'all', diff:false, edit:false, del:false }, limit = 40;
+let F = { q:'', view:'all', form:'all', change:'all', cat:'all', level:'all', axis:'all', diff:false, edit:false, del:false }, limit = 40;
 const open = new Set(), busy = new Set();
 try { const s = JSON.parse(localStorage.getItem('nadab-board-f2') || 'null'); if (s) F = { ...F, ...s, q:'' }; } catch {}
 const saveF = () => { try { localStorage.setItem('nadab-board-f2', JSON.stringify({ ...F, q:'' })); } catch {} };
@@ -280,6 +317,8 @@ function filters(){
   opt('#fCat', '관심사 전체', Object.values(CAT).map(c => [c, c]), F.cat);
   const ax = [...new Set(all.map(r => r.axis).filter(Boolean))].sort();
   opt('#fAxis', '자아분석 축 전체', ax.map(a => [a, `${a} (${all.filter(r => r.axis === a && !r.deleted).length})`]), F.axis);
+  const fm = [...new Set(all.map(r => r.form || '기타'))].sort();
+  opt('#fForm', '질문 형식 전체', fm.map(f => [f, `${f} (${all.filter(r => (r.form || '기타') === f && !r.deleted).length})`]), F.form);
   $('#fLevel').value = F.level; $('#fDiff').checked = F.diff; $('#fEdit').checked = F.edit; $('#fDel').checked = F.del;
 }
 const VIEWS = [
@@ -309,6 +348,7 @@ function visible(){
     inView(r, F.view) &&
     (F.change === 'all' || r.change === F.change) &&
     (F.cat === 'all' || r.cat === F.cat) &&
+    (F.form === 'all' || (r.form || '기타') === F.form) &&
     (F.level === 'all' || String(r.level) === F.level) &&
     (F.axis === 'all' || r.axis === F.axis) &&
     (!F.diff || diffOf(r)) &&
@@ -387,7 +427,37 @@ function evidence(r){
     ${spark(r.key) ? `<div class="chartbox"><div class="ttl">수집일별 답변율</div>${spark(r.key)}</div>` : ''}
   </div>`;
 }
+let BRK = 'form';
+function breakdown(){
+  const s = latest(), avg = avgRate(s), all = rows();
+  const nowCat = r => r.catChange ? r.catChange.split('→')[0] : r.cat;
+  const key = {
+    form: [r => r.form || '기타', r => r.form || '기타'],
+    cat: [nowCat, r => r.cat],
+    level: [r => `레벨 ${r.level}`, r => `레벨 ${r.level}`],
+  }[BRK];
+  const now = all.filter(r => !r.newId && !r.change.startsWith('이미 삭제')), aft = all.filter(r => !r.deleted);
+  const g = new Map(), get = k => g.get(k) || (g.set(k, { k, now: 0, aft: 0, ans: 0, rep: 0, exp: 0 }), g.get(k));
+  now.forEach(r => { const x = get(key[0](r)); x.now++; const v = s && s.q[r.key]; if (v){ x.exp += v[0]; x.ans += v[1]; x.rep += v[2]; } });
+  aft.forEach(r => get(key[1](r)).aft++);
+  const order = BRK === 'cat' ? Object.values(CAT) : null;
+  const list = [...g.values()].sort((a, b) => order ? order.indexOf(a.k) - order.indexOf(b.k) : b.aft - a.aft);
+  const max = Math.max(...list.map(x => Math.max(x.now / now.length, x.aft / aft.length)), 0.01);
+  $('#brk').innerHTML = list.map(x => {
+    const sn = x.now / now.length, sa = x.aft / aft.length, res = x.ans + x.rep, rate = res ? x.ans / res : null;
+    const d = Math.round((sa - sn) * 100);
+    const low = rate != null && res >= 30 && rate < avg - 0.05, high = rate != null && res >= 30 && rate > avg + 0.05;
+    return `<button type="button" class="brk-row" data-k="${esc(x.k)}">
+      <span class="nm">${esc(x.k)}<small>지금 ${x.now} → 개선 후 ${x.aft}개</small></span>
+      <span class="cell"><span class="num">${P(sn)} → ${P(sa)} <em>${d ? (d > 0 ? '+' : '') + d + '%p' : '그대로'}</em></span>
+        <span class="share" aria-hidden="true"><span class="now"><i style="width:${sn / max * 100}%"></i></span><span class="aft"><i style="width:${sa / max * 100}%"></i></span></span></span>
+      <span class="cell"><span class="num">${rate == null ? '실적 없음' : `답변율 ${P(rate)}`} <em>${rate == null ? '' : `교체율 ${P(x.exp ? x.rep / x.exp : null)} · 결론 ${res.toLocaleString()}회${res < 30 ? ' · 표본 적음' : ''}`}</em>${low ? ' <span class="chip low">평균보다 낮음</span>' : high ? ' <span class="chip high">평균보다 높음</span>' : ''}</span>
+        <span class="rate" aria-hidden="true"><i style="width:${(rate || 0) * 100}%"></i>${avg != null ? `<b style="left:${avg * 100}%"></b>` : ''}</span></span>
+    </button>`;
+  }).join('');
+}
 function dataUI(){
+  breakdown();
   const s = latest(), p = prevSnap();
   if (!s){ $('#dataAt').textContent = '아직 받아온 통계가 없어요.'; return; }
   const avg = avgRate(s), pavg = avgRate(p);
@@ -639,9 +709,13 @@ list.addEventListener('click', async e => {
   try { await db.doc('edits/' + rv.dataset.revert).delete(); toast('개선본으로 되돌렸어요.'); } catch { toast('되돌리지 못했어요.'); rv.disabled = false; }
 });
 let st; $('#q').addEventListener('input', e => { clearTimeout(st); st = setTimeout(() => { F.q = e.target.value; limit = 40; render(); }, 150); });
-[['#fChange','change'],['#fCat','cat'],['#fLevel','level'],['#fAxis','axis']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.value; limit = 40; saveF(); render(); }));
+[['#fChange','change'],['#fForm','form'],['#fCat','cat'],['#fLevel','level'],['#fAxis','axis']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.value; limit = 40; saveF(); render(); }));
 [['#fDiff','diff'],['#fEdit','edit'],['#fDel','del']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.checked; limit = 40; saveF(); render(); }));
 $('#more').addEventListener('click', () => { limit += 40; render(); });
+$('#brkSeg').addEventListener('click', e => { const b = e.target.closest('[data-by]'); if (!b) return; BRK = b.dataset.by; document.querySelectorAll('#brkSeg button').forEach(x => x.setAttribute('aria-pressed', x === b)); breakdown(); });
+$('#brk').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; const k = b.dataset.k;
+  if (BRK === 'form') F.form = k; else if (BRK === 'cat') F.cat = k; else F.level = k.replace('레벨 ', '');
+  F.view = 'all'; limit = 40; saveF(); filters(); render(); $('#tabs').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
 $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (!b) return; F.view = b.dataset.view; limit = 40; saveF(); render(); });
 $('#baseSel').addEventListener('change', e => { baseId = e.target.value; historyUI(); render(); });
 $('#dlAll').addEventListener('click', () => download('all'));
