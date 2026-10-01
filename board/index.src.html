@@ -379,7 +379,7 @@ let toastT; function toast(m){ const t=$('#toast'); t.textContent=m; t.hidden=fa
 const fmt = iso => { try { return new Date(iso).toLocaleString('ko-KR',{dateStyle:'medium',timeStyle:'short'}); } catch { return iso; } };
 
 const MIN_EXP = 5;  // analysis/monthly_picks.py와 같은 기준
-let DUPS = [], DUPOK = new Map(), PICKS = new Map(), KEEPS = new Map(), STATS = [], BASE = [], BUILT = '', EDITS = new Map(), AIS = new Map(), DLS = [], baseId = null;
+let DUPS = [], DUPOK = new Map(), PICKS = new Map(), KEEPS = new Map(), STATS = [], BASE = [], BUILT = '', EDITS = new Map(), AIS = new Map(), DLS = [], baseId = null, jumpToLatest = false;
 let db = null, downloads = null, user = null, sample = null, me = null, canWrite = true;
 let F = { q:'', view:'all', form:'all', change:'all', cat:'all', level:'all', axis:'all', diff:false, edit:false, del:false }, limit = 40;
 const open = new Set(), closed = new Set(), busy = new Set();
@@ -403,9 +403,18 @@ function hash(r){
   let h = 0x811c9dc5; for (let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); }
   return (h >>> 0).toString(36);
 }
-const baseline = () => DLS.find(d => d.id === baseId) || null;
+// 비교 기준: 다운로드 기록 하나, 또는 'orig'(처음 받은 원본 DB 2026-08-14)
+const ORIG_LABEL = '원본 DB(daily_questions_202608141346.csv)';
+const ORIG_BASE = { id: 'orig', orig: true, at: null, by: null };
+const baseline = () => baseId === 'orig' ? ORIG_BASE : (DLS.find(d => d.id === baseId) || null);
 function diffOf(r){
   const b = baseline(); if (!b) return '';
+  if (b.orig){
+    const o = r.orig; if (!o) return r.deleted ? '' : 'new';
+    if (o[6]) return r.deleted ? '' : 'mod';
+    if (r.deleted) return 'gone';
+    return r.text !== o[1] || r.g[0] !== o[3] || r.g[1] !== o[4] || r.g[2] !== o[5] || Number(r.level) !== o[2] || Number(r.interest_id) !== o[0] ? 'mod' : '';
+  }
   const old = b.h[r.key];
   if (old === undefined) return r.deleted ? '' : 'new';
   if (old === hash(r)) return '';
@@ -588,16 +597,16 @@ function summary(){
   $('#tEdits').textContent = EDITS.size.toLocaleString();
   const b = baseline();
   $('#tDiff').textContent = b ? all.filter(r => diffOf(r)).length.toLocaleString() : '–';
-  $('#tDiffL').textContent = b ? `${fmt(b.at)} 다운로드 이후 바뀐 질문` : '지난 다운로드 이후 바뀐 질문';
+  $('#tDiffL').textContent = b ? (b.orig ? `${ORIG_LABEL} 대비 바뀐 질문` : `${fmt(b.at)} 다운로드 이후 바뀐 질문`) : '지난 다운로드 이후 바뀐 질문';
 }
 async function historyUI(){
   const ids = [...new Set(DLS.map(d => d.by).filter(Boolean))];
   const ps = user && ids.length ? await user.profiles(ids) : {};
   const who = id => (ps[id] && ps[id].name) || '누군가';
-  $('#baseSel').innerHTML = DLS.length ? DLS.map(d => `<option value="${esc(d.id)}"${d.id===baseId?' selected':''}>비교 기준 · ${esc(fmt(d.at))} · ${esc(who(d.by))}</option>`).join('') : '<option value="">비교 기준 없음</option>';
-  $('#baseSel').disabled = !DLS.length;
+  $('#baseSel').innerHTML = DLS.map(d => `<option value="${esc(d.id)}"${d.id===baseId?' selected':''}>비교 기준 · ${esc(fmt(d.at))} · ${esc(who(d.by))}</option>`).join('')
+    + `<option value="orig"${baseId === 'orig' ? ' selected' : ''}>비교 기준 · 최초 ${ORIG_LABEL}</option>`;
   const b = baseline();
-  $('#baseInfo').textContent = b ? `${fmt(b.at)}에 ${who(b.by)}님이 받은 파일과 비교하고 있어요.` : '아직 받은 기록이 없어요. 처음 받으면 이후부터 바뀐 질문이 표시돼요.';
+  $('#baseInfo').textContent = !b ? '비교 기준이 없어요.' : b.orig ? `최초 ${ORIG_LABEL}와 비교하고 있어요. 지금까지 바뀐 전부가 '바뀐 것'으로 잡혀요.` : `${fmt(b.at)}에 ${who(b.by)}님이 받은 파일과 비교하고 있어요.`;
   $('#hist').innerHTML = DLS.length ? DLS.map(d => `<li><span>${esc(fmt(d.at))}</span><span>${esc(who(d.by))}</span><span>${d.kind === 'diff' ? '바뀐 것만' : '전체'} ${d.count}행</span><span>새로 ${d.nNew ?? 0} · 바뀜 ${d.nMod ?? 0} · 빠짐 ${d.nGone ?? 0}</span></li>`).join('') : '<li>아직 없어요.</li>';
 }
 
@@ -1014,11 +1023,11 @@ async function download(kind){
   if (!db) return;
   const h = {}; all.forEach(r => { if (!(r.newId && r.deleted && !sent(r))) h[r.key] = hash(r); });  // 파일에서 뺀 신규 질문은 기록에도 남기지 않는다
   const cnt = k => all.filter(r => diffOf(r) === k).length;
+  jumpToLatest = true;   // 기록이 들어오면 비교 기준을 방금 받은 파일로 옮긴다
   try {
     await db.collection('downloads').add({ at: now.toISOString(), by: me?.id || null, kind, count: pick.length, built: BUILT,
       nNew: b ? cnt('new') : 0, nMod: b ? cnt('mod') : 0, nGone: b ? cnt('gone') : 0, h });
-    baseId = null;
-  } catch { toast('다운로드 기록을 남기지 못했어요. 다음 비교는 이전 기록 기준이에요.'); }
+  } catch { jumpToLatest = false; toast('다운로드 기록을 남기지 못했어요. 다음 비교는 이전 기록 기준이에요.'); }
 }
 
 // ---- 이벤트 ----
@@ -1174,7 +1183,7 @@ $('#upHist').addEventListener('click', async e => {
   cuse('sample').then(s => { sample = s; if (s) document.querySelectorAll('[data-guide]').forEach(b => b.hidden = false); document.querySelectorAll('details.q[open]').forEach(el => refreshOpts(el.dataset.key)); });
   cuse('user').then(async u => { user = u; if (u){ me = await u.me(); if (await u.can('data.write') === false) canWrite = false; historyUI(); render(); } });
   db = await cuse('db');
-  if (!db){ $('#baseInfo').textContent = '이 화면에서는 다운로드 기록과 수정 저장을 쓸 수 없어요. 파일 받기는 돼요.'; render(); return; }
+  if (!db){ baseId = 'orig'; historyUI(); $('#baseInfo').textContent = '이 화면에서는 다운로드 기록과 수정 저장을 쓸 수 없어요. 파일 받기는 돼요.'; render(); return; }
   let firstEdits = true;
   db.collection('stats').orderBy('date', 'asc').limit(90).onSnapshot(qs => { STATS = qs.docs.map(d => d.data()); render(); }, () => {});
   db.collection('edits').onSnapshot(qs => {
@@ -1197,7 +1206,8 @@ $('#upHist').addEventListener('click', async e => {
   db.collection('uplog').orderBy('at', 'desc').limit(30).onSnapshot(qs => { UPLOG = qs.docs.map(d => d.data()); upInfoUI(); }, () => {});
   db.collection('downloads').orderBy('at', 'desc').limit(50).onSnapshot(qs => {
     DLS = qs.docs.map(d => ({ id: d.id, ...d.data() }));
-    if (!baseId || !DLS.some(d => d.id === baseId)) baseId = DLS[0]?.id || null;
+    if (jumpToLatest && DLS.length){ baseId = DLS[0].id; jumpToLatest = false; }
+    else if (!baseId || (baseId !== 'orig' && !DLS.some(d => d.id === baseId))) baseId = DLS[0]?.id || 'orig';
     historyUI(); render();
   }, () => {});
 })();
