@@ -801,7 +801,13 @@ list.addEventListener('submit', async e => {
   const same = v.text === r.text && v.g0 === r.g[0] && v.g1 === r.g[1] && v.g2 === r.g[2] && v.level === r.level && v.interest_id === r.interest_id;
   const btn = f.querySelector('[type=submit]'); btn.disabled = true;
   try {
-    if (same) { await db.doc('edits/' + k).delete(); toast('개선본과 같아서 수정 기록을 지웠어요.'); }
+    if (same) {
+      // 개선본 그대로 고른 것도 '고른 것'이다: 수정 기록은 지우고, 골라 주세요에 있던 질문이면 그대로 두기로 확정한다
+      const cur = rows().find(x => x.key === k), wasPick = cur && isPick({ ...cur, edited: null });
+      if (EDITS.has(k)) await db.doc('edits/' + k).delete();
+      if (wasPick || KEEPS.has(k)) { await db.doc('keeps/' + k).set({ by: me?.id || null, at: new Date().toISOString() }); toast('이 문구로 확정했어요.'); }
+      else toast('개선본과 같아서 수정 기록을 지웠어요.');
+    }
     else { await db.doc('edits/' + k).set({ ...v, by: me?.id || null, at: new Date().toISOString() }); toast('저장했어요.'); }
   } catch (err) {
     if (err?.code === 'invalid_argument'){ canWrite = false; toast('이 화면에서는 저장 권한이 없어요.'); render(); }
