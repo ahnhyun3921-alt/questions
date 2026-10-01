@@ -257,7 +257,7 @@ a{color:var(--blue)}
   <button type="button" role="tab" data-page="q" aria-selected="true" aria-controls="pg-q">전체 질문</button>
   <button type="button" role="tab" data-page="dup" aria-selected="false" aria-controls="pg-dup">중복 검토<span class="bdg" id="bdgDup" hidden></span></button>
   <button type="button" role="tab" data-page="data" aria-selected="false" aria-controls="pg-data">데이터</button>
-  <button type="button" role="tab" data-page="dl" aria-selected="false" aria-controls="pg-dl">다운로드<span class="bdg" id="bdgDiff" hidden></span></button>
+  <button type="button" role="tab" data-page="dl" aria-selected="false" aria-controls="pg-dl">다운로드·업로드<span class="bdg" id="bdgDiff" hidden></span></button>
 </div></nav>
 
 <div class="wrap">
@@ -305,26 +305,12 @@ a{color:var(--blue)}
   </section>
   </div>
   <div class="pg" id="pg-dl" role="tabpanel" data-page="dl" hidden>
-  <section class="panel" aria-labelledby="dlh">
-    <h2 id="dlh">다운로드</h2>
-    <span class="hint" id="baseInfo">아직 받은 기록이 없어요. 처음 받으면 이후부터 바뀐 질문이 표시돼요.</span>
-    <div class="row">
-      <button class="btn primary" id="dlAll" type="button" disabled>전체 CSV 받기</button>
-      <button class="btn mint" id="dlDiff" type="button" disabled>바뀐 것만 CSV 받기</button>
-      <select id="baseSel" aria-label="비교 기준 다운로드"></select>
-    </div>
-    <div class="note">관리자 DB 열(id, interest_id, question_text, question_level, 가이드 3종, created_at, updated_at, deleted_at) 그대로이고, 맨 오른쪽에 '변경 내용' 열 하나만 붙어요(신규 · 문구 수정 · 가이드 수정 · 관심사 수정 · 비활성화 등, 바뀐 게 없으면 빈 칸). 신규 질문도 id 900번부터 매겨 두었어요.</div>
-    <details>
-      <summary class="note">다운로드 기록</summary>
-      <ul class="hist" id="hist"></ul>
-    </details>
-  </section>
   <section class="panel" aria-labelledby="uph">
-    <h2 id="uph">CSV 올려서 최신본으로</h2>
+    <h2 id="uph">CSV 업로드 · 최신본으로 만들기</h2>
     <p class="note" style="margin:0">BE에서 고친 CSV(관리자 DB 열 형식)를 올리면 그 내용이 페이지의 최신본이 돼요. 화면·다운로드·비교가 모두 이 파일을 기준으로 바뀌고, 올린 뒤에 페이지에서 고친 것만 그 위에 더해져요. 엑셀에서 저장한 CSV도 읽어요.</p>
     <span class="hint" id="upInfo">아직 올린 최신본이 없어요.</span>
     <div class="row">
-      <label class="btn primary" for="upFile" id="upLabel">CSV 고르기</label>
+      <label class="btn primary" for="upFile" id="upLabel">⬆ CSV 업로드</label>
       <input type="file" id="upFile" accept=".csv,text/csv" hidden>
       <button class="btn" type="button" id="upClear" hidden>올린 최신본 해제</button>
     </div>
@@ -332,6 +318,21 @@ a{color:var(--blue)}
     <details>
       <summary class="note">올린 기록</summary>
       <ul class="hist" id="upHist"></ul>
+    </details>
+  </section>
+  <section class="panel" aria-labelledby="dlh">
+    <h2 id="dlh">다운로드</h2>
+    <span class="hint" id="baseInfo">아직 받은 기록이 없어요. 처음 받으면 이후부터 바뀐 질문이 표시돼요.</span>
+    <div class="row">
+      <button class="btn primary" id="dlAll" type="button" disabled>전체 CSV 받기</button>
+      <button class="btn mint" id="dlDiff" type="button" disabled>바뀐 것만 CSV 받기</button>
+      <label class="btn" for="upFile">⬆ CSV 업로드</label>
+      <select id="baseSel" aria-label="비교 기준 다운로드"></select>
+    </div>
+    <div class="note">관리자 DB 열(id, interest_id, question_text, question_level, 가이드 3종, created_at, updated_at, deleted_at) 그대로이고, 맨 오른쪽에 '변경 내용' 열 하나만 붙어요(신규 · 문구 수정 · 가이드 수정 · 관심사 수정 · 비활성화 등, 바뀐 게 없으면 빈 칸). 신규 질문도 id 900번부터 매겨 두었어요.</div>
+    <details>
+      <summary class="note">다운로드 기록</summary>
+      <ul class="hist" id="hist"></ul>
     </details>
   </section>
 
