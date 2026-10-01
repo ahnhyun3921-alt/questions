@@ -286,7 +286,7 @@ a{color:var(--blue)}
       <button class="btn mint" id="dlDiff" type="button" disabled>바뀐 것만 CSV 받기</button>
       <select id="baseSel" aria-label="비교 기준 다운로드"></select>
     </div>
-    <div class="note">관리자 DB 열(id, interest_id, question_text, question_level, 가이드 3종, created_at, updated_at, deleted_at) 그대로이고, 뒤에 참고 열(지난 다운로드 대비, 변경 구분, 신규 ID, 관심사, 목적)이 붙어요. 신규 질문도 id 900번부터 매겨 두었어요.</div>
+    <div class="note">관리자 DB 열(id, interest_id, question_text, question_level, 가이드 3종, created_at, updated_at, deleted_at) 그대로이고, 맨 오른쪽에 '변경 내용' 열 하나만 붙어요(신규 · 문구 수정 · 가이드 수정 · 관심사 수정 · 비활성화 등, 바뀐 게 없으면 빈 칸). 신규 질문도 id 900번부터 매겨 두었어요.</div>
     <details>
       <summary class="note">다운로드 기록</summary>
       <ul class="hist" id="hist"></ul>
@@ -815,11 +815,12 @@ JSON만 출력: {"empathy":"","hint":"","leading":""}`;
 }
 
 // ---- 다운로드 ----
-const COLS = ['id','interest_id','question_text','question_level','empathy_guide','hint_guide','leading_question_guide','created_at','updated_at','deleted_at','지난 다운로드 대비','변경 구분','신규 ID','관심사','목적','수정 여부'];
-// 원본 DB와 비교한 수정 표시(맨 오른쪽 열). 바뀐 게 없으면 빈 칸.
+const COLS = ['id','interest_id','question_text','question_level','empathy_guide','hint_guide','leading_question_guide','created_at','updated_at','deleted_at','변경 내용'];
+// 원본 DB와 비교한 변경 내용(맨 오른쪽 열). 바뀐 게 없으면 빈 칸, 이번에 끈 질문은 '비활성화'만 쓴다.
 function modFlags(r){
   if (r.newId) return '신규';
   const o = r.orig; if (!o) return '';
+  if (r.deleted && !o[6]) return '비활성화';
   const f = [];
   if (r.text !== o[1]) f.push('문구 수정');
   if (r.g[0] !== o[3] || r.g[1] !== o[4] || r.g[2] !== o[5]) f.push(o[3] || o[4] || o[5] ? '가이드 수정' : '가이드 추가');
@@ -839,9 +840,10 @@ async function download(kind){
   const pick = (kind === 'diff' ? all.filter(r => diffOf(r)) : all).filter(r => !(r.newId && r.deleted && !sent(r)));
   if (!pick.length) return toast('비교 기준 이후 바뀐 질문이 없어요.');
   const now = new Date();
-  const lines = [COLS.join(',')].concat(pick.map(r => [r.id, r.interest_id, r.text, r.level, r.g[0], r.g[1], r.g[2], r.created_at,
-    r.edited ? r.edited.at : r.updated_at, r.deletedAt, b ? (DIFF_LABEL[diffOf(r)] || '같음') : '첫 다운로드',
-    r.change + (r.edited ? ' + 페이지 수정' : ''), r.newId, r.cat, r.purpose, modFlags(r)].map(cell).join(',')));
+  // 이번에 끄는 기존 질문은 원본 값 그대로 두고 deleted_at만 채운다
+  const out = r => (r.deleted && r.orig && !r.orig[6]) ? { ...r, interest_id: r.orig[0], text: r.orig[1], level: r.orig[2], g: r.orig.slice(3, 6) } : r;
+  const lines = [COLS.join(',')].concat(pick.map(out).map(r => [r.id, r.interest_id, r.text, r.level, r.g[0], r.g[1], r.g[2], r.created_at,
+    r.edited ? r.edited.at : r.updated_at, r.deletedAt, modFlags(r)].map(cell).join(',')));
   const stamp = now.toISOString().slice(0,16).replace(/[-:T]/g, '');
   try {
     await downloads.save({ filename: `nadab_daily_questions_${kind === 'diff' ? 'changes_' : ''}${stamp}.csv`, data: new Blob(['﻿' + lines.join('\n')], { type:'text/csv' }) });
