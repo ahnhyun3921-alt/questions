@@ -49,8 +49,8 @@ def wilson(a, n):
     return [round(c - h, 4), round(c + h, 4)]
 
 
-def load():
-    snap = sorted((ROOT / "output" / "board_stats").glob("20*.json"))[-1]
+def load(snap=None):
+    snap = snap or sorted((ROOT / "output" / "board_stats").glob("20*.json"))[-1]
     st = json.loads(snap.read_text())
     tags = pd.read_csv(Path(__file__).parent / "question_tags.csv").set_index("id")
     db = latest_db().astype({"id": str}).set_index("id")
@@ -116,12 +116,26 @@ SPEC = [  # (이름, 무리, 조건)
   + [("관심사: " + c, "관심사", (lambda c: lambda d: d["cat"] == c)(c)) for c in CAT.values() if c != "가치관"]
 
 
-def design(d, mean_logl=None):
+INTER_MIN = 8   # 관심사×형식 상호작용 후보: 그 조합 문항이 이만큼 있어야
+
+
+def inter_name(c, f):
+    return f"상호작용: {c}×{f}"
+
+
+def design(d, mean_logl=None, inter=()):
     X = pd.DataFrame({n: f(d).astype(float) for n, _, f in SPEC})
+    for nm in inter:                     # 관심사×형식 상호작용(선택된 것만)
+        c, f = nm.split(": ")[1].split("×")
+        X[nm] = ((d["cat"] == c) & (d["F"] == f)).astype(float)
     ll = np.log(d["L"].astype(float))
     mean_logl = float(ll.mean()) if mean_logl is None else mean_logl
     X["문구 길이"] = ll - mean_logl     # 로그 글자 수(가운데 맞춤) — 효과는 '두 배 길어질 때'로 보고
     return X, mean_logl
+
+
+MIN_RES = 5   # 판정에 필요한 최소 결론 수(운영 규칙)
+_FIT = {}   # model()이 학습한 적합 결과 — 평가 층(evaluate)과 시간 외 검증이 쓴다
 
 
 def model(d):
@@ -132,11 +146,20 @@ def model(d):
     d = d[(d.ans + d.rep) > 0].reset_index(drop=True)
     a, n = d.ans.values.astype(float), (d.ans + d.rep).values.astype(float)
     X, mean_logl = design(d)
-    names = list(X.columns)
     Xv = X.values
     # λ 고르기
-    cv = {lam: np.mean([kfold_eval(Xv, a, n, lambda: BetaBinomialRidge(lam), k=5, seed=s)["ll"] for s in range(2)]) for lam in [3, 10, 30]}
+    cv = {lam: np.mean([kfold_eval(Xv, a, n, lambda: BetaBinomialRidge(lam), k=5, seed=s)["ll"] for s in range(3)]) for lam in [3, 10, 30]}
     lam = max(cv, key=cv.get)
+    # 구조 선택: 관심사×형식 상호작용 블록을 넣었을 때 교차검증 로그우도가 1 이상 좋아질 때만 채택(절약 원칙)
+    cand = [inter_name(c, f) for c in CAT.values() for f in FORM if ((d["cat"] == c) & (d["F"] == f)).sum() >= INTER_MIN]
+    Xi, _ = design(d, mean_logl, cand)
+    cv_int = float(np.mean([kfold_eval(Xi.values, a, n, lambda: BetaBinomialRidge(lam), k=5, seed=s)["ll"] for s in range(3)]))
+    inter = cand if cv_int - cv[lam] >= 1.0 else []
+    base_ll = float(cv[lam])
+    if inter:
+        X, Xv = Xi, Xi.values
+        cv[lam] = cv_int
+    names = list(X.columns)
     fit = BetaBinomialRidge(lam).fit(Xv, a, n)
     base = a.sum() / n.sum()
     lg = np.log(base / (1 - base))
@@ -147,7 +170,7 @@ def model(d):
         ix = rng.integers(0, len(a), len(a))
         boots.append(BetaBinomialRidge(lam).fit(Xv[ix], a[ix], n[ix]).coef_[1:])
     boots = np.array(boots)
-    group = {nm: g for nm, g, _ in SPEC}
+    group = {nm: g for nm, g, _ in SPEC} | {nm: "상호작용" for nm in inter}
     group["문구 길이"] = "문구 특성"
     terms = []
     for j, nm in enumerate(names):
@@ -165,7 +188,8 @@ def model(d):
     old = [c for c in names if c in ("시점 고정", "경험 전제", "즉답 가능", "감정 무게", "자기노출", "은유·모호", "40자 초과") or c.startswith(("형식: ", "관심사: "))]
     m0 = cvll([])
     evals = [dict(name="평균만", ll=0.0), dict(name="관심사만", ll=round(cvll([c for c in names if c.startswith("관심사: ")]) - m0, 1)),
-             dict(name="이전 모델 특성", ll=round(cvll(old) - m0, 1)), dict(name="지금 모델", ll=round(float(cv[lam]) - m0, 1))]
+             dict(name="이전 모델 특성", ll=round(cvll(old) - m0, 1)), dict(name="특성 모델(상호작용 없음)", ll=round(base_ll - m0, 1)),
+             dict(name="지금 모델", ll=round(float(cv[lam]) - m0, 1))]
     ev_new = kfold_eval(Xv, a, n, lambda: BetaBinomialRidge(lam), k=5, seed=0)
     ev_old = kfold_eval(X[old].values, a, n, lambda: BetaBinomialRidge(lam), k=5, seed=0)
     big = n >= 6
@@ -180,7 +204,9 @@ def model(d):
     pa = 1 - fit.prob_below(Xv, a, n, base + 0.10)
     post = {k: [round(float(m_), 4), round(float(pb_), 3), round(float(pa_), 3)] for k, m_, pb_, pa_ in zip(d.key, mu, pb, pa)}
     coef = {"const": round(float(fit.coef_[0]), 5), **{nm: round(float(fit.coef_[1 + j]), 5) for j, nm in enumerate(names)}}
-    return dict(kind="betabinomial-ridge", coef=coef, phi=round(fit.phi_, 3), lam=lam, mean_logl=round(mean_logl, 5),
+    _FIT.update(fit=fit, mean_logl=mean_logl, inter=inter, names=names, base=float(base))
+    return dict(kind="betabinomial-ridge", coef=coef, phi=round(fit.phi_, 3), lam=lam, mean_logl=round(mean_logl, 5), inter=inter,
+                inter_gain=round(cv_int - base_ll, 1),
                 n_q=int(len(a)), n_res=int(n.sum()), base=round(float(base), 4), ref="형식은 성향·습관, 관심사는 가치관 대비",
                 terms=terms, evals=evals, rho=dict(new=round(rho_new, 3), old=round(rho_old, 3), n=int(big.sum())), calib=calib, post=post,
                 policy=dict(fix_p=0.8, good_p=0.8, explore_n=20, gap=0.10), scale=1.0)
@@ -370,6 +396,156 @@ def findings(uni, mdl, ln, ax, st=None):
     return out
 
 
+# ---------------- 평가 층: 등급 · 진단 · 처방 · 우선순위 ----------------
+GRADE = {"A": "우수", "B": "양호", "C": "개선 권장", "D": "수정 필요", "N": "판정 보류"}
+# 처방 후보: (라벨, 해당 조건, 바꾼 특성) — 모델로 바꿨을 때의 예상 답변율 변화를 계산해 효과 큰 순으로 제시
+RX = [
+    ("특정 경험 전제 없애기 — '없다면 ~' 대안을 붙이거나 누구나 겪는 상황으로", lambda t: t["P"] == 2, lambda t: {**t, "P": 0}),
+    ("경험 전제 없애기 — '~한 적 있다면'을 빼고 지금의 나를 묻기", lambda t: t["P"] == 1, lambda t: {**t, "P": 0}),
+    ("'오늘·이번 주' 같은 시점 빼기", lambda t: t["T"] > 0, lambda t: {**t, "T": 0}),
+    ("은유를 걷어내고 구체적인 대상 묻기", lambda t: t["C"] == 1, lambda t: {**t, "C": 0}),
+    ("예/아니오형을 양자택일로", lambda t: t["F"] == "o", lambda t: {**t, "F": "c", "E": 1}),
+    ("일화 회상을 성향형('~하는 편인가요')으로", lambda t: t["F"] == "r", lambda t: {**t, "F": "t", "P": min(t["P"], 1)}),
+    ("선택지를 주는 양자택일로 — 바로 답하게", lambda t: t["F"] in ("t", "d", "n") and t["E"] >= 2, lambda t: {**t, "F": "c", "E": 1}),
+    ("30자 안팎으로 줄이기", lambda t: t["L"] > 35, lambda t: {**t, "L": 30}),
+]
+
+
+def _mu_rows(rows):
+    """태그 행 목록 → 설계 예측 μ (학습한 모델 그대로)."""
+    F = _FIT
+    d = pd.DataFrame(rows)
+    X, _ = design(d, F["mean_logl"], F["inter"])
+    return F["fit"].mu(X[F["names"]].values)
+
+
+def evaluate(mdl):
+    """활성 질문마다: 실적 사후(θ), 설계 예측(μ), 등급, 진단, 처방(반사실 예측), 우선순위(기대 이득 × 노출).
+    결과 키 = DB id → [등급, 진단, μ, θ̂, θ 80% 하한, θ 80% 상한, 결론 수, 처방[[라벨, Δ]], 우선순위 점수]"""
+    from scipy.stats import beta as B
+    rows = json.loads((ROOT / "board" / "data" / "questions.json").read_text())["rows"]
+    tags = pd.read_csv(Path(__file__).parent / "question_tags.csv").set_index("id")
+    T = {str(stats_to_db(int(i))): r.to_dict() for i, r in tags.iterrows()}
+    for f in ["new_questions.csv", "new_questions_scraped.csv", "new_questions_love.csv", "new_questions_fun.csv", "new_questions_self.csv"]:
+        nq = pd.read_csv(ROOT / "output" / f).set_index("신규 ID")
+        for r in rows:
+            if r["newId"] in nq.index:
+                T[r["key"]] = nq.loc[r["newId"], list("TPEWSFC")].to_dict()
+    pa = Path(__file__).parent / "new" / "page_added.csv"
+    if pa.exists():
+        for _, r in pd.read_csv(pa, dtype={"DB id": str}).iterrows():
+            T[r["DB id"]] = {**{c: int(r[c]) for c in "TPEWSC"}, "F": r["F"]}
+    snap = sorted((ROOT / "output" / "board_stats").glob("20*.json"))[-1]
+    st = json.loads(snap.read_text())["q"]
+    from import_page_added import guess_form, guess_tags
+    live = [r for r in rows if not r["deleted"] and r["key"] in T]
+    base, phi, pol = _FIT["base"], mdl["phi"], mdl["policy"]
+    # 통계와 태그는 '지금 DB 문구' 기준이다. 개선본에서 문구를 바꾼 질문은 지금 문구로 평가하고, 바뀐 문구는 자동 태그로 예측만 한다.
+    cur_text = lambda r: r["oldText"] if r["oldText"] and r["oldText"] != r["text"] else r["text"]
+    feat = [dict(**{k: (int(T[r["key"]][k]) if k != "F" else str(T[r["key"]][k])) for k in "TPEWSCF"}, L=len(cur_text(r)), level=r["level"], cat=r["cat"]) for r in live]
+    mu = _mu_rows(feat)
+    rw = [i for i, r in enumerate(live) if cur_text(r) != r["text"]]
+    if rw:
+        nf = []
+        for i in rw:
+            t = live[i]["text"]; f = guess_form(t)
+            nf.append(dict(**guess_tags(t, f), F=f, L=len(t), level=live[i]["level"], cat=live[i]["cat"]))
+        mu_new = dict(zip(rw, _mu_rows(nf)))
+    else:
+        mu_new = {}
+    # 처방: 해당하는 반사실을 한꺼번에 계산
+    rx_rows, rx_idx = [], []
+    for i, t in enumerate(feat):
+        for j, (_, cond, chg) in enumerate(RX):
+            if cond(t):
+                rx_rows.append(chg(t)); rx_idx.append((i, j))
+    rx_mu = _mu_rows(rx_rows) if rx_rows else []
+    rx = {}
+    for (i, j), m2 in zip(rx_idx, rx_mu):
+        dlt = float(m2 - mu[i])
+        if dlt >= 0.02:
+            rx.setdefault(i, []).append([RX[j][0], round(dlt, 3)])
+    out, cnt = {}, {g: 0 for g in GRADE}
+    exp_all = [st.get(r["key"], [0])[0] for r in live]
+    mean_exp = max(1.0, float(np.mean([e for e in exp_all if e > 0]) if any(exp_all) else 1.0))
+    for i, r in enumerate(live):
+        v = st.get(r["key"])
+        a, n, e = (v[1], v[1] + v[2], v[0]) if v else (0, 0, 0)
+        al, be = a + phi * mu[i], n - a + phi * (1 - mu[i])
+        est = al / (al + be)
+        lo, hi = B.ppf(0.1, al, be), B.ppf(0.9, al, be)
+        pb, pa_ = B.cdf(base - pol["gap"], al, be), 1 - B.cdf(base + pol["gap"], al, be)
+        rxs = [] if i in mu_new else sorted(rx.get(i, []), key=lambda x: -x[1])[:3]
+        if n < MIN_RES:
+            g = "N"
+            dx = "설계 예측만 — 실적이 쌓이기 전" + (" · 설계상 낮음" if mu[i] < base - 0.05 else "")
+        else:
+            if pb >= pol["fix_p"]:
+                g = "D"
+            elif pa_ >= pol["good_p"]:
+                g = "A"
+            elif B.cdf(base - 0.05, al, be) >= 0.7 or (mu[i] < base - 0.05 and rxs):
+                g = "C"
+            else:
+                g = "B"
+            worse = B.cdf(max(0.01, mu[i] - 0.08), al, be)
+            better = 1 - B.cdf(min(0.99, mu[i] + 0.08), al, be)
+            if mu[i] < base - 0.05 and rxs:
+                dx = "설계 문제 — 문구 특성이 답변율을 낮춰요. 처방대로 고치면 올라가요"
+            elif worse >= 0.6:
+                dx = "소재·표현 문제 — 특성상 괜찮은데 실제로 덜 답해요. 형식보다 소재나 말투를 바꿔요"
+            elif better >= 0.6:
+                dx = "숨은 강자 — 특성 예측보다 잘 돼요. 새 질문의 본보기로"
+            else:
+                dx = "예측대로 — 특성으로 설명되는 만큼 답해요"
+        if i in mu_new:
+            dx = f"수정안 대기 — 지금 DB 문구 기준 평가예요. 바뀐 문구의 설계 예측 {mu_new[i]:.0%}({(mu_new[i] - mu[i]) * 100:+.0f}%p)"
+        best = mu[i] + (rxs[0][1] if rxs else 0)
+        gain = max(0.0, max(best, base) - est) if g in ("C", "D") and i not in mu_new else 0.0
+        prio = round(gain * 100 * (e / mean_exp if e else 0.5), 2)   # 기대 이득(%p) × 상대 노출
+        cnt[g] += 1
+        out[r["key"]] = [g, dx, round(float(mu[i]), 4), round(float(est), 4), round(float(lo), 4), round(float(hi), 4), int(n), rxs, prio,
+                         round(float(mu_new[i]), 4) if i in mu_new else None]
+    order = sorted((k for k, v in out.items() if v[8] > 0), key=lambda k: -out[k][8])
+    for rank, k in enumerate(order, 1):
+        out[k].append(rank)
+    for k in out:
+        if len(out[k]) == 10:
+            out[k].append(None)
+    return dict(grades=GRADE, count=cnt, q=out, min_res=MIN_RES, untagged=sum(1 for r in rows if not r["deleted"]) - len(live))
+
+
+def holdout(mdl):
+    """시간 외 검증: 이전 스냅숏으로 모델을 학습하고, 다음 스냅숏까지 새로 쌓인 결론을 예측한다.
+    비교: (1) 전체 평균 (2) 문항 관측 비율(라플라스) (3) 모델 사후. 지표 = 결론당 로그 손실(낮을수록 좋음)."""
+    snaps = sorted((ROOT / "output" / "board_stats").glob("20*.json"))
+    if len(snaps) < 2:
+        return None
+    s0, s1 = snaps[-2], snaps[-1]
+    _, d0 = load(s0)
+    d0 = d0[(d0.ans + d0.rep) > 0].reset_index(drop=True)
+    from qmodel import BetaBinomialRidge
+    X0, ml = design(d0, None, _FIT["inter"])
+    f0 = BetaBinomialRidge(mdl["lam"]).fit(X0.values, d0.ans.values.astype(float), (d0.ans + d0.rep).values.astype(float))
+    q1 = json.loads(s1.read_text())["q"]
+    a0, n0 = d0.ans.values.astype(float), (d0.ans + d0.rep).values.astype(float)
+    mu = f0.mu(X0.values)
+    post = (a0 + f0.phi_ * mu) / (n0 + f0.phi_)
+    raw = (a0 + 1) / (n0 + 2)
+    g = a0.sum() / n0.sum()
+    da, dn = [], []
+    for k, aa, nn in zip(d0.key, a0, n0):
+        v = q1.get(k)
+        da.append(max(0, (v[1] if v else aa) - aa)); dn.append(max(0, ((v[1] + v[2]) if v else nn) - nn))
+    da, dn = np.array(da, float), np.array(dn, float)
+    m = dn > 0
+    def ll(p):
+        p = np.clip(p, 1e-4, 1 - 1e-4)
+        return float(-(da[m] * np.log(p[m]) + (dn[m] - da[m]) * np.log(1 - p[m])).sum() / dn[m].sum())
+    return dict(train=s0.stem, test=s1.stem, n_q=int(m.sum()), n_res=int(dn[m].sum()),
+                loss=dict(mean=round(ll(np.full(len(a0), g)), 4), raw=round(ll(raw), 4), model=round(ll(post), 4)))
+
+
 def revision_effect():
     """수정 효과: 통계의 Revision이 1보다 큰 질문(앱 DB에서 문구가 바뀐 질문)의 수정 전(전체 − 현재 Revision)과 수정 후(현재 Revision) 답변율.
     pooled = 전·후 각각 결론 20회 이상인 질문들을 합친 차이(정규 근사 95% CI)."""
@@ -455,7 +631,7 @@ def levels(d, mdl):
 def main():
     date, d = load()
     uni, mdl, ln, ax, st = univariate(d), model(d), length_bins(d), axes(d), structure(d)
-    out = dict(snapshot=date, uni=uni, model=mdl, length=ln, axes=ax, structure=st, recat=recat_queue(), revision=revision_effect(), levels=levels(d, mdl),
+    out = dict(snapshot=date, uni=uni, model=mdl, length=ln, axes=ax, structure=st, recat=recat_queue(), revision=revision_effect(), evals=evaluate(mdl), holdout=holdout(mdl), levels=levels(d, mdl),
                findings=findings(uni, mdl, ln, ax, st))
     f = ROOT / "board" / "data" / "insights.json"
     f.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":"), allow_nan=False))

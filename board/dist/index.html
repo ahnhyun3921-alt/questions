@@ -262,6 +262,22 @@ summary.note{cursor:pointer;font-weight:700}
 .rci .m{font-size:.78rem;color:var(--ink-2)}
 .fam{font-size:.72rem;font-weight:800;color:var(--blue)}
 .subs{display:flex;flex-wrap:wrap;gap:6px}
+.chip.gA{background:var(--high-soft);color:var(--high)} .chip.gC{background:var(--mod-soft);color:var(--mod)} .chip.gD{background:var(--low-soft);color:var(--low)} .chip.gN{background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)}
+.evx{display:grid;gap:8px}
+.evx .evr{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;font-size:.84rem;align-items:baseline}
+.evx .evr b{color:var(--ink-2);font-size:.78rem}
+.evx .evr>span{display:grid;gap:3px}
+.evbar{display:block}
+.evx ol{margin:0;padding-left:18px;display:grid;gap:2px}
+.evbar{position:relative;height:14px;background:var(--track);border-radius:999px;margin-top:4px}
+.evbar .ci{position:absolute;top:3px;height:8px;border-radius:999px;background:color-mix(in srgb,var(--chart) 30%,transparent)}
+.evbar .pt{position:absolute;top:1px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--chart);box-shadow:0 0 0 2px var(--soft)}
+.evbar .mu{position:absolute;top:0;bottom:0;width:2px;background:var(--blue)}
+.evbar .av{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink);opacity:.5}
+.layers{display:grid;gap:6px;counter-reset:ly}
+.layers>div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:10px;background:var(--soft);border-radius:14px;padding:10px 12px;font-size:.84rem}
+.layers>div b{font-size:.84rem}
+@media (max-width:640px){.layers>div,.evx .evr{grid-template-columns:1fr}}
 .steps{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
 .steps li{font-size:.78rem;font-weight:800;color:var(--muted);background:var(--soft);border-radius:999px;padding:5px 12px}
 .steps li.on{background:var(--blue);color:#fff} .steps li.ok{background:var(--mint-soft);color:var(--mint-ink)}
@@ -489,7 +505,7 @@ a{color:var(--blue)}
   </div>
   <div class="pg" id="pg-ana" role="tabpanel" data-page="ins" hidden>
   <nav class="subnav" aria-label="분석 바로가기" id="anaNav">
-    <a href="#dth">지금 숫자</a><a href="#insh">핵심 인사이트</a><a href="#lvh">레벨 구조</a><a href="#mdh">질문 모델</a><a href="#forh">요인 효과</a><a href="#axh">자아분석 축</a><a href="#strh">질문 구조</a><a href="#revh">수정 효과</a><a href="#disth">관심사 분포</a><a href="#lenh">문구 길이</a><a href="#method-sec">방법과 한계</a>
+    <a href="#dth">지금 숫자</a><a href="#insh">핵심 인사이트</a><a href="#lvh">레벨 구조</a><a href="#mdh">질문 모델</a><a href="#evh">평가 체계</a><a href="#forh">요인 효과</a><a href="#axh">자아분석 축</a><a href="#strh">질문 구조</a><a href="#revh">수정 효과</a><a href="#disth">관심사 분포</a><a href="#lenh">문구 길이</a><a href="#method-sec">방법과 한계</a>
   </nav>
   <section class="panel" aria-labelledby="dth">
     <div class="data-head"><h2 id="dth">데이터로 보는 지금</h2><span class="note" id="dataAt">통계를 불러오는 중이에요.</span></div>
@@ -545,6 +561,10 @@ a{color:var(--blue)}
     <h2 id="mdh">나답 질문 모델</h2>
     <p class="note" style="margin:0">질문을 <b>분석</b>하는 흐름과 <b>만드는</b> 흐름이 하나의 모델로 이어져요. 매달 새 통계가 들어오면 모델이 다시 학습되고, 진단기와 생성기의 예측도 같이 바뀌어요.</p>
     <div class="flow" id="flow"></div>
+  </section>
+  <section class="panel" aria-labelledby="evh">
+    <h2 id="evh">질문 평가 체계 — 등급 · 진단 · 처방 · 우선순위</h2>
+    <div id="evSys"></div>
   </section>
   <section class="panel" aria-labelledby="eqh">
     <h2 id="eqh">평가 모델 · 검증 · 운영 규칙</h2>
@@ -641,6 +661,7 @@ a{color:var(--blue)}
         <select id="fLevel" aria-label="레벨"><option value="all">레벨 전체</option><option value="1">레벨 1 · 첫 질문</option><option value="2">레벨 2</option></select>
         <select id="fAxis" aria-label="자아분석 축"></select>
         <select id="fPt" aria-label="목적 유형"></select>
+        <select id="fGrade" aria-label="평가 등급"></select>
         <select id="fForm" aria-label="질문 형식"></select>
       </div>
       <div class="row" style="margin-top:8px">
@@ -669,7 +690,7 @@ const fmt = iso => { try { return new Date(iso).toLocaleString('ko-KR',{dateStyl
 const MIN_EXP = 5;  // analysis/monthly_picks.py와 같은 기준
 let DUPS = [], DUPOK = new Map(), PICKS = new Map(), KEEPS = new Map(), STATS = [], BASE = [], BUILT = '', EDITS = new Map(), AIS = new Map(), DLS = [], baseId = null, jumpToLatest = false;
 let db = null, downloads = null, user = null, sample = null, me = null, canWrite = true;
-let F = { q:'', view:'all', form:'all', change:'all', cat:'all', level:'all', axis:'all', pt:'all', diff:false, edit:false, del:false }, limit = 40;
+let F = { q:'', view:'all', form:'all', change:'all', cat:'all', level:'all', axis:'all', pt:'all', grade:'all', diff:false, edit:false, del:false }, limit = 40;
 const open = new Set(), closed = new Set(), busy = new Set();
 try { const s = JSON.parse(localStorage.getItem('nadab-board-f2') || 'null'); if (s) F = { ...F, ...s, q:'' }; } catch {}
 const saveF = () => { try { localStorage.setItem('nadab-board-f2', JSON.stringify({ ...F, q:'' })); } catch {} };
@@ -871,6 +892,7 @@ function filters(){
   opt('#fChange', '변경 구분 전체', ch.map(c => [c, `${c} (${all.filter(r => r.change === c).length})`]), F.change);
   opt('#fCat', '관심사 전체', Object.values(CAT).map(c => [c, c]), F.cat);
   opt('#fAxis', '자아분석 축 전체', [['none', `축 없음 (${all.filter(r => !r.ax && !r.deleted).length})`]].concat(Object.values(AX2).map(a => [a.key, `${a.cat} · ${a.name} (${all.filter(r => r.ax === a.key && !r.deleted).length})`])), F.axis);
+  opt('#fGrade', '평가 등급 전체', Object.entries(GRADE_L).map(([g, l]) => [g, `${g} ${l} (${all.filter(r => !r.deleted && EV(r.key)?.[0] === g).length})`]), F.grade);
   opt('#fPt', '목적 유형 전체', Object.entries(PT).map(([k, n]) => [k, `${n} (${all.filter(r => r.pt === k && !r.deleted).length})`]), F.pt);
   const fm = [...new Set(all.map(r => r.form || '기타'))].sort();
   opt('#fForm', '질문 형식 전체', fm.map(f => [f, `${f} (${all.filter(r => (r.form || '기타') === f && !r.deleted).length})`]), F.form);
@@ -878,7 +900,7 @@ function filters(){
 }
 const VIEWS = [
   ['all', '전체', '활성 질문 모두'],
-  ['fix', '고쳐야 할 것', '답변율이 낮은데 수정안이 없음 · 매달 1일 골라 주세요로'],
+  ['fix', '고쳐야 할 것', '실적이 낮고 처방이 있는데 수정안이 없음 · 기대 이득 순'],
   ['new', '신규 질문', '새로 추가하는 질문'],
   ['mod', '변경된 질문', '문구·관심사가 바뀌거나 비활성화됨'],
   ['off', '비활성화·삭제', '끄는 기존 질문, 이미 삭제된 질문, 뺀 신규 질문'],
@@ -890,20 +912,23 @@ const doneSince = (r, at) => (r.edited && r.edited.at >= at) || (KEEPS.get(r.key
 const pickKind = r => { const p = pickOf(r); return p && !doneSince(r, p.at) ? 'month' : 'review'; };
 const isPick = r => { if (r.deleted) return false; const p = pickOf(r); if (p && !doneSince(r, p.at)) return true;
   return !r.edited && !KEEPS.has(r.key) && r.alts.length >= 2 && !['chosen', 'applied'].includes(r.decided); };
-const isFix = r => { if (r.deleted || r.edited || r.change !== '유지' || isPick(r)) return false; const q = qstat(r.key); return !!q && q.low; };
+// 평가 층(analysis/build_insights.evaluate)의 우선순위가 있는 질문 = 등급 C·D이고, 수정안이 없고, 처방으로 기대 이득이 있는 것
+const EV = k => INS?.evals?.q?.[k];
+const GRADE_L = { A: '우수', B: '양호', C: '개선 권장', D: '수정 필요', N: '판정 보류' };
+const isFix = r => { if (r.deleted || r.edited || isPick(r) || KEEPS.has(r.key) || ['chosen', 'applied'].includes(r.decided)) return false; const e = EV(r.key); if (e) return e[10] != null; const q = qstat(r.key); return !!q && q.low && r.change === '유지'; };
 const inView = (r, v) => v === 'all' || (v === 'off' ? r.deleted : v === 'fix' ? isFix(r) : v === 'new' ? isNewQ(r) : isMod(r));
 function tabsUI(){
   const all = rows();
   $('#tabs').innerHTML = VIEWS.map(([v, l, d]) => {
     const n = all.filter(r => (F.del || !r.deleted || v === 'mod' || v === 'off') && inView(r, v)).length;
-    const dim = v === 'fix' && !STATS.length;
+    const dim = v === 'fix' && !INS && !STATS.length;
     return `<button type="button" class="tab" data-view="${v}" aria-pressed="${F.view === v}"><b>${dim ? '–' : n.toLocaleString()}</b><span>${l}</span><small>${dim ? '통계를 불러오는 중' : v === 'fix' && !n ? '지금은 없어요 · 매달 통계로 다시 봐요' : d}</small></button>`;
   }).join('');
 }
 function activeFilters(){
   if (PAGE === 'pick') return [];
   return [F.change !== 'all' && `변경 구분 ${F.change}`, F.cat !== 'all' && `관심사 ${F.cat}`, F.form !== 'all' && `형식 ${F.form}`,
-    F.level !== 'all' && `레벨 ${F.level}`, F.axis !== 'all' && `축 ${F.axis === 'none' ? '없음' : AX2[F.axis]?.name || F.axis}`, F.pt !== 'all' && PT[F.pt], F.diff && '지난 다운로드 이후 바뀐 것', F.edit && '이 페이지에서 고친 것', F.q.trim() && `검색 "${F.q.trim()}"`].filter(Boolean);
+    F.level !== 'all' && `레벨 ${F.level}`, F.axis !== 'all' && `축 ${F.axis === 'none' ? '없음' : AX2[F.axis]?.name || F.axis}`, F.pt !== 'all' && PT[F.pt], F.grade !== 'all' && `등급 ${F.grade}`, F.diff && '지난 다운로드 이후 바뀐 것', F.edit && '이 페이지에서 고친 것', F.q.trim() && `검색 "${F.q.trim()}"`].filter(Boolean);
 }
 function visible(){
   if (!VIEWS.some(v => v[0] === F.view)) F.view = 'all';
@@ -913,7 +938,7 @@ function visible(){
       .sort((a, b) => rank(a) - rank(b) || (pickOf(b)?.month || '').localeCompare(pickOf(a)?.month || '') || Number(a.key) - Number(b.key));
   }
   const q = F.q.trim().toLowerCase();
-  return rows().filter(r =>
+  const out = rows().filter(r =>
     (F.del || !r.deleted || F.view === 'mod' || F.view === 'off') &&
     inView(r, F.view) &&
     (F.change === 'all' || r.change === F.change) &&
@@ -922,9 +947,11 @@ function visible(){
     (F.level === 'all' || String(r.level) === F.level) &&
     (F.axis === 'all' || (F.axis === 'none' ? !r.ax : r.ax === F.axis)) &&
     (F.pt === 'all' || r.pt === F.pt) &&
+    (F.grade === 'all' || EV(r.key)?.[0] === F.grade) &&
     (!F.diff || diffOf(r)) &&
     (!F.edit || r.edited) &&
     (!q || r.key.toLowerCase() === q || (r.newId || '').toLowerCase() === q || r.text.toLowerCase().includes(q) || (r.oldText || '').toLowerCase().includes(q)));
+  return F.view === 'fix' ? out.sort((a, b) => (EV(a.key)?.[10] ?? 1e9) - (EV(b.key)?.[10] ?? 1e9)) : out;
 }
 function summary(){
   const all = rows();
@@ -1096,7 +1123,7 @@ function insUI(){
   $('#insMeta').textContent = `통계 ${INS.snapshot} 기준 · 문항 ${m.n_q.toLocaleString()}개 · 결론(답변+교체) ${m.n_res.toLocaleString()}회 · 평균 답변율 ${P(m.base)}`;
   const KL = { neg: '낮추는 요인', pos: '올리는 요인', gap: '빈 곳', neutral: '참고' };
   $('#finds').innerHTML = INS.findings.map(f => `<article class="find ${f.kind}"><span class="k">${KL[f.kind] || '참고'}</span><h3>${esc(f.title)}</h3><p>${esc(f.body)}</p>${f.action ? `<div class="act"><b>그래서</b> ${esc(f.action)}</div>` : ''}</article>`).join('');
-  forestUI(); axUI(); heatUI(); lenUI(); structUI(); revUI(); recatUI();
+  forestUI(); axUI(); heatUI(); lenUI(); structUI(); revUI(); recatUI(); evSysUI(); filters();
   $('#method').innerHTML = [
     `<div><b>데이터</b> 통계 사이트의 문항별 '현재 Revision' 실적(${INS.snapshot}). 답변율 = 답변 ÷ (답변 + 교체). 미응답은 결론이 나지 않은 노출이라 뺐어요.</div>`,
     `<div><b>문구 특성</b> 기존 질문마다 붙인 태그(시점 고정, 경험 전제, 즉답, 감정 무게, 자기노출, 은유)와 글자 수, 형식, 관심사.</div>`,
@@ -1107,7 +1134,7 @@ function insUI(){
 }
 function forestUI(){
   const multi = FMODE === 'multi';
-  const items = multi ? INS.model.terms.map(t => ({ g: t.group, n: t.name, v: t.pp, lo: t.pp_lo, hi: t.pp_hi, sig: t.p < 0.05, tip: `오즈비 ${t.or_} (95% CI ${t.or_lo}~${t.or_hi}) · p=${t.p}` }))
+  const items = multi ? INS.model.terms.filter(t => t.group !== '상호작용').map(t => ({ g: t.group, n: t.name, v: t.pp, lo: t.pp_lo, hi: t.pp_hi, sig: t.p < 0.05, tip: `오즈비 ${t.or_} (95% CI ${t.or_lo}~${t.or_hi}) · p=${t.p}` }))
     : INS.uni.map(u => ({ g: u.group, n: u.name, v: u.diff, lo: u.lo, hi: u.hi, sig: u.lo > 0 || u.hi < 0, tip: `해당 ${P(u.rate)} vs 나머지 ${P(u.rest)} · 문항 ${u.nq} · 결론 ${u.res}` }));
   $('#forNote').textContent = multi ? `평가 모델(릿지 베타-이항)로 다른 특성을 모두 함께 고려했을 때 각 특성이 평균 답변율(${P(INS.model.base)})을 얼마나 바꾸는지예요. ${INS.model.ref}. 구간은 부트스트랩 95%.` : '그 특성이 있는 질문과 없는 질문의 답변율 차이예요. 다른 특성과 겹친 효과가 섞여 있어요.';
   const groups = [...new Set(items.map(i => i.g))], rowsH = [];
@@ -1488,7 +1515,7 @@ function modelPred(tags, form, cat, len, level = 2){
   const x = [['시점 고정', tags.T > 0], ['특정 날 시점', tags.T === 2], ['경험 전제', tags.P > 0], ['특정 경험 전제', tags.P === 2],
     ['즉답 가능', tags.E === 1], ['깊은 성찰', tags.E === 3], ['감정 무게', tags.W >= 2], ['무거운 감정', tags.W === 3],
     ['자기노출', tags.S >= 2], ['높은 자기노출', tags.S === 3], ['은유·모호', tags.C === 1], ['40자 초과', len > 40], ['레벨 1', Number(level) === 1],
-    ['형식: ' + f, true], ['관심사: ' + cat, true]].filter(([n, on]) => on && k[n] != null).map(([n]) => [n, k[n]]);
+    ['형식: ' + f, true], ['관심사: ' + cat, true], ['상호작용: ' + cat + '×' + form, true]].filter(([n, on]) => on && k[n] != null).map(([n]) => [n, k[n]]);
   if (k['문구 길이'] != null && M.mean_logl != null && len > 0) x.push(['문구 길이', k['문구 길이'] * (Math.log(len) - M.mean_logl)]);
   const z = k.const + x.reduce((a, [, b]) => a + b, 0), sig = v => 1 / (1 + Math.exp(-v)), p = sig(z);
   // 새 질문의 진짜 답변율 θ ~ Beta(pφ, (1-p)φ) — 80% 구간(정규 근사)
@@ -1693,6 +1720,38 @@ function dataUI(){
   $('#top5').innerHTML = top.map(({ r, q }) => `<button type="button" data-jump="${esc(r.key)}"><span class="t">${esc(r.text)}</span><span class="n">교체 ${q.rep} · 답변율 ${P(q.rate)}</span><span class="rate" aria-hidden="true"><i style="width:${Math.max(2, Math.round((q.rate || 0) * 100))}%"></i><b style="left:${Math.round(avg * 100)}%"></b></span></button>`).join('') + `<div class="note">막대는 답변율, 세로선은 전체 평균이에요. 누르면 그 질문을 열어요.</div>`;
 }
 
+// ---- 평가(등급·진단·처방) ----
+function evalSec(r){
+  const e = EV(r.key); if (!e || r.deleted) return '';
+  const [g, dx, mu, est, lo, hi, n, rx, , muNew, rank] = e, base = INS.model.base;
+  const sc = v => `${Math.min(100, Math.max(0, (v - 0.2) / 0.6 * 100))}%`;
+  return `<div class="sec"><h3>평가 <span class="chip g${g}">${g} ${GRADE_L[g]}</span>${rank ? ` <span class="chip low">수정 우선 ${rank}위</span>` : ''}</h3><div class="box evx">
+    <div class="evr"><b>진단</b><span>${esc(dx)}</span></div>
+    <div class="evr"><b>실적 추정</b><span>${n ? `${P(est)} <span class="note">(80% 범위 ${P(lo)}~${P(hi)} · 결론 ${n}회)</span>` : '<span class="note">결론이 아직 없어요 — 설계 예측만 있어요</span>'}
+      <span class="evbar" role="img" aria-label="실적 추정 ${P(est)}, 설계 예측 ${P(mu)}, 평균 ${P(base)}"><span class="ci" style="left:${sc(lo)};width:calc(${sc(hi)} - ${sc(lo)})"></span><span class="mu" style="left:${sc(mu)}" title="설계 예측 ${P(mu)}"></span><span class="av" style="left:${sc(base)}" title="평균 ${P(base)}"></span><span class="pt" style="left:${sc(est)}"></span></span>
+      <span class="note" style="margin:0">점 = 실적 추정 · 파란 선 = 설계 예측 · 회색 선 = 평균 ${P(base)} (축 20~80%)</span></span></div>
+    <div class="evr"><b>설계 예측</b><span>${P(mu)} — 문구 특성만으로 본 기대 답변율${muNew != null ? ` · 바뀐 문구 ${P(muNew)} (${pp(muNew - mu)})` : ''}</span></div>
+    ${rx.length ? `<div class="evr"><b>처방</b><ol>${rx.map(([l, d]) => `<li>${esc(l)} <b style="color:var(--high)">${pp(d)}</b></li>`).join('')}</ol></div>` : ''}
+  </div></div>`;
+}
+function evSysUI(){
+  const E = INS?.evals, m = INS?.model, H = INS?.holdout; if (!E || !m) return;
+  const c = E.count, tot = Object.values(c).reduce((a, b) => a + b, 0) || 1;
+  const L = H?.loss;
+  $('#evSys').innerHTML = `<p class="note" style="margin:0">질문 하나를 다섯 층으로 평가해요. 아래 층의 결과가 위 층의 입력이 돼요. 각 층은 무엇을 보장하고 무엇을 보장하지 않는지가 분명해요.</p>
+    <div class="layers">
+      <div><b>① 측정</b><span><b>결론 = 답변 + 교체</b>만 써요. 미응답은 빼요 — 결론에 이르는 비율의 문항 간 차이가 이항 잡음 수준(표준편차 0.093 vs 우연 0.091)이라, 질문이 좌우하는 건 '답하느냐 바꾸느냐'뿐이에요.</span></div>
+      <div><b>② 설계 예측 μ</b><span>문구 특성(시점·경험 전제·인지 노력·감정·자기노출·은유·형식·관심사·길이·레벨) → 릿지 베타-이항 회귀. 질문을 내보내기 전에도 계산돼요(생성기·진단기와 같은 식). 관심사×형식 상호작용은 교차검증 이득 ${m.inter_gain ?? '–'}로 기준(1.0) 미달이라 넣지 않았어요.</span></div>
+      <div><b>③ 실적 추정 θ</b><span>θ ~ Beta(a + φμ, n − a + φ(1 − μ)), φ=${Math.round(m.phi)}. 결론이 적으면 설계 예측 쪽으로, 많으면 실제 비율 쪽으로 가요. 80% 범위와 '평균보다 10%p 낮을/높을 확률'을 같이 내요.</span></div>
+      <div><b>④ 등급 · 진단</b><span><b>D</b> P(θ &lt; 평균−10%p) ≥ 0.8 · <b>A</b> P(θ &gt; 평균+10%p) ≥ 0.8 · <b>C</b> P(θ &lt; 평균−5%p) ≥ 0.7 이거나 설계상 낮고 처방 있음 · <b>B</b> 나머지 · <b>보류</b> 결론 ${E.min_res}회 미만.<br>진단은 θ와 μ를 비교해요 — 설계 문제(μ가 낮음) / 소재·표현 문제(μ는 괜찮은데 θ가 낮음) / 숨은 강자(θ가 μ보다 높음) / 예측대로. 문구를 바꾼 질문은 '수정안 대기'로 지금 문구를 평가하고 바뀐 문구의 μ를 함께 보여요.</span></div>
+      <div><b>⑤ 처방 · 우선순위</b><span>특성 하나를 바꾼 반사실 문구의 μ를 다시 계산해 효과(+%p) 순으로 처방을 내요. 우선순위 = 기대 이득(처방 후 μ 또는 평균까지 올라갈 몫) × 상대 노출 — 많이 보이는 질문의 큰 개선부터. '고쳐야 할 것' 탭이 이 순서예요.</span></div>
+    </div>
+    <div class="kpis">${Object.entries(GRADE_L).map(([g, l]) => `<div class="kpi"><span class="l">${g} ${l}</span><span class="v">${(c[g] || 0).toLocaleString()}</span><span class="d">활성 질문의 ${Math.round((c[g] || 0) / tot * 100)}%${g === 'N' ? ' · 결론이 쌓이면 판정' : ''}</span></div>`).join('')}</div>
+    ${L ? `<div class="gbox"><h3>시간 외 검증 (${esc(H.train)} 통계로 학습 → ${esc(H.test)}까지 새로 쌓인 결론 ${H.n_res}회 예측, 문항 ${H.n_q}개)</h3>
+      <span>결론당 로그 손실(낮을수록 좋음): 전체 평균 ${L.mean.toFixed(4)} · 문항별 관측 비율 ${L.raw.toFixed(4)} · <b>평가 모델 ${L.model.toFixed(4)}</b></span>
+      <span class="note" style="margin:0">문항별 관측 비율을 그대로 믿으면 평균보다도 못해요(표본이 작아서). 모델처럼 설계 예측 쪽으로 당겨야 미래를 더 잘 맞혀요. 기간이 6일뿐이라 차이는 작아요 — 매달 다시 재요.</span></div>` : ''}
+    <p class="note" style="margin:0">한계: 관찰 데이터라 처방 효과는 '같은 특성을 가진 다른 질문들에서 본 차이'예요. 실제 효과는 수정 후 Revision 비교(수정 효과 측정)로 확인해요.</p>`;
+}
 // ---- 관심사 재배정 ----
 const RCSRC = { both: '사람·모델 둘 다', manual: '사람 분류', model: '문구 모델' };
 function recatItems(){
@@ -1739,6 +1798,7 @@ function card(r){
     r.axis ? `<span class="chip mint" title="${esc(r.axisNote)}${r.sig ? ' · ' + esc(sigLabel(r.ax, r.sig)) : ''}">${esc(r.axis)}${r.sig ? ` · ${esc(r.sig === 'A' ? AX2[r.ax]?.a : AX2[r.ax]?.b)} 먼저` : ''}</span>` : '',
     r.sub ? `<span class="chip">${esc(r.sub)}</span>` : '',
     r.recat && r.cat !== r.recat && !RECATOK.has(r.key) ? `<span class="chip d-mod" title="관심사 재배정 후보">${esc(r.recat)} 쪽?</span>` : '',
+    (e => e ? `<span class="chip g${e[0]}" title="평가 등급 — ${esc(e[1])}">${e[0]} ${GRADE_L[e[0]]}${e[10] ? ` · 우선 ${e[10]}위` : ''}</span>` : '')(EV(r.key)),
     rateChip(r.key),
   ].join('');
   const op = open.has(r.key) || (PAGE === 'pick' && !closed.has(r.key));
@@ -1774,6 +1834,7 @@ function detail(r){
   return `<div class="body">
     ${pickKind(r) === 'month' && isPick(r) ? `<div class="why-up"><b>${esc(pickOf(r).month)} 점검에서 올라왔어요.</b> ${esc(pickOf(r).reason || '')} (${esc(pickOf(r).stats?.date || '')} 기준)</div>` : ''}
     ${d === 'mod' ? `<div class="diff"><b>지난 다운로드 이후 바뀌었어요.</b> 문구·가이드·레벨·관심사·비활성 중 하나 이상이 달라졌어요.</div>` : ''}
+    ${evalSec(r)}
     <div class="sec"><h3>데이터 근거</h3>${evidence(r)}</div>
     <div class="sec"><h3>이 질문의 목적</h3>
       <div class="box"><div>${esc(r.purpose)}</div>${r.pt ? `<div><b>목적 유형</b> ${PT[r.pt]} — ${esc(PT_DESC[r.pt])}${r.sub ? ` · <b>소주제</b> ${esc(r.sub)}` : ''}</div>` : ''}${r.axis ? `<div><b>자아분석</b> ${esc(AX2[r.ax]?.cat || '')} '${esc(r.axis)}' — ${esc(r.axisNote)}${r.sig ? ` · ${esc(sigLabel(r.ax, r.sig))}` : ''}</div>` : ''}
@@ -1820,7 +1881,7 @@ async function render(){
   summary(); dataUI(); tabsUI(); badges(); dupUI(); if (INS){ heatUI(); recatUI(); if (PAGE === 'ins'){ axUI(); structUI(); } }
   const vis = visible(), shown = vis.slice(0, limit);
   const act = activeFilters();
-  { const n = [F.change !== 'all', F.level !== 'all', F.axis !== 'all', F.pt !== 'all', F.form !== 'all', F.diff, F.edit, F.del].filter(Boolean).length;
+  { const n = [F.change !== 'all', F.level !== 'all', F.axis !== 'all', F.pt !== 'all', F.grade !== 'all', F.form !== 'all', F.diff, F.edit, F.del].filter(Boolean).length;
     $('#advN').textContent = n ? `${n}개 적용 중` : ''; if (n && !advOpened){ $('#advF').open = true; advOpened = true; } }
   $('#count').textContent = `${vis.length.toLocaleString()}개${act.length ? ` · 필터: ${act.join(', ')}` : ''}`;
   $('#list').innerHTML = shown.length ? shown.map(card).join('') : `<div class="empty">조건에 맞는 질문이 없어요.${act.length && PAGE !== 'pick' ? `<br>걸려 있는 필터: ${esc(act.join(', '))} <button class="btn" type="button" data-reset>필터 풀기</button>` : ''}</div>`;
@@ -2081,7 +2142,7 @@ $('#rcList').addEventListener('click', async e => {
 });
 let pst; $('#pq').addEventListener('input', () => { clearTimeout(pst); pst = setTimeout(() => { limit = 20; render(); }, 150); });
 let st; $('#q').addEventListener('input', e => { clearTimeout(st); st = setTimeout(() => { F.q = e.target.value; limit = 40; render(); }, 150); });
-[['#fChange','change'],['#fForm','form'],['#fCat','cat'],['#fLevel','level'],['#fAxis','axis'],['#fPt','pt']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.value; limit = 40; saveF(); render(); }));
+[['#fChange','change'],['#fForm','form'],['#fCat','cat'],['#fLevel','level'],['#fAxis','axis'],['#fPt','pt'],['#fGrade','grade']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.value; limit = 40; saveF(); render(); }));
 [['#fDiff','diff'],['#fEdit','edit'],['#fDel','del']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.checked; limit = 40; saveF(); render(); }));
 $('#more').addEventListener('click', () => { limit += 40; render(); });
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (b) go(b.dataset.page); });
@@ -2154,7 +2215,7 @@ $('#brk').addEventListener('click', e => { const b = e.target.closest('[data-k]'
   if (BRK === 'form') F.form = k; else if (BRK === 'cat') F.cat = k; else F.level = k.replace('레벨 ', '');
   F.view = 'all'; limit = 40; saveF(); filters(); render(); go('q'); });
 // 보기 탭을 누르면 위에 남아 있던 필터를 풀어 탭 숫자와 목록이 같게 한다
-function resetFilters(){ Object.assign(F, { change:'all', cat:'all', form:'all', level:'all', axis:'all', pt:'all', diff:false, edit:false, q:'' }); $('#q').value = ''; filters(); }
+function resetFilters(){ Object.assign(F, { change:'all', cat:'all', form:'all', level:'all', axis:'all', pt:'all', grade:'all', diff:false, edit:false, q:'' }); $('#q').value = ''; filters(); }
 $('#dups').addEventListener('click', async e => {
   const j = e.target.closest('[data-jump2]');
   if (j){ const k = j.dataset.jump2; F.q = k; F.view = 'all'; F.del = true; $('#q').value = k; resetFilters(); F.q = k; $('#q').value = k; open.add(k); go('q', false); render(); setTimeout(() => document.querySelector(`details.q[data-key="${CSS.escape(k)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); return; }
