@@ -44,6 +44,18 @@ h1{font-size:2rem;font-weight:800;margin:0;letter-spacing:-.02em;line-height:1.2
 
 /* 본문 */
 .wrap{max-width:1000px;margin:0 auto;padding-inline:16px;padding-block:20px 80px;display:grid;gap:16px}
+.nav{position:sticky;top:0;z-index:5;padding:12px 16px 0;background:linear-gradient(var(--bg) 75%,transparent)}
+.nav .in{max-width:1000px;margin:0 auto;display:flex;gap:6px;background:var(--surface);border-radius:999px;padding:5px;box-shadow:var(--shadow)}
+.nav button{all:unset;box-sizing:border-box;flex:1;text-align:center;cursor:pointer;font-weight:800;font-size:.92rem;color:var(--ink-2);padding:10px 8px;border-radius:999px;white-space:nowrap}
+.nav button:hover{color:var(--blue)}
+.nav button[aria-selected="true"]{background:var(--blue);color:#fff}
+.nav button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.nav .bdg{display:inline-block;min-width:1.4em;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:.72rem;background:var(--mod-soft);color:var(--mod);font-variant-numeric:tabular-nums}
+.nav button[aria-selected="true"] .bdg{background:rgba(255,255,255,.22);color:#fff}
+.nav .bdg[hidden]{display:none}
+.pg{display:grid;gap:16px}
+.pg[hidden]{display:none}
+@media (max-width:480px){.nav button{font-size:.85rem;padding:9px 4px}.nav .bdg{margin-left:4px;padding:1px 5px}}
 .panel{background:var(--surface);border-radius:28px;padding:22px;display:grid;gap:12px;box-shadow:var(--shadow)}
 .panel h2{font-size:1.05rem;margin:0;font-weight:800}
 .hint{display:block;justify-self:start;font-size:.8rem;color:var(--muted);border:1.5px solid var(--line);border-radius:18px;padding:3px 12px;max-width:100%;box-sizing:border-box}
@@ -83,7 +95,7 @@ summary.note{cursor:pointer;font-weight:700}
 
 /* 데이터 영역 */
 .data-head{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
 .kpi{background:var(--soft);border-radius:20px;padding:14px 16px;display:grid;gap:2px}
 .kpi .v{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.25}
 .kpi .l{font-size:.78rem;color:var(--muted);font-weight:700}
@@ -199,8 +211,14 @@ a{color:var(--blue)}
     </section>
   </div>
 </header>
+<nav class="nav" aria-label="페이지"><div class="in" role="tablist" id="nav">
+  <button type="button" role="tab" data-page="q" aria-selected="true" aria-controls="pg-q">질문 고르기·고치기<span class="bdg" id="bdgPick" hidden></span></button>
+  <button type="button" role="tab" data-page="data" aria-selected="false" aria-controls="pg-data">데이터</button>
+  <button type="button" role="tab" data-page="dl" aria-selected="false" aria-controls="pg-dl">다운로드<span class="bdg" id="bdgDiff" hidden></span></button>
+</div></nav>
 
 <div class="wrap">
+  <div class="pg" id="pg-data" role="tabpanel" data-page="data" hidden>
   <section class="panel" aria-labelledby="dth">
     <div class="data-head"><h2 id="dth">데이터로 보는 지금</h2><span class="note" id="dataAt">통계를 불러오는 중이에요.</span></div>
     <div class="kpis">
@@ -226,6 +244,8 @@ a{color:var(--blue)}
       <p class="note" style="margin:8px 2px 4px">답변율은 지금 DB 문구가 실제로 받은 실적(답변 ÷ 답변+교체)이에요. 신규 질문은 실적이 없어서 비중에만 들어가요. 누르면 아래 목록이 그 유형으로 걸러져요.</p>
     </div>
   </section>
+  </div>
+  <div class="pg" id="pg-dl" role="tabpanel" data-page="dl" hidden>
   <section class="panel" aria-labelledby="dlh">
     <h2 id="dlh">다운로드</h2>
     <span class="hint" id="baseInfo">아직 받은 기록이 없어요. 처음 받으면 이후부터 바뀐 질문이 표시돼요.</span>
@@ -241,6 +261,8 @@ a{color:var(--blue)}
     </details>
   </section>
 
+  </div>
+  <div class="pg" id="pg-q" role="tabpanel" data-page="q">
   <section class="panel" aria-label="찾기">
     <div class="tabs" id="tabs" role="group" aria-label="보기"></div>
     <div class="row">
@@ -261,6 +283,7 @@ a{color:var(--blue)}
 
   <section class="list" id="list" aria-live="polite"><div class="empty">질문 목록을 불러오는 중입니다.</div></section>
   <div class="row" style="justify-content:center"><button class="btn" id="more" type="button" hidden>더 보기</button></div>
+  </div>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -429,6 +452,20 @@ function evidence(r){
     ${spark(r.key) ? `<div class="chartbox"><div class="ttl">수집일별 답변율</div>${spark(r.key)}</div>` : ''}
   </div>`;
 }
+let PAGE = 'q';
+try { PAGE = localStorage.getItem('nadab-board-page') || 'q'; } catch {}
+function go(pg, scroll = true){
+  PAGE = ['q', 'data', 'dl'].includes(pg) ? pg : 'q';
+  try { localStorage.setItem('nadab-board-page', PAGE); } catch {}
+  document.querySelectorAll('#nav [data-page]').forEach(b => b.setAttribute('aria-selected', b.dataset.page === PAGE));
+  document.querySelectorAll('.pg').forEach(el => el.hidden = el.dataset.page !== PAGE);
+  if (scroll) window.scrollTo({ top: document.querySelector('.nav').offsetTop, behavior: 'smooth' });
+}
+function badges(){
+  const all = rows(), np = all.filter(isPick).length, b = baseline(), nd = b ? all.filter(r => diffOf(r)).length : 0;
+  $('#bdgPick').hidden = !np; $('#bdgPick').textContent = np.toLocaleString();
+  $('#bdgDiff').hidden = !nd; $('#bdgDiff').textContent = nd.toLocaleString();
+}
 let BRK = 'form';
 function breakdown(){
   const s = latest(), avg = avgRate(s), all = rows();
@@ -566,7 +603,7 @@ function detail(r){
 }
 async function render(){
   if (!BASE.length) return;
-  summary(); dataUI(); tabsUI();
+  summary(); dataUI(); tabsUI(); badges();
   const vis = visible(), shown = vis.slice(0, limit);
   $('#count').textContent = `${vis.length.toLocaleString()}개`;
   $('#list').innerHTML = shown.length ? shown.map(card).join('') : '<div class="empty">조건에 맞는 질문이 없어요.</div>';
@@ -714,14 +751,16 @@ let st; $('#q').addEventListener('input', e => { clearTimeout(st); st = setTimeo
 [['#fChange','change'],['#fForm','form'],['#fCat','cat'],['#fLevel','level'],['#fAxis','axis']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.value; limit = 40; saveF(); render(); }));
 [['#fDiff','diff'],['#fEdit','edit'],['#fDel','del']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.checked; limit = 40; saveF(); render(); }));
 $('#more').addEventListener('click', () => { limit += 40; render(); });
+$('#nav').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (b) go(b.dataset.page); });
+go(PAGE, false);
 $('#brkSeg').addEventListener('click', e => { const b = e.target.closest('[data-by]'); if (!b) return; BRK = b.dataset.by; document.querySelectorAll('#brkSeg button').forEach(x => x.setAttribute('aria-pressed', x === b)); breakdown(); });
 $('#brk').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; const k = b.dataset.k;
   if (BRK === 'form') F.form = k; else if (BRK === 'cat') F.cat = k; else F.level = k.replace('레벨 ', '');
-  F.view = 'all'; limit = 40; saveF(); filters(); render(); $('#tabs').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+  F.view = 'all'; limit = 40; saveF(); filters(); render(); go('q'); });
 $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (!b) return; F.view = b.dataset.view; limit = 40; saveF(); render(); });
 $('#baseSel').addEventListener('change', e => { baseId = e.target.value; historyUI(); render(); });
 $('#dlAll').addEventListener('click', () => download('all'));
-$('#top5').addEventListener('click', e => { const b = e.target.closest('[data-jump]'); if (!b) return; const k = b.dataset.jump; F.q = k; $('#q').value = k; open.add(k); limit = 40; render(); setTimeout(() => document.querySelector(`details.q[data-key="${CSS.escape(k)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); });
+$('#top5').addEventListener('click', e => { const b = e.target.closest('[data-jump]'); if (!b) return; const k = b.dataset.jump; F.q = k; F.view = 'all'; $('#q').value = k; go('q', false); open.add(k); limit = 40; render(); setTimeout(() => document.querySelector(`details.q[data-key="${CSS.escape(k)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); });
 $('#dlDiff').addEventListener('click', () => download('diff'));
 
 // ---- 시작 ----
