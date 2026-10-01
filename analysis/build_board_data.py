@@ -56,6 +56,25 @@ def s(x):
     return "" if pd.isna(x) else str(x)
 
 
+def duplicate_pairs(rows):
+    """활성 질문끼리 중복 후보(dedupe.pairs)를 뽑고 analysis/dup_labels.csv 판정을 붙인다.
+    판정 diff(형식만 비슷)는 빼고, 판정이 없는 새 후보는 v='new'로 남긴다(월간 루틴에서 판정)."""
+    from dedupe import pairs
+    live = [r for r in rows if not r["deleted"]]
+    lab_path = Path(__file__).parent / "dup_labels.csv"
+    lab = {}
+    if lab_path.exists():
+        for _, x in pd.read_csv(lab_path, dtype=str).fillna("").iterrows():
+            lab[frozenset((x["a"], x["b"]))] = (x["판정"], x["메모"])
+    out = []
+    for a, b, c, _ in pairs([r["text"] for r in live]):
+        ka, kb = live[a]["key"], live[b]["key"]
+        v, note = lab.get(frozenset((ka, kb)), ("new", ""))
+        if v != "diff":
+            out.append({"a": ka, "b": kb, "score": round(c, 2), "v": v, "note": note})
+    return sorted(out, key=lambda x: ({"dup": 0, "similar": 1, "new": 2}[x["v"]], -x["score"]))
+
+
 def main():
     full = pd.read_csv(OUT / "daily_questions_revised.csv", dtype=str).fillna("")
     card = pd.read_csv(OUT / "question_scorecard.csv").set_index("질문 ID")
@@ -151,11 +170,13 @@ def main():
             "exp": exp, "ans": ans, "rep": rep,
             "alts": alternatives(r, sid, r["question_text"]), "decided": decision(r, sid),
         })
+    dups = duplicate_pairs(rows)
     built = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M")
     out = ROOT / "board" / "data" / "questions.json"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps({"builtAt": built, "rows": rows}, ensure_ascii=False, separators=(",", ":"), allow_nan=False))
+    out.write_text(json.dumps({"builtAt": built, "rows": rows, "dups": dups}, ensure_ascii=False, separators=(",", ":"), allow_nan=False))
     live = [x for x in rows if not x["deleted"]]
+    print(f"중복 후보 {len(dups)}쌍 (같은 질문 {sum(x['v'] == 'dup' for x in dups)} · 비슷 {sum(x['v'] == 'similar' for x in dups)} · 판정 전 {sum(x['v'] == 'new' for x in dups)})")
     print(f"{len(rows)}행 (활성 {len(live)}) · 목적 빈 칸 {sum(not x['purpose'] for x in rows)} · {out.stat().st_size // 1024}KB")
 
 

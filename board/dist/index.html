@@ -55,10 +55,22 @@ h1{font-size:2rem;font-weight:800;margin:0;letter-spacing:-.02em;line-height:1.2
 .nav .bdg[hidden]{display:none}
 .pg{display:grid;gap:16px}
 body[data-page="pick"] .q-only{display:none} body:not([data-page="pick"]) .pick-only{display:none}
+.dups{display:grid;gap:12px}
+.dpair{background:var(--surface);border-radius:24px;padding:18px;display:grid;gap:12px;box-shadow:var(--shadow)}
+.dpair.done{opacity:.6}
+.dpair .hd{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.dpair .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dq{background:var(--soft);border-radius:18px;padding:12px 14px;display:grid;gap:6px;align-content:start}
+.dq .t{font-weight:800}
+.dq.off .t{text-decoration:line-through;color:var(--muted)}
+.dq .m{font-size:.76rem;color:var(--muted);font-weight:700}
+.dq a{font-size:.78rem;font-weight:800;color:var(--blue);cursor:pointer}
+@media (max-width:640px){.dpair .two{grid-template-columns:1fr}}
+.simwarn{font-size:.8rem;color:var(--mod);font-weight:700;margin-top:4px}
 .why-up{background:var(--low-soft);color:var(--ink);border-radius:16px;padding:10px 14px;font-size:.88rem}
 .why-up b{color:var(--low)}
 .pg[hidden]{display:none}
-@media (max-width:480px){.nav button{font-size:.85rem;padding:9px 4px}.nav .bdg{margin-left:4px;padding:1px 5px}}
+@media (max-width:640px){.nav .in{overflow-x:auto;scrollbar-width:none;justify-content:flex-start}.nav .in::-webkit-scrollbar{display:none}.nav button{flex:0 0 auto;font-size:.85rem;padding:9px 12px}.nav .bdg{margin-left:4px;padding:1px 5px}}
 .panel{background:var(--surface);border-radius:28px;padding:22px;display:grid;gap:12px;box-shadow:var(--shadow)}
 .panel h2{font-size:1.05rem;margin:0;font-weight:800}
 .hint{display:block;justify-self:start;font-size:.8rem;color:var(--muted);border:1.5px solid var(--line);border-radius:18px;padding:3px 12px;max-width:100%;box-sizing:border-box}
@@ -220,11 +232,24 @@ a{color:var(--blue)}
 <nav class="nav" aria-label="페이지"><div class="in" role="tablist" id="nav">
   <button type="button" role="tab" data-page="pick" aria-selected="false" aria-controls="pg-q">골라 주세요<span class="bdg" id="bdgPick" hidden></span></button>
   <button type="button" role="tab" data-page="q" aria-selected="true" aria-controls="pg-q">전체 질문</button>
+  <button type="button" role="tab" data-page="dup" aria-selected="false" aria-controls="pg-dup">중복 검토<span class="bdg" id="bdgDup" hidden></span></button>
   <button type="button" role="tab" data-page="data" aria-selected="false" aria-controls="pg-data">데이터</button>
   <button type="button" role="tab" data-page="dl" aria-selected="false" aria-controls="pg-dl">다운로드<span class="bdg" id="bdgDiff" hidden></span></button>
 </div></nav>
 
 <div class="wrap">
+  <div class="pg" id="pg-dup" role="tabpanel" data-page="dup" hidden>
+  <section class="panel" aria-labelledby="duph">
+    <h2 id="duph">중복 검토</h2>
+    <p class="note" style="margin:0">문구가 비슷한 질문 쌍이에요. 같은 질문이면 하나를 비활성화하고, 다르다면 '중복 아니에요'를 눌러 주세요. 매달 새 후보를 다시 찾아요.</p>
+    <div class="kpis">
+      <div class="kpi"><span class="l">같은 질문</span><span class="v" id="dpDup">–</span><span class="d">답이 거의 같아서 하나만 남기길 권해요</span></div>
+      <div class="kpi"><span class="l">비슷한 질문</span><span class="v" id="dpSim">–</span><span class="d">답이 겹치기 쉬워요 · 둘 다 둬도 괜찮아요</span></div>
+      <div class="kpi"><span class="l">정리한 쌍</span><span class="v" id="dpDone">–</span><span class="d">하나를 비활성화했거나 중복 아님으로 표시</span></div>
+    </div>
+  </section>
+  <section class="dups" id="dups"></section>
+  </div>
   <div class="pg" id="pg-data" role="tabpanel" data-page="data" hidden>
   <section class="panel" aria-labelledby="dth">
     <div class="data-head"><h2 id="dth">데이터로 보는 지금</h2><span class="note" id="dataAt">통계를 불러오는 중이에요.</span></div>
@@ -313,7 +338,7 @@ let toastT; function toast(m){ const t=$('#toast'); t.textContent=m; t.hidden=fa
 const fmt = iso => { try { return new Date(iso).toLocaleString('ko-KR',{dateStyle:'medium',timeStyle:'short'}); } catch { return iso; } };
 
 const MIN_EXP = 5;  // analysis/monthly_picks.py와 같은 기준
-let PICKS = new Map(), KEEPS = new Map(), STATS = [], BASE = [], BUILT = '', EDITS = new Map(), AIS = new Map(), DLS = [], baseId = null;
+let DUPS = [], DUPOK = new Map(), PICKS = new Map(), KEEPS = new Map(), STATS = [], BASE = [], BUILT = '', EDITS = new Map(), AIS = new Map(), DLS = [], baseId = null;
 let db = null, downloads = null, user = null, sample = null, me = null, canWrite = true;
 let F = { q:'', view:'all', form:'all', change:'all', cat:'all', level:'all', axis:'all', diff:false, edit:false, del:false }, limit = 40;
 const open = new Set(), closed = new Set(), busy = new Set();
@@ -375,7 +400,7 @@ const VIEWS = [
   ['fix', '고쳐야 할 것', '답변율이 낮은데 수정안이 없음 · 매달 1일 골라 주세요로'],
   ['new', '신규 질문', '새로 추가하는 질문'],
   ['mod', '변경된 질문', '문구·관심사가 바뀌거나 비활성화됨'],
-  ['off', '비활성화', '이번에 끄는 질문과 이미 삭제된 질문'],
+  ['off', '비활성화·삭제', '끄는 기존 질문, 이미 삭제된 질문, 뺀 신규 질문'],
 ];
 const isNewQ = r => r.change === '신규';
 const isMod = r => !isNewQ(r) && (r.edited || !!r.catChange || /^(문구 수정|레벨1|비활성화)/.test(r.change));
@@ -494,7 +519,7 @@ function evidence(r){
 let PAGE = 'q';
 try { PAGE = localStorage.getItem('nadab-board-page') || 'q'; } catch {}
 function go(pg, scroll = true){
-  PAGE = ['pick', 'q', 'data', 'dl'].includes(pg) ? pg : 'q';
+  PAGE = ['pick', 'q', 'dup', 'data', 'dl'].includes(pg) ? pg : 'q';
   const was = document.body.dataset.page; document.body.dataset.page = PAGE;
   try { localStorage.setItem('nadab-board-page', PAGE); } catch {}
   document.querySelectorAll('#nav [data-page]').forEach(b => b.setAttribute('aria-selected', b.dataset.page === PAGE));
@@ -510,7 +535,41 @@ function badges(){
   $('#pkMonthD').textContent = lastM ? `최근 점검 ${lastM} · 매달 1일, 데이터상 문제 있는 질문에 수정안을 붙여 올려요` : '첫 점검은 다음 달 1일이에요 · 데이터상 문제 있는 질문에 수정안을 붙여 올려요';
   $('#pkReview').textContent = (np - mp.length).toLocaleString();
   $('#pkDone').textContent = all.filter(r => !isPick(r) && (KEEPS.has(r.key) || (r.edited && (PICKS.has(r.key) || r.alts.length >= 2)))).length.toLocaleString();
+  const nu = DUPS.filter(x => !dupDone(x, all)).length; $('#bdgDup').hidden = !nu; $('#bdgDup').textContent = nu;
   $('#bdgDiff').hidden = !nd; $('#bdgDiff').textContent = nd.toLocaleString();
+}
+// ---- 중복 검토 ----
+const dupId = x => [x.a, x.b].sort((p, q) => Number(p) - Number(q)).join('-');
+function dupDone(x, all = rows()){
+  const a = all.find(r => r.key === x.a), b = all.find(r => r.key === x.b);
+  return !a || !b || a.deleted || b.deleted || DUPOK.has(dupId(x));
+}
+function dupUI(){
+  if (!BASE.length) return;
+  const all = rows(), byKey = new Map(all.map(r => [r.key, r]));
+  const open = DUPS.filter(x => !dupDone(x, all)), done = DUPS.filter(x => dupDone(x, all));
+  $('#dpDup').textContent = open.filter(x => x.v === 'dup').length;
+  $('#dpSim').textContent = open.filter(x => x.v !== 'dup').length;
+  $('#dpDone').textContent = done.length;
+  const V = { dup: ['low', '같은 질문'], similar: ['d-mod', '비슷한 질문'], new: ['blue', '새 후보 · 판정 전'] };
+  const side = (r, other) => { const q = qstat(r.key);
+    return `<div class="dq${r.deleted ? ' off' : ''}"><span class="qno">Q.${esc(r.key)}${r.newId ? ` <span class="nid">${esc(r.newId)}</span>` : ''}</span><span class="t">${esc(r.text)}</span>
+      <span class="m">${esc(r.cat)} · 레벨 ${r.level}${r.form ? ' · ' + esc(r.form) : ''}${r.change === '신규' ? ' · 신규' : ''}${q && q.res ? ` · 답변율 ${P(q.rate)} (노출 ${q.exp})` : ''}</span>
+      ${r.deleted ? '<span class="m">비활성화됨</span>' : `<span><button class="btn danger" type="button" data-dupoff="${esc(r.key)}" ${db && canWrite ? '' : 'disabled'}>${r.newId ? '이 신규 질문 삭제' : '이 질문 비활성화'}</button> <a data-jump2="${esc(r.key)}">질문 열기</a></span>`}</div>`; };
+  const pair = x => { const a = byKey.get(x.a), b = byKey.get(x.b); if (!a || !b) return ''; const fin = dupDone(x, all), ok = DUPOK.has(dupId(x));
+    return `<article class="dpair${fin ? ' done' : ''}"><div class="hd"><span class="chip ${V[x.v][0]}">${V[x.v][1]}</span><span class="chip">글자 유사도 ${Math.round(x.score * 100)}%</span>${x.note ? `<span class="note">${esc(x.note)}</span>` : ''}${ok ? '<span class="chip mint">중복 아님으로 표시함</span>' : ''}</div>
+      <div class="two">${side(a)}${side(b)}</div>
+      ${fin ? (ok ? `<div><button class="btn" type="button" data-dupundo="${dupId(x)}" ${db && canWrite ? '' : 'disabled'}>다시 검토</button></div>` : '') : `<div><button class="btn mint" type="button" data-dupok="${dupId(x)}" ${db && canWrite ? '' : 'disabled'}>중복 아니에요 · 둘 다 둘게요</button></div>`}</article>`; };
+  $('#dups').innerHTML = (open.length ? open.map(pair).join('') : '<div class="empty">검토할 중복 후보가 없어요.</div>')
+    + (done.length ? `<details class="panel"><summary class="note">정리한 쌍 ${done.length}개</summary><div class="dups" style="margin-top:10px">${done.map(pair).join('')}</div></details>` : '');
+}
+// 문구를 고칠 때 다른 활성 질문과 너무 비슷하면 알려 준다(글자 2-gram Dice)
+const grams = t => { const s = t.replace(/[^가-힣a-zA-Z0-9]/g, ''), g = new Set(); for (let i = 0; i < s.length - 1; i++) g.add(s.slice(i, i + 2)); return g; };
+const dice = (x, y) => { if (!x.size || !y.size) return 0; let n = 0; x.forEach(g => { if (y.has(g)) n++; }); return 2 * n / (x.size + y.size); };
+function similarTo(k, text){
+  const g = grams(text); let best = null;
+  rows().forEach(r => { if (r.key === k || r.deleted) return; const v = dice(g, grams(r.text)); if (v >= 0.6 && (!best || v > best.v)) best = { r, v }; });
+  return best;
 }
 let BRK = 'form';
 function breakdown(){
@@ -585,7 +644,7 @@ function card(r){
   const chips = [
     d ? `<span class="chip d-${d}">${DIFF_LABEL[d]}</span>` : '',
     r.edited ? `<span class="chip blue">페이지에서 고침</span>` : '',
-    r.deleted ? `<span class="chip d-gone">비활성화</span>` : '',
+    r.deleted ? `<span class="chip d-gone">${r.newId ? '삭제 · 파일에서 빠짐' : '비활성화'}</span>` : '',
     isPick(r) ? (pickKind(r) === 'month' ? `<span class="chip low">${esc(pickOf(r).month)} 점검 · 골라 주세요</span>` : `<span class="chip d-mod">골라 주세요</span>`)
       : KEEPS.has(r.key) ? `<span class="chip mint">그대로 두기로 함</span>` : ['chosen', 'applied'].includes(r.decided) && !r.edited ? `<span class="chip mint">검토에서 고름</span>` : '',
     isFix(r) ? `<span class="chip low">고쳐야 할 것 · AI 제안 받기</span>` : '',
@@ -639,7 +698,7 @@ function detail(r){
     </div>
     <form class="form" data-form="${k}">
       <h3 style="margin:0">직접 고쳐 쓰기</h3>
-      <div><div class="lbl">질문 문구 · 자유롭게 고쳐 쓰고 저장하면 돼요</div><textarea id="t-${k}" name="text" rows="2">${esc(r.text)}</textarea><div class="warn" id="w-${k}">${esc(lint(r.text).join(' '))}</div></div>
+      <div><div class="lbl">질문 문구 · 자유롭게 고쳐 쓰고 저장하면 돼요</div><textarea id="t-${k}" name="text" rows="2">${esc(r.text)}</textarea><div class="warn" id="w-${k}">${esc(lint(r.text).join(' '))}</div><div class="simwarn" id="sw-${k}"></div></div>
       <div><div class="lbl">공감 가이드 · empathy_guide</div><textarea id="g0-${k}" name="g0" rows="2">${esc(r.g[0])}</textarea></div>
       <div><div class="lbl">힌트 가이드 · hint_guide</div><textarea id="g1-${k}" name="g1" rows="2">${esc(r.g[1])}</textarea></div>
       <div><div class="lbl">유도 질문 · leading_question_guide</div><textarea id="g2-${k}" name="g2" rows="2">${esc(r.g[2])}</textarea></div>
@@ -651,7 +710,7 @@ function detail(r){
         <button class="btn primary" type="submit" ${db && canWrite ? '' : 'disabled'}>고친 내용 저장</button>
         <button class="btn mint" type="button" data-guide="${k}" ${sample ? '' : 'hidden'}>이 문구로 가이드 채우기</button>
         ${e ? `<button class="btn mint" type="button" data-revert="${k}" ${db && canWrite ? '' : 'disabled'}>개선본으로 되돌리기</button>` : ''}
-        <button class="btn ${r.deleted ? 'mint' : 'danger'}" type="button" data-off="${k}" data-to="${r.deleted ? 0 : 1}" ${db && canWrite ? '' : 'disabled'}>${r.deleted ? '다시 활성화' : '이 질문 비활성화'}</button>
+        <button class="btn ${r.deleted ? 'mint' : 'danger'}" type="button" data-off="${k}" data-to="${r.deleted ? 0 : 1}" ${db && canWrite ? '' : 'disabled'}>${r.deleted ? (r.newId ? '다시 넣기' : '다시 활성화') : (r.newId ? '이 신규 질문 삭제' : '이 질문 비활성화')}</button>
         <span class="note">${db ? (canWrite ? '저장하면 모두에게 바로 보이고 다음 다운로드에 들어가요.' : '이 화면에서는 저장 권한이 없어요.') : '저장 기능을 쓸 수 없는 화면이에요.'}</span>
       </div>
     </form>
@@ -659,7 +718,7 @@ function detail(r){
 }
 async function render(){
   if (!BASE.length) return;
-  summary(); dataUI(); tabsUI(); badges();
+  summary(); dataUI(); tabsUI(); badges(); dupUI();
   const vis = visible(), shown = vis.slice(0, limit);
   const act = activeFilters();
   $('#count').textContent = `${vis.length.toLocaleString()}개${act.length ? ` · 필터: ${act.join(', ')}` : ''}`;
@@ -761,7 +820,10 @@ const cell = v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s
 async function download(kind){
   if (!downloads) return;
   const all = rows(), b = baseline();
-  const pick = kind === 'diff' ? all.filter(r => diffOf(r)) : all;
+  // 신규 질문을 페이지에서 끈 것은 '삭제'로 치고 파일에 넣지 않는다.
+  // 단, 비교 기준 다운로드에 이미 들어갔던 신규 질문이면 DB에 들어갔을 수 있어 deleted_at을 채워 남긴다.
+  const sent = r => DLS.some(d => d.h && d.h[r.key] !== undefined);
+  const pick = (kind === 'diff' ? all.filter(r => diffOf(r)) : all).filter(r => !(r.newId && r.deleted && !sent(r)));
   if (!pick.length) return toast('비교 기준 이후 바뀐 질문이 없어요.');
   const now = new Date();
   const lines = [COLS.join(',')].concat(pick.map(r => [r.id, r.interest_id, r.text, r.level, r.g[0], r.g[1], r.g[2], r.created_at,
@@ -777,7 +839,7 @@ async function download(kind){
   }
   toast('저장했어요.');
   if (!db) return;
-  const h = {}; all.forEach(r => h[r.key] = hash(r));
+  const h = {}; all.forEach(r => { if (!(r.newId && r.deleted && !sent(r))) h[r.key] = hash(r); });  // 파일에서 뺀 신규 질문은 기록에도 남기지 않는다
   const cnt = k => all.filter(r => diffOf(r) === k).length;
   try {
     await db.collection('downloads').add({ at: now.toISOString(), by: me?.id || null, kind, count: pick.length, built: BUILT,
@@ -801,12 +863,15 @@ list.addEventListener('change', e => {
   if (radio.value === 'own'){ ta.focus(); ta.select(); toast('문구를 직접 써 주세요. 가이드도 함께 고칠 수 있어요.'); return; }
   const o = optionsOf(r).find(x => x.key === radio.value); if (!o) return;
   ta.value = o.text;
+  { const sw = document.getElementById('sw-' + k), m = similarTo(k, o.text); if (sw) sw.textContent = m ? `비슷한 질문이 있어요: Q.${m.r.key} "${m.r.text}" (${Math.round(m.v * 100)}%)` : ''; }
   document.getElementById('w-' + k).textContent = lint(o.text).join(' ');
   if (o.g) ['g0','g1','g2'].forEach((n, i) => { if (o.g[i]) document.getElementById(n + '-' + k).value = o.g[i]; });
   else if (o.text !== r.text) toast('문구를 바꿨어요. 가이드도 새 문구에 맞는지 확인해 주세요.');
 });
 list.addEventListener('input', e => {
-  if (e.target.name === 'text'){ const k = e.target.closest('form').dataset.form; const w = document.getElementById('w-' + k); if (w) w.textContent = lint(e.target.value).join(' '); }
+  if (e.target.name === 'text'){ const k = e.target.closest('form').dataset.form; const w = document.getElementById('w-' + k); if (w) w.textContent = lint(e.target.value).join(' ');
+    const sw = document.getElementById('sw-' + k), m = similarTo(k, e.target.value);
+    if (sw) sw.textContent = m ? `비슷한 질문이 있어요: Q.${m.r.key} "${m.r.text}" (${Math.round(m.v * 100)}%)` : ''; }
 });
 list.addEventListener('submit', async e => {
   e.preventDefault(); if (!db) return;
@@ -838,8 +903,9 @@ list.addEventListener('click', async e => {
   if (off && db){
     const k = off.dataset.off, toOff = off.dataset.to === '1';
     if (toOff && !off.classList.contains('armed')){   // 실수 방지: 한 번 더 눌러야 비활성화
-      off.classList.add('armed'); off.textContent = '한 번 더 누르면 비활성화돼요';
-      setTimeout(() => { if (off.isConnected){ off.classList.remove('armed'); off.textContent = '이 질문 비활성화'; } }, 4000);
+      const isNew = !!BASE.find(x => x.key === k)?.newId, label = off.textContent;
+      off.classList.add('armed'); off.textContent = isNew ? '한 번 더 누르면 삭제돼요' : '한 번 더 누르면 비활성화돼요';
+      setTimeout(() => { if (off.isConnected){ off.classList.remove('armed'); off.textContent = label; } }, 4000);
       return;
     }
     off.disabled = true;
@@ -849,7 +915,8 @@ list.addEventListener('click', async e => {
     try {
       if (toOff === base.deleted && onlyFlag) await db.doc('edits/' + k).delete();
       else await db.doc('edits/' + k).set({ ...ex, ...(toOff === base.deleted ? {} : { deleted: toOff }), by: me?.id || null, at: new Date().toISOString() });
-      toast(toOff ? '비활성화했어요. 다음 다운로드에 deleted_at이 채워져요.' : '다시 활성화했어요.');
+      const nw = !!base.newId;
+      toast(toOff ? (nw ? '삭제했어요. 신규 질문이라 다운로드 파일에서 빠져요.' : '비활성화했어요. 다음 다운로드에 deleted_at이 채워져요.') : (nw ? '다시 넣었어요.' : '다시 활성화했어요.'));
     } catch { toast('저장하지 못했어요.'); off.disabled = false; }
     return;
   }
@@ -875,6 +942,23 @@ $('#brk').addEventListener('click', e => { const b = e.target.closest('[data-k]'
   F.view = 'all'; limit = 40; saveF(); filters(); render(); go('q'); });
 // 보기 탭을 누르면 위에 남아 있던 필터를 풀어 탭 숫자와 목록이 같게 한다
 function resetFilters(){ Object.assign(F, { change:'all', cat:'all', form:'all', level:'all', axis:'all', diff:false, edit:false, q:'' }); $('#q').value = ''; filters(); }
+$('#dups').addEventListener('click', async e => {
+  const j = e.target.closest('[data-jump2]');
+  if (j){ const k = j.dataset.jump2; F.q = k; F.view = 'all'; F.del = true; $('#q').value = k; resetFilters(); F.q = k; $('#q').value = k; open.add(k); go('q', false); render(); setTimeout(() => document.querySelector(`details.q[data-key="${CSS.escape(k)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); return; }
+  if (!db) return;
+  const off = e.target.closest('[data-dupoff]'), ok = e.target.closest('[data-dupok]'), un = e.target.closest('[data-dupundo]');
+  const b = off || ok || un; if (!b) return;
+  if (off && !off.classList.contains('armed')){ const label = off.textContent, nw = !!BASE.find(x => x.key === off.dataset.dupoff)?.newId; off.classList.add('armed'); off.textContent = nw ? '한 번 더 누르면 삭제돼요' : '한 번 더 누르면 비활성화돼요'; setTimeout(() => { if (off.isConnected){ off.classList.remove('armed'); off.textContent = label; } }, 4000); return; }
+  b.disabled = true;
+  try {
+    if (off){ const k = off.dataset.dupoff, base = BASE.find(x => x.key === k), ex = { ...(EDITS.get(k) || {}) }; delete ex.deleted; delete ex.by; delete ex.at;
+      if (base.deleted && !Object.keys(ex).length) await db.doc('edits/' + k).delete();
+      else await db.doc('edits/' + k).set({ ...ex, ...(base.deleted ? {} : { deleted: true }), by: me?.id || null, at: new Date().toISOString() });
+      toast(base.newId ? `Q.${k}를 삭제했어요. 다운로드 파일에서 빠져요.` : `Q.${k}를 비활성화했어요.`); }
+    else if (ok){ await db.doc('dupok/' + ok.dataset.dupok).set({ by: me?.id || null, at: new Date().toISOString() }); toast('중복 아님으로 표시했어요.'); }
+    else { await db.doc('dupok/' + un.dataset.dupundo).delete(); toast('다시 검토 목록에 올렸어요.'); }
+  } catch { toast('저장하지 못했어요.'); b.disabled = false; }
+});
 $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (!b) return; F.view = b.dataset.view; resetFilters(); limit = 40; saveF(); render(); });
 $('#list').addEventListener('click', e => { if (e.target.closest('[data-reset]')){ resetFilters(); limit = 40; saveF(); render(); } });
 $('#baseSel').addEventListener('change', e => { baseId = e.target.value; historyUI(); render(); });
@@ -886,7 +970,7 @@ $('#dlDiff').addEventListener('click', () => download('diff'));
 (async () => {
   try {
     const j = await (await fetch('data/questions.json')).json();
-    BASE = j.rows.slice().sort((a, b) => Number(a.key) - Number(b.key)); BUILT = j.builtAt;
+    BASE = j.rows.slice().sort((a, b) => Number(a.key) - Number(b.key)); BUILT = j.builtAt; DUPS = j.dups || [];
     $('#built').textContent = `개선본 ${j.builtAt} 기준 · 전체 ${BASE.length.toLocaleString()}행`;
     filters(); render();
   } catch { $('#list').innerHTML = '<div class="empty">질문 데이터를 불러오지 못했어요. 새로고침해 주세요.</div>'; return; }
@@ -901,10 +985,11 @@ $('#dlDiff').addEventListener('click', () => download('diff'));
     EDITS = new Map(qs.docs.map(d => [d.id, d.data()]));
     if (firstEdits || F.edit || F.diff){ firstEdits = false; return render(); }
     // 다른 카드에서 쓰던 내용을 지우지 않도록 바뀐 카드만 다시 그린다(입력 중인 카드는 건너뜀)
-    summary();
+    summary(); dupUI(); badges();
     qs.docChanges().forEach(c => { const el = document.querySelector(`details.q[data-key="${CSS.escape(c.doc.id)}"]`); if (el && !el.contains(document.activeElement)) rerender(c.doc.id); });
   }, () => {});
   db.collection('picks').onSnapshot(qs => { const m = new Map(); qs.docs.map(d => d.data()).sort((a, b) => (a.month || '').localeCompare(b.month || '')).forEach(p => p.key && m.set(String(p.key), p)); PICKS = m; render(); }, () => {});
+  db.collection('dupok').onSnapshot(qs => { DUPOK = new Map(qs.docs.map(d => [d.id, d.data()])); dupUI(); badges(); }, () => {});
   db.collection('keeps').onSnapshot(qs => { KEEPS = new Map(qs.docs.map(d => [d.id, d.data()])); render(); }, () => {});
   db.collection('ai').onSnapshot(qs => { AIS = new Map(qs.docs.map(d => [d.id, d.data()])); qs.docChanges().forEach(c => refreshOpts(c.doc.id)); }, () => {});
   db.collection('downloads').orderBy('at', 'desc').limit(50).onSnapshot(qs => {
