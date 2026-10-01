@@ -33,14 +33,16 @@ body{background:var(--bg);color:var(--ink);font:400 15px/1.65 var(--font);-webki
 button,input,select,textarea{font-family:var(--font)}
 
 /* 머리 영역 */
-.hero{background:var(--blue);color:var(--blue-ink);border-radius:0 0 36px 36px;padding-inline:16px;padding-block:30px 28px}
+.hero{background:var(--blue);color:var(--blue-ink);border-radius:0 0 28px 28px;padding-inline:16px;padding-block:18px 18px}
 .hero .in{max-width:1000px;margin:0 auto;display:grid;gap:18px}
 .tag{font-size:.78rem;font-weight:700;background:var(--on-blue);padding:5px 12px;border-radius:999px;justify-self:start}
 h1{font-size:2rem;font-weight:800;margin:0;letter-spacing:-.02em;line-height:1.25;text-wrap:balance}
 .lead{font-size:.88rem;opacity:.86;margin-top:6px}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.tile{background:var(--on-blue);border-radius:20px;padding:14px 16px;display:grid;gap:2px}
-.tile .v{font-size:1.65rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}
+.tiles{display:flex;flex-wrap:wrap;gap:6px}
+.hrow{display:flex!important;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 18px}
+.hero h1{font-size:1.35rem}
+.tile{background:var(--on-blue);border-radius:12px;padding:6px 10px;display:flex;align-items:baseline;gap:6px}
+.tile .v{font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}
 .tile .l{font-size:.78rem;opacity:.88}
 
 /* 본문 */
@@ -146,6 +148,19 @@ summary.note{cursor:pointer;font-weight:700}
 .dist .lg button:focus-visible{outline:2px solid var(--blue)}
 #forest{position:relative}
 .flow{display:grid;gap:14px}
+.advf summary{cursor:pointer;font-size:.84rem;font-weight:800;color:var(--ink-2)}
+.advf summary span{margin-left:6px;color:var(--blue)}
+#pg-dl{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));align-items:start}
+.subnav{display:flex;flex-wrap:wrap;gap:6px;background:var(--surface);border-radius:18px;padding:8px;box-shadow:var(--shadow)}
+.subnav a{font-size:.8rem;font-weight:800;color:var(--ink-2);text-decoration:none;padding:6px 12px;border-radius:999px;background:var(--soft)}
+.subnav a:hover{color:var(--blue)}
+.panel h2[id],#method-sec{scroll-margin-top:90px}
+.dgadd{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.two3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.two3 input{width:100%;font:inherit;font-size:.86rem;border:1.5px solid var(--line);border-radius:10px;padding:7px 9px;background:var(--surface);color:var(--ink)}
+@media (max-width:760px){.two3{grid-template-columns:minmax(0,1fr)}}
+[data-gmode][hidden]{display:none!important}
+.cardpred{font-size:.8rem;font-weight:800;color:var(--ink-2);margin-top:4px}
 .flane{display:grid;gap:6px}
 .flane h3{margin:0;font-size:.84rem;color:var(--ink-2)}
 .fsteps{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px}
@@ -342,8 +357,7 @@ a{color:var(--blue)}
 </style>
 
 <header class="hero">
-  <div class="in">
-    <span class="tag">나답 · 데일리 질문</span>
+  <div class="in hrow">
     <div>
       <h1>나답 질문 개선함</h1>
       <div class="lead" id="built">데이터를 불러오는 중입니다.</div>
@@ -381,27 +395,21 @@ a{color:var(--blue)}
   <section class="dups" id="dups"></section>
   </div>
   <div class="pg" id="pg-gen" role="tabpanel" data-page="gen" hidden>
-  <section class="panel">
+  <div class="seg2 revseg" id="gmSeg" role="group" aria-label="만드는 방법"><button type="button" data-gm="fill" aria-pressed="true">빈 곳 채우기 · AI 생성기</button><button type="button" data-gm="write" aria-pressed="false">직접 써서 진단</button></div>
+  <section class="panel" data-gmode="fill">
     <h2 style="margin:0">질문 생성기</h2>
     <p class="note" style="margin:0">빈 곳을 고르고 → 그 칸의 실제 데이터를 보고 → 형식을 정하고 → 소재를 뽑아 → 질문을 만들고 → 예상 답변율과 중복을 확인해 추가해요. AI는 나답 실제 통계와 기존 질문을 근거로 써요.</p>
     <ol class="steps" id="steps"></ol>
   </section>
-  <section class="panel step" aria-labelledby="g1h"><h2 id="g1h"><span class="sn">1</span>축 × 관심사 고르기</h2>
+  <section class="panel step" data-gmode="fill" aria-labelledby="g1h"><h2 id="g1h"><span class="sn">1</span>축 × 관심사 고르기</h2>
     <p class="note" style="margin:0">개선 후 활성 질문 수예요(페이지에서 고친 것까지 반영). 빨간 0칸은 그 관심사에서 그 축을 묻는 질문이 없는 곳이에요. 칸을 누르세요.</p>
     <div class="chartbox" style="overflow-x:auto"><div id="heat"></div></div></section>
-  <section class="panel step" aria-labelledby="g2h"><h2 id="g2h"><span class="sn">2</span>데이터 근거</h2><div id="gData"><p class="note">먼저 칸을 골라 주세요.</p></div></section>
-  <section class="panel step" aria-labelledby="g4h"><h2 id="g4h"><span class="sn">3</span>형식과 조건</h2><div id="gOpt"></div></section>
-  <section class="panel step" aria-labelledby="g5h"><h2 id="g5h"><span class="sn">4</span>소재 뽑기</h2><div id="gTop"></div></section>
-  <section class="panel step" aria-labelledby="g6h"><h2 id="g6h"><span class="sn">5</span>질문 만들기 · 검토 · 추가</h2><div id="gen"></div></section>
-  </div>
-  <div class="pg" id="pg-ana" role="tabpanel" data-page="ins" hidden>
-  <section class="panel" aria-labelledby="mdh">
-    <h2 id="mdh">나답 질문 모델</h2>
-    <p class="note" style="margin:0">질문을 <b>분석</b>하는 흐름과 <b>만드는</b> 흐름이 하나의 모델로 이어져요. 매달 새 통계가 들어오면 모델이 다시 학습되고, 진단기와 생성기의 예측도 같이 바뀌어요.</p>
-    <div class="flow" id="flow"></div>
-  </section>
-  <section class="panel" aria-labelledby="dgh">
-    <h2 id="dgh">질문 진단기</h2>
+  <section class="panel step" data-gmode="fill" aria-labelledby="g2h"><h2 id="g2h"><span class="sn">2</span>데이터 근거</h2><div id="gData"><p class="note">먼저 칸을 골라 주세요.</p></div></section>
+  <section class="panel step" data-gmode="fill" aria-labelledby="g4h"><h2 id="g4h"><span class="sn">3</span>형식과 조건</h2><div id="gOpt"></div></section>
+  <section class="panel step" data-gmode="fill" aria-labelledby="g5h"><h2 id="g5h"><span class="sn">4</span>소재 뽑기</h2><div id="gTop"></div></section>
+  <section class="panel step" data-gmode="fill" aria-labelledby="g6h"><h2 id="g6h"><span class="sn">5</span>질문 만들기 · 검토 · 추가</h2><div id="gen"></div></section>
+  <section class="panel" aria-labelledby="dgh" data-gmode="write" hidden>
+    <h2 id="dgh">직접 써서 진단하고 추가하기</h2>
     <p class="note" style="margin:0">문구를 넣으면 모델로 예상 답변율과 요인별 기여를 계산해요. 태그는 문구에서 자동으로 추정하고, 틀리면 직접 바꾸거나 AI로 붙일 수 있어요.</p>
     <div class="dg">
       <div class="dgin">
@@ -411,11 +419,23 @@ a{color:var(--blue)}
       </div>
       <div class="dgout" id="dgOut"><p class="note">문구를 넣어 보세요.</p></div>
     </div>
+    <div class="dgadd">
+      <div class="two3">
+        <div><div class="lbl">공감 가이드</div><input id="dgG0" aria-label="공감 가이드"></div>
+        <div><div class="lbl">힌트 가이드</div><input id="dgG1" aria-label="힌트 가이드"></div>
+        <div><div class="lbl">유도 질문</div><input id="dgG2" aria-label="유도 질문"></div>
+      </div>
+      <div class="row"><select id="dgLv" aria-label="레벨"><option value="2">레벨 2</option><option value="1">레벨 1 · 첫 질문</option></select>
+        <select id="dgAx" aria-label="자아분석 축"></select>
+        <button class="btn mint" type="button" id="dgGuide" hidden>AI로 가이드 채우기</button>
+        <button class="btn primary" type="button" id="dgAdd" disabled>신규 질문으로 추가</button></div>
+    </div>
   </section>
-  <section class="panel" aria-labelledby="eqh">
-    <h2 id="eqh">예측식과 계수</h2>
-    <div id="eq"></div>
-  </section>
+  </div>
+  <div class="pg" id="pg-ana" role="tabpanel" data-page="ins" hidden>
+  <nav class="subnav" aria-label="분석 바로가기" id="anaNav">
+    <a href="#dth">지금 숫자</a><a href="#insh">핵심 인사이트</a><a href="#mdh">질문 모델</a><a href="#forh">요인 효과</a><a href="#axh">자아분석 축</a><a href="#disth">관심사 분포</a><a href="#lenh">문구 길이</a><a href="#method-sec">방법과 한계</a>
+  </nav>
   <section class="panel" aria-labelledby="dth">
     <div class="data-head"><h2 id="dth">데이터로 보는 지금</h2><span class="note" id="dataAt">통계를 불러오는 중이에요.</span></div>
     <div class="kpis">
@@ -445,9 +465,14 @@ a{color:var(--blue)}
     <div class="data-head"><h2 id="insh">나답 질문 분석 리포트</h2><span class="note" id="insMeta">분석 결과를 불러오는 중이에요.</span></div>
     <div class="finds" id="finds"></div>
   </section>
-  <section class="panel" aria-labelledby="disth">
-    <h2 id="disth">카테고리(관심사) 분포</h2>
-    <div class="dist" id="dist"></div>
+  <section class="panel" aria-labelledby="mdh">
+    <h2 id="mdh">나답 질문 모델</h2>
+    <p class="note" style="margin:0">질문을 <b>분석</b>하는 흐름과 <b>만드는</b> 흐름이 하나의 모델로 이어져요. 매달 새 통계가 들어오면 모델이 다시 학습되고, 진단기와 생성기의 예측도 같이 바뀌어요.</p>
+    <div class="flow" id="flow"></div>
+  </section>
+  <section class="panel" aria-labelledby="eqh">
+    <h2 id="eqh">예측식과 계수</h2>
+    <div id="eq"></div>
   </section>
   <section class="panel" aria-labelledby="forh">
     <div class="brk-head"><h2 id="forh" style="margin:0">무엇이 답변율을 움직이나</h2>
@@ -461,16 +486,34 @@ a{color:var(--blue)}
     <div class="chartbox"><div id="axChart"></div></div>
     <div class="legend"><span><i style="background:var(--muted)"></i>지금 DB 문항 수</span><span><i style="background:var(--chart)"></i>개선 후 문항 수</span><span><i style="background:var(--ink);width:2px"></i>전체 평균 답변율</span></div>
   </section>
+  <section class="panel" aria-labelledby="disth">
+    <h2 id="disth">카테고리(관심사) 분포</h2>
+    <div class="dist" id="dist"></div>
+  </section>
   <section class="panel" aria-labelledby="lenh">
     <h2 id="lenh">문구 길이별 답변율</h2>
     <div class="chartbox"><div id="lenChart"></div></div>
   </section>
-  <section class="panel">
+  <section class="panel" id="method-sec">
     <details><summary class="note"><b>방법과 한계</b></summary>
       <div class="note" style="display:grid;gap:6px;margin-top:8px" id="method"></div></details>
   </section>
   </div>
   <div class="pg" id="pg-dl" role="tabpanel" data-page="dl" hidden>
+  <section class="panel" aria-labelledby="dlh">
+    <h2 id="dlh">다운로드</h2>
+    <span class="hint" id="baseInfo">아직 받은 기록이 없어요. 처음 받으면 이후부터 바뀐 질문이 표시돼요.</span>
+    <div class="row">
+      <button class="btn primary" id="dlAll" type="button" disabled>전체 CSV 받기</button>
+      <button class="btn mint" id="dlDiff" type="button" disabled>바뀐 것만 CSV 받기</button>
+      <select id="baseSel" aria-label="비교 기준 다운로드"></select>
+    </div>
+    <div class="note">관리자 DB 열(id, interest_id, question_text, question_level, 가이드 3종, created_at, updated_at, deleted_at) 그대로이고, 맨 오른쪽에 '변경 내용' 열 하나만 붙어요(신규 · 문구 수정 · 가이드 수정 · 관심사 수정 · 비활성화 등, 바뀐 게 없으면 빈 칸). 신규 질문도 id 900번부터 매겨 두었어요.</div>
+    <details>
+      <summary class="note">다운로드 기록</summary>
+      <ul class="hist" id="hist"></ul>
+    </details>
+  </section>
   <section class="panel" aria-labelledby="uph">
     <h2 id="uph">CSV 업로드 · 최신본으로 만들기</h2>
     <p class="note" style="margin:0">BE에서 고친 CSV(관리자 DB 열 형식)를 올리면 그 내용이 페이지의 최신본이 돼요. 화면·다운로드·비교가 모두 이 파일을 기준으로 바뀌고, 올린 뒤에 페이지에서 고친 것만 그 위에 더해져요. 엑셀에서 저장한 CSV도 읽어요.</p>
@@ -484,20 +527,6 @@ a{color:var(--blue)}
     <details>
       <summary class="note">올린 기록</summary>
       <ul class="hist" id="upHist"></ul>
-    </details>
-  </section>
-  <section class="panel" aria-labelledby="dlh">
-    <h2 id="dlh">다운로드</h2>
-    <span class="hint" id="baseInfo">아직 받은 기록이 없어요. 처음 받으면 이후부터 바뀐 질문이 표시돼요.</span>
-    <div class="row">
-      <button class="btn primary" id="dlAll" type="button" disabled>전체 CSV 받기</button>
-      <button class="btn mint" id="dlDiff" type="button" disabled>바뀐 것만 CSV 받기</button>
-      <select id="baseSel" aria-label="비교 기준 다운로드"></select>
-    </div>
-    <div class="note">관리자 DB 열(id, interest_id, question_text, question_level, 가이드 3종, created_at, updated_at, deleted_at) 그대로이고, 맨 오른쪽에 '변경 내용' 열 하나만 붙어요(신규 · 문구 수정 · 가이드 수정 · 관심사 수정 · 비활성화 등, 바뀐 게 없으면 빈 칸). 신규 질문도 id 900번부터 매겨 두었어요.</div>
-    <details>
-      <summary class="note">다운로드 기록</summary>
-      <ul class="hist" id="hist"></ul>
     </details>
   </section>
 
@@ -517,19 +546,23 @@ a{color:var(--blue)}
     <div class="dist mini" id="distMini"></div>
     <div class="tabs" id="tabs" role="group" aria-label="보기"></div>
     <div class="row">
-      <input type="search" id="q" placeholder="문구나 id로 찾기" aria-label="검색">
-      <select id="fChange" aria-label="변경 구분"></select>
+      <input type="search" id="q" placeholder="문구나 id로 찾기" aria-label="검색" style="flex:1;min-width:200px">
       <select id="fCat" aria-label="관심사"></select>
-      <select id="fLevel" aria-label="레벨"><option value="all">레벨 전체</option><option value="1">레벨 1 · 첫 질문</option><option value="2">레벨 2</option></select>
-      <select id="fAxis" aria-label="자아분석 축"></select>
-      <select id="fForm" aria-label="질문 형식"></select>
     </div>
-    <div class="row">
-      <label class="pill" for="fDiff"><input type="checkbox" id="fDiff">지난 다운로드 이후 바뀐 것</label>
-      <label class="pill" for="fEdit"><input type="checkbox" id="fEdit">이 페이지에서 고친 것</label>
-      <label class="pill" for="fDel"><input type="checkbox" id="fDel">비활성·삭제 포함</label>
-      <span class="note" id="count"></span>
-    </div>
+    <details class="advf" id="advF"><summary>필터 더보기<span id="advN"></span></summary>
+      <div class="row" style="margin-top:8px">
+        <select id="fChange" aria-label="변경 구분"></select>
+        <select id="fLevel" aria-label="레벨"><option value="all">레벨 전체</option><option value="1">레벨 1 · 첫 질문</option><option value="2">레벨 2</option></select>
+        <select id="fAxis" aria-label="자아분석 축"></select>
+        <select id="fForm" aria-label="질문 형식"></select>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label class="pill" for="fDiff"><input type="checkbox" id="fDiff">지난 다운로드 이후 바뀐 것</label>
+        <label class="pill" for="fEdit"><input type="checkbox" id="fEdit">이 페이지에서 고친 것</label>
+        <label class="pill" for="fDel"><input type="checkbox" id="fDel">비활성·삭제 포함</label>
+      </div>
+    </details>
+    <span class="note" id="count"></span>
   </section>
 
   <section class="list" id="list" aria-live="polite"><div class="empty">질문 목록을 불러오는 중입니다.</div></section>
@@ -612,7 +645,7 @@ function addedRows(){
   return [...ADDED.values()].filter(a => !have.has(String(a.id))).map(a => ({ key: String(a.id), id: String(a.id), newId: 'P' + a.id, statsId: null,
     interest_id: a.interest_id, cat: CAT[a.interest_id], level: a.level, text: a.text, oldText: '', g: [a.g0, a.g1, a.g2], deleted: false, deletedAt: '',
     created_at: dbTime(a.at), updated_at: dbTime(a.at), change: '신규', catChange: '', set: '페이지에서 생성', form: a.form || '', axis: a.axis || '', axisNote: AXES[a.axis]?.[1] || '',
-    purpose: [a.level === 1 ? '첫 질문용이에요.' : '', `자아분석 '${a.axis}' 축의 신호를 모아요.`].filter(Boolean).join(' '), why: a.why || '', source: '분석 탭 축×관심사에서 AI로 생성', srcUrl: '',
+    purpose: [a.level === 1 ? '첫 질문용이에요.' : '', a.axis ? `자아분석 '${a.axis}' 축의 신호를 모아요.` : ''].filter(Boolean).join(' ') || '페이지에서 직접 추가한 질문이에요.', why: a.why || '', source: '새 질문 만들기', srcUrl: '',
     pred: null, exp: null, ans: null, rep: null, alts: [], decided: '', orig: null, made: a }));
 }
 function mergeUpload(){
@@ -865,6 +898,7 @@ function go(pg, scroll = true){
   const navOf = PAGE === 'pick' || PAGE === 'dup' ? 'rev' : PAGE;
   document.querySelectorAll('#nav [data-page]').forEach(b => b.setAttribute('aria-selected', b.dataset.page === navOf));
   document.querySelectorAll('#revSeg [data-rev]').forEach(b => b.setAttribute('aria-pressed', b.dataset.rev === PAGE));
+  { const nb = document.querySelector(`#nav [data-page="${navOf}"]`), bar = $('#nav'); if (nb && bar.scrollWidth > bar.clientWidth) bar.scrollTo({ left: nb.offsetLeft - (bar.clientWidth - nb.offsetWidth) / 2, behavior: 'smooth' }); }
   document.querySelectorAll('.pg').forEach(el => el.hidden = !el.dataset.page.split(' ').includes(PAGE));
   if (was && was !== PAGE && (was === 'pick' || PAGE === 'pick')) { limit = PAGE === 'pick' ? 20 : 40; render(); }
   if (scroll) window.scrollTo({ top: document.querySelector('.nav').offsetTop, behavior: 'smooth' });
@@ -1192,6 +1226,12 @@ async function genAdd(i){
     c.done = String(id); genUI(); toast(`Q.${id}로 추가했어요. 다운로드에 신규로 들어가요.`);
   } catch { toast('추가하지 못했어요.'); }
 }
+// 질문 카드 수정 칸의 예상 답변율(문구로 태그·형식을 자동 추정)
+function cardPred(text, cat){
+  if (!INS?.model?.coef || !text) return '';
+  const f = guessForm(text), r = modelPred(guessTags(text, f), f, cat, text.length); if (!r) return '';
+  return `예상 답변율 ${P(r.p)} · 평균 대비 ${pp(r.p - INS.model.base)} <span class="note">(문구로 자동 추정 · ${FORMN[f]})</span>`;
+}
 // ---- 질문 모델: 구조도 · 진단기 · 예측식 ----
 const TAGDEF = [
   ['T', '시점 고정', [[0, '없음'], [1, '요즘'], [2, '특정 날']]],
@@ -1258,7 +1298,8 @@ function eqUI(){
 function dgInit(){
   $('#dgCat').innerHTML = Object.values(CAT).map(c => `<option>${c}</option>`).join('');
   $('#dgForm').innerHTML = `<option value="auto">형식 자동</option>` + Object.entries(FORMN).map(([k, n]) => `<option value="${k}">${n}</option>`).join('');
-  $('#dgAI').hidden = !sample;
+  $('#dgAI').hidden = !sample; $('#dgGuide').hidden = !sample;
+  $('#dgAx').innerHTML = '<option value="">자아분석 축 없음</option>' + Object.keys(AXES).map(a => `<option>${a}</option>`).join('');
 }
 function dgUI(){
   const text = ($('#dgText').value || '').trim(), cat = $('#dgCat').value, form = $('#dgForm').value === 'auto' ? guessForm(text) : $('#dgForm').value;
@@ -1295,7 +1336,7 @@ JSON만: {"T":0,"P":0,"E":1,"W":1,"S":1,"C":0,"F":"c"}`, { modelTier: 'quick', c
   } catch (e) { if (e?.code === 'not_granted'){ sample = null; b.hidden = true; } toast('태그를 붙이지 못했어요.'); }
   finally { b.disabled = false; b.textContent = 'AI로 태그 붙이기'; }
 }
-let BRK = 'form';
+let BRK = 'form', advOpened = false, GM = 'fill';
 function breakdown(){
   const s = latest(), avg = avgRate(s), all = rows();
   const nowCat = r => r.catChange ? r.catChange.split('→')[0] : r.cat;
@@ -1422,7 +1463,7 @@ function detail(r){
     </div>
     <form class="form" data-form="${k}">
       <h3 style="margin:0">직접 고쳐 쓰기</h3>
-      <div><div class="lbl">질문 문구 · 자유롭게 고쳐 쓰고 저장하면 돼요</div><textarea id="t-${k}" name="text" rows="2">${esc(r.text)}</textarea><div class="warn" id="w-${k}">${esc(lint(r.text).join(' '))}</div><div class="simwarn" id="sw-${k}"></div></div>
+      <div><div class="lbl">질문 문구 · 자유롭게 고쳐 쓰고 저장하면 돼요</div><textarea id="t-${k}" name="text" rows="2">${esc(r.text)}</textarea><div class="warn" id="w-${k}">${esc(lint(r.text).join(' '))}</div><div class="simwarn" id="sw-${k}"></div><div class="cardpred" id="pr-${k}">${cardPred(r.text, r.cat)}</div></div>
       <div><div class="lbl">공감 가이드 · empathy_guide</div><textarea id="g0-${k}" name="g0" rows="2">${esc(r.g[0])}</textarea></div>
       <div><div class="lbl">힌트 가이드 · hint_guide</div><textarea id="g1-${k}" name="g1" rows="2">${esc(r.g[1])}</textarea></div>
       <div><div class="lbl">유도 질문 · leading_question_guide</div><textarea id="g2-${k}" name="g2" rows="2">${esc(r.g[2])}</textarea></div>
@@ -1445,6 +1486,8 @@ async function render(){
   summary(); dataUI(); tabsUI(); badges(); dupUI(); if (INS) heatUI();
   const vis = visible(), shown = vis.slice(0, limit);
   const act = activeFilters();
+  { const n = [F.change !== 'all', F.level !== 'all', F.axis !== 'all', F.form !== 'all', F.diff, F.edit, F.del].filter(Boolean).length;
+    $('#advN').textContent = n ? `${n}개 적용 중` : ''; if (n && !advOpened){ $('#advF').open = true; advOpened = true; } }
   $('#count').textContent = `${vis.length.toLocaleString()}개${act.length ? ` · 필터: ${act.join(', ')}` : ''}`;
   $('#list').innerHTML = shown.length ? shown.map(card).join('') : `<div class="empty">조건에 맞는 질문이 없어요.${act.length && PAGE !== 'pick' ? `<br>걸려 있는 필터: ${esc(act.join(', '))} <button class="btn" type="button" data-reset>필터 풀기</button>` : ''}</div>`;
   $('#more').hidden = vis.length <= limit;
@@ -1602,6 +1645,7 @@ list.addEventListener('change', e => {
   if (radio.value === 'own'){ ta.focus(); ta.select(); toast('문구를 직접 써 주세요. 가이드도 함께 고칠 수 있어요.'); return; }
   const o = optionsOf(r).find(x => x.key === radio.value); if (!o) return;
   ta.value = o.text;
+  { const pr = document.getElementById('pr-' + k); if (pr) pr.innerHTML = cardPred(o.text, r.cat); }
   { const sw = document.getElementById('sw-' + k), m = similarTo(k, o.text); if (sw) sw.textContent = m ? `비슷한 질문이 있어요: Q.${m.r.key} "${m.r.text}" (${Math.round(m.v * 100)}%)` : ''; }
   document.getElementById('w-' + k).textContent = lint(o.text).join(' ');
   if (o.g) ['g0','g1','g2'].forEach((n, i) => { if (o.g[i]) document.getElementById(n + '-' + k).value = o.g[i]; });
@@ -1609,6 +1653,7 @@ list.addEventListener('change', e => {
 });
 list.addEventListener('input', e => {
   if (e.target.name === 'text'){ const k = e.target.closest('form').dataset.form; const w = document.getElementById('w-' + k); if (w) w.textContent = lint(e.target.value).join(' ');
+    { const pr = document.getElementById('pr-' + k), r = rows().find(x => x.key === k); if (pr && r) pr.innerHTML = cardPred(e.target.value, CAT[document.getElementById('ct-' + k)?.value] || r.cat); }
     const sw = document.getElementById('sw-' + k), m = similarTo(k, e.target.value);
     if (sw) sw.textContent = m ? `비슷한 질문이 있어요: Q.${m.r.key} "${m.r.text}" (${Math.round(m.v * 100)}%)` : ''; }
 });
@@ -1680,6 +1725,39 @@ $('#dgText').addEventListener('input', () => { DG.manual = {}; dgUI(); });
 $('#dgCat').addEventListener('change', dgUI); $('#dgForm').addEventListener('change', dgUI);
 $('#dgTags').addEventListener('click', e => { const b = e.target.closest('[data-tk]'); if (!b) return; DG.manual[b.dataset.tk] = Number(b.dataset.tv); dgUI(); });
 $('#dgAI').addEventListener('click', dgAI);
+$('#gmSeg').addEventListener('click', e => { const b = e.target.closest('[data-gm]'); if (!b) return; GM = b.dataset.gm;
+  document.querySelectorAll('#gmSeg [data-gm]').forEach(x => x.setAttribute('aria-pressed', x === b));
+  document.querySelectorAll('#pg-gen [data-gmode]').forEach(x => x.hidden = x.dataset.gmode !== GM); });
+$('#anaNav').addEventListener('click', e => { const a = e.target.closest('a[href^="#"]'); if (!a) return; e.preventDefault(); document.getElementById(a.getAttribute('href').slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+const dgAddState = () => { $('#dgAdd').disabled = !(db && canWrite && ($('#dgText').value || '').trim()); };
+$('#dgText').addEventListener('input', dgAddState);
+$('#dgGuide').addEventListener('click', async () => {
+  const text = ($('#dgText').value || '').trim(); if (!sample || !text) return toast('문구를 먼저 써 주세요.');
+  const b = $('#dgGuide'); b.disabled = true; b.textContent = 'AI가 쓰는 중…';
+  try {
+    const o = await sample.json(`셀프 저널링 앱 '나답'의 데일리 질문에 붙일 가이드 3종을 기존 DB 말투로 쓰세요(각 30자 안팎, '~해요/~봐요/~뭘까요?').
+empathy: 공감·정상화 한 문장 / hint: 떠올릴 예시·선택지 / leading: 한 걸음 더 들어가는 질문.
+질문: ${text}
+관심사: ${$('#dgCat').value}
+JSON만: {"empathy":"","hint":"","leading":""}`, { modelTier: 'quick', cache: false });
+    [['dgG0', o?.empathy], ['dgG1', o?.hint], ['dgG2', o?.leading]].forEach(([id, v]) => { if (typeof v === 'string' && v.trim()) $('#' + id).value = v.trim(); });
+  } catch { toast('가이드를 만들지 못했어요.'); } finally { b.disabled = false; b.textContent = 'AI로 가이드 채우기'; }
+});
+$('#dgAdd').addEventListener('click', async () => {
+  const text = ($('#dgText').value || '').trim(); if (!db || !text) return;
+  const g = ['dgG0', 'dgG1', 'dgG2'].map(id => ($('#' + id).value || '').trim());
+  if (g.some(x => !x)) return toast('가이드 3종을 채워 주세요. AI로 채울 수도 있어요.');
+  const form = $('#dgForm').value === 'auto' ? guessForm(text) : $('#dgForm').value, cat = $('#dgCat').value;
+  const r = modelPred({ ...guessTags(text, form), ...DG.manual }, form, cat, text.length);
+  const ids = BASE.map(x => Number(x.key)).concat([...ADDED.values()].map(a => Number(a.id))).filter(Number.isFinite), id = Math.max(...ids) + 1;
+  const btn = $('#dgAdd'); btn.disabled = true;
+  try {
+    await db.doc('added/' + id).set({ id, interest_id: catId(cat), axis: $('#dgAx').value, text, g0: g[0], g1: g[1], g2: g[2], level: Number($('#dgLv').value),
+      form: FORMN[form] || '', why: ['직접 작성', r && '예상 답변율 ' + P(r.p)].filter(Boolean).join(' · '), by: me?.id || null, at: new Date().toISOString() });
+    toast(`Q.${id}로 추가했어요. 다운로드에 신규로 들어가요.`);
+    ['dgText', 'dgG0', 'dgG1', 'dgG2'].forEach(x => $('#' + x).value = ''); DG.manual = {}; dgUI();
+  } catch { toast('추가하지 못했어요.'); } finally { dgAddState(); }
+});
 $('#heat').addEventListener('click', e => { const td = e.target.closest('td.hc'); if (td) genNew(td.dataset.ax, td.dataset.cat); });
 $('#heat').addEventListener('keydown', e => { const td = e.target.closest('td.hc'); if (td && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); genNew(td.dataset.ax, td.dataset.cat); } });
 $('#gOpt').addEventListener('change', e => { if (!GEN) return; const f = e.target.closest('[data-form]'); if (f){ f.checked ? GEN.forms.add(f.dataset.form) : GEN.forms.delete(f.dataset.form); } readOpts(); genUI(); });
@@ -1759,7 +1837,7 @@ $('#upHist').addEventListener('click', async e => {
     fetch('data/insights.json').then(r => r.json()).then(j => { INS = j; insUI(); heatUI(); genAll(); flowUI(); eqUI(); dgInit(); dgUI(); }).catch(() => { $('#insMeta').textContent = '분석 결과를 불러오지 못했어요.'; });
   } catch { $('#list').innerHTML = '<div class="empty">질문 데이터를 불러오지 못했어요. 새로고침해 주세요.</div>'; return; }
   cuse('downloads').then(d => { downloads = d; $('#dlAll').disabled = $('#dlDiff').disabled = !d; });
-  cuse('sample').then(s => { sample = s; if ($('#dgAI')) $('#dgAI').hidden = !s; if (s) document.querySelectorAll('[data-guide]').forEach(b => b.hidden = false); document.querySelectorAll('details.q[open]').forEach(el => refreshOpts(el.dataset.key)); });
+  cuse('sample').then(s => { sample = s; if ($('#dgAI')) { $('#dgAI').hidden = !s; $('#dgGuide').hidden = !s; } if (s) document.querySelectorAll('[data-guide]').forEach(b => b.hidden = false); document.querySelectorAll('details.q[open]').forEach(el => refreshOpts(el.dataset.key)); });
   cuse('user').then(async u => { user = u; if (u){ me = await u.me(); if (await u.can('data.write') === false) canWrite = false; historyUI(); render(); } });
   db = await cuse('db');
   if (!db){ baseId = 'orig'; historyUI(); $('#baseInfo').textContent = '이 화면에서는 다운로드 기록과 수정 저장을 쓸 수 없어요. 파일 받기는 돼요.'; render(); return; }
