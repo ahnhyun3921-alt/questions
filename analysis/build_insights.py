@@ -257,19 +257,23 @@ def recat_queue():
     P = cross_val_predict(clf, X, y, cv=5, method="predict_proba")
     labels = sorted(set(y))
     acc = float(np.mean([labels[i] == t for i, t in zip(P.argmax(1), y)]))
+    ra = Path(__file__).parent / "recat_applied.csv"
+    applied = set(pd.read_csv(ra, dtype=str)["DB id"]) if ra.exists() else set()   # 이미 옮긴 질문은 다시 후보로 올리지 않는다
     out = []
     for r, p in zip(rows, P):
+        if r["key"] in applied:
+            continue
         pr = dict(zip(labels, p))
         top = max(pr, key=pr.get)
         to, src = "", ""
-        if r["recat"]:
+        if r["recat"] and r["recat"] != r["cat"]:
             to, src = r["recat"], "both" if top == r["recat"] else "manual"
         elif top != r["cat"] and pr[top] >= 0.7 and pr[r["cat"]] <= 0.15 and not (top == "가치관" and (r["cat"] in PEOPLE_FIRST or PEOPLE.search(r["text"]))):
             to, src = top, "model"
         if to:
             out.append(dict(key=r["key"], cur=r["cat"], to=to, src=src, p_to=round(float(pr[to]), 3), p_cur=round(float(pr[r["cat"]]), 3)))
     order = {"both": 0, "manual": 1, "model": 2}
-    return dict(acc=round(acc, 3), items=sorted(out, key=lambda x: (order[x["src"]], -x["p_to"])))
+    return dict(acc=round(acc, 3), applied=len(applied), items=sorted(out, key=lambda x: (order[x["src"]], -x["p_to"])))
 
 
 ACTION = {
