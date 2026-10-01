@@ -59,6 +59,10 @@ h1{font-size:2rem;font-weight:800;margin:0;letter-spacing:-.02em;line-height:1.2
 .pg > .panel{min-width:0}
 body[data-page="pick"] .q-only{display:none} body:not([data-page="pick"]) .pick-only{display:none}
 .dups{display:grid;gap:12px}
+.revseg{justify-self:start;box-shadow:var(--shadow)}
+.revseg .bdg{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:.72rem;background:var(--mod-soft);color:var(--mod)}
+.revseg button[aria-pressed="true"] .bdg{background:rgba(255,255,255,.22);color:#fff}
+.revseg .bdg[hidden]{display:none}
 .dpair{background:var(--surface);border-radius:24px;padding:18px;display:grid;gap:12px;box-shadow:var(--shadow)}
 .dpair.done{opacity:.6}
 .dpair .hd{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -318,16 +322,17 @@ a{color:var(--blue)}
   </div>
 </header>
 <nav class="nav" aria-label="페이지"><div class="in" role="tablist" id="nav">
-  <button type="button" role="tab" data-page="pick" aria-selected="false" aria-controls="pg-q">골라 주세요<span class="bdg" id="bdgPick" hidden></span></button>
-  <button type="button" role="tab" data-page="q" aria-selected="true" aria-controls="pg-q">전체 질문</button>
-  <button type="button" role="tab" data-page="dup" aria-selected="false" aria-controls="pg-dup">중복 검토<span class="bdg" id="bdgDup" hidden></span></button>
-  <button type="button" role="tab" data-page="ins" aria-selected="false" aria-controls="pg-ins">분석</button>
-  <button type="button" role="tab" data-page="gen" aria-selected="false" aria-controls="pg-gen">질문 생성기</button>
-  <button type="button" role="tab" data-page="data" aria-selected="false" aria-controls="pg-data">데이터</button>
+  <button type="button" role="tab" data-page="rev" aria-selected="false" aria-controls="pg-rev">검토할 것<span class="bdg" id="bdgRev" hidden></span></button>
+  <button type="button" role="tab" data-page="q" aria-selected="true" aria-controls="pg-q">질문 목록</button>
+  <button type="button" role="tab" data-page="gen" aria-selected="false" aria-controls="pg-gen">새 질문 만들기</button>
+  <button type="button" role="tab" data-page="ins" aria-selected="false" aria-controls="pg-ana">분석</button>
   <button type="button" role="tab" data-page="dl" aria-selected="false" aria-controls="pg-dl">다운로드·업로드<span class="bdg" id="bdgDiff" hidden></span></button>
 </div></nav>
 
 <div class="wrap">
+  <div class="pg" id="pg-rev" data-page="pick dup" hidden>
+  <div class="seg2 revseg" id="revSeg" role="group" aria-label="검토 종류"><button type="button" data-rev="pick" aria-pressed="true">골라 주세요<span class="bdg" id="bdgPick" hidden></span></button><button type="button" data-rev="dup" aria-pressed="false">중복 검토<span class="bdg" id="bdgDup" hidden></span></button></div>
+  </div>
   <div class="pg" id="pg-dup" role="tabpanel" data-page="dup" hidden>
   <section class="panel" aria-labelledby="duph">
     <h2 id="duph">중복 검토</h2>
@@ -339,32 +344,6 @@ a{color:var(--blue)}
     </div>
   </section>
   <section class="dups" id="dups"></section>
-  </div>
-  <div class="pg" id="pg-ins" role="tabpanel" data-page="ins" hidden>
-  <section class="panel" aria-labelledby="insh">
-    <div class="data-head"><h2 id="insh">나답 질문 분석 리포트</h2><span class="note" id="insMeta">분석 결과를 불러오는 중이에요.</span></div>
-    <div class="finds" id="finds"></div>
-  </section>
-  <section class="panel" aria-labelledby="forh">
-    <div class="brk-head"><h2 id="forh" style="margin:0">무엇이 답변율을 움직이나</h2>
-      <div class="seg2" id="forSeg" role="group" aria-label="분석 방식"><button type="button" data-m="multi" aria-pressed="true">함께 보기(다변량)</button><button type="button" data-m="uni" aria-pressed="false">따로 보기(단변량)</button></div></div>
-    <p class="note" style="margin:0" id="forNote"></p>
-    <div class="chartbox"><div id="forest"></div></div>
-    <div class="legend"><span><i style="background:var(--chart)"></i>확실한 효과 (95% CI가 0을 넘지 않음)</span><span><i style="background:transparent;box-shadow:inset 0 0 0 2px var(--muted)"></i>불확실</span></div>
-  </section>
-  <section class="panel" aria-labelledby="axh">
-    <h2 id="axh">자아분석 축: 얼마나 묻고, 얼마나 답하나</h2>
-    <div class="chartbox"><div id="axChart"></div></div>
-    <div class="legend"><span><i style="background:var(--muted)"></i>지금 DB 문항 수</span><span><i style="background:var(--chart)"></i>개선 후 문항 수</span><span><i style="background:var(--ink);width:2px"></i>전체 평균 답변율</span></div>
-  </section>
-  <section class="panel" aria-labelledby="lenh">
-    <h2 id="lenh">문구 길이별 답변율</h2>
-    <div class="chartbox"><div id="lenChart"></div></div>
-  </section>
-  <section class="panel">
-    <details><summary class="note"><b>방법과 한계</b></summary>
-      <div class="note" style="display:grid;gap:6px;margin-top:8px" id="method"></div></details>
-  </section>
   </div>
   <div class="pg" id="pg-gen" role="tabpanel" data-page="gen" hidden>
   <section class="panel">
@@ -380,11 +359,7 @@ a{color:var(--blue)}
   <section class="panel step" aria-labelledby="g5h"><h2 id="g5h"><span class="sn">4</span>소재 뽑기</h2><div id="gTop"></div></section>
   <section class="panel step" aria-labelledby="g6h"><h2 id="g6h"><span class="sn">5</span>질문 만들기 · 검토 · 추가</h2><div id="gen"></div></section>
   </div>
-  <div class="pg" id="pg-data" role="tabpanel" data-page="data" hidden>
-  <section class="panel" aria-labelledby="disth">
-    <h2 id="disth">카테고리(관심사) 분포</h2>
-    <div class="dist" id="dist"></div>
-  </section>
+  <div class="pg" id="pg-ana" role="tabpanel" data-page="ins" hidden>
   <section class="panel" aria-labelledby="dth">
     <div class="data-head"><h2 id="dth">데이터로 보는 지금</h2><span class="note" id="dataAt">통계를 불러오는 중이에요.</span></div>
     <div class="kpis">
@@ -409,6 +384,34 @@ a{color:var(--blue)}
       <div class="brk" id="brk"></div>
       <p class="note" style="margin:8px 2px 4px">답변율은 지금 DB 문구가 실제로 받은 실적(답변 ÷ 답변+교체)이에요. 신규 질문은 실적이 없어서 비중에만 들어가요. 누르면 아래 목록이 그 유형으로 걸러져요.</p>
     </div>
+  </section>
+  <section class="panel" aria-labelledby="insh">
+    <div class="data-head"><h2 id="insh">나답 질문 분석 리포트</h2><span class="note" id="insMeta">분석 결과를 불러오는 중이에요.</span></div>
+    <div class="finds" id="finds"></div>
+  </section>
+  <section class="panel" aria-labelledby="disth">
+    <h2 id="disth">카테고리(관심사) 분포</h2>
+    <div class="dist" id="dist"></div>
+  </section>
+  <section class="panel" aria-labelledby="forh">
+    <div class="brk-head"><h2 id="forh" style="margin:0">무엇이 답변율을 움직이나</h2>
+      <div class="seg2" id="forSeg" role="group" aria-label="분석 방식"><button type="button" data-m="multi" aria-pressed="true">함께 보기(다변량)</button><button type="button" data-m="uni" aria-pressed="false">따로 보기(단변량)</button></div></div>
+    <p class="note" style="margin:0" id="forNote"></p>
+    <div class="chartbox"><div id="forest"></div></div>
+    <div class="legend"><span><i style="background:var(--chart)"></i>확실한 효과 (95% CI가 0을 넘지 않음)</span><span><i style="background:transparent;box-shadow:inset 0 0 0 2px var(--muted)"></i>불확실</span></div>
+  </section>
+  <section class="panel" aria-labelledby="axh">
+    <h2 id="axh">자아분석 축: 얼마나 묻고, 얼마나 답하나</h2>
+    <div class="chartbox"><div id="axChart"></div></div>
+    <div class="legend"><span><i style="background:var(--muted)"></i>지금 DB 문항 수</span><span><i style="background:var(--chart)"></i>개선 후 문항 수</span><span><i style="background:var(--ink);width:2px"></i>전체 평균 답변율</span></div>
+  </section>
+  <section class="panel" aria-labelledby="lenh">
+    <h2 id="lenh">문구 길이별 답변율</h2>
+    <div class="chartbox"><div id="lenChart"></div></div>
+  </section>
+  <section class="panel">
+    <details><summary class="note"><b>방법과 한계</b></summary>
+      <div class="note" style="display:grid;gap:6px;margin-top:8px" id="method"></div></details>
   </section>
   </div>
   <div class="pg" id="pg-dl" role="tabpanel" data-page="dl" hidden>
@@ -794,13 +797,18 @@ function evidence(r){
     ${spark(r.key) ? `<div class="chartbox"><div class="ttl">수집일별 답변율</div>${spark(r.key)}</div>` : ''}
   </div>`;
 }
-let PAGE = 'q';
+let PAGE = 'q', REV = 'pick';
 try { PAGE = localStorage.getItem('nadab-board-page') || 'q'; } catch {}
 function go(pg, scroll = true){
-  PAGE = ['pick', 'q', 'dup', 'ins', 'gen', 'data', 'dl'].includes(pg) ? pg : 'q';
+  if (pg === 'data') pg = 'ins';                              // 예전 '데이터' 탭은 분석에 합쳤다
+  if (pg === 'rev') pg = REV;                                 // '검토할 것'은 마지막에 본 하위 보기로
+  PAGE = ['pick', 'q', 'dup', 'ins', 'gen', 'dl'].includes(pg) ? pg : 'q';
+  if (PAGE === 'pick' || PAGE === 'dup') REV = PAGE;
   const was = document.body.dataset.page; document.body.dataset.page = PAGE;
   try { localStorage.setItem('nadab-board-page', PAGE); } catch {}
-  document.querySelectorAll('#nav [data-page]').forEach(b => b.setAttribute('aria-selected', b.dataset.page === PAGE));
+  const navOf = PAGE === 'pick' || PAGE === 'dup' ? 'rev' : PAGE;
+  document.querySelectorAll('#nav [data-page]').forEach(b => b.setAttribute('aria-selected', b.dataset.page === navOf));
+  document.querySelectorAll('#revSeg [data-rev]').forEach(b => b.setAttribute('aria-pressed', b.dataset.rev === PAGE));
   document.querySelectorAll('.pg').forEach(el => el.hidden = !el.dataset.page.split(' ').includes(PAGE));
   if (was && was !== PAGE && (was === 'pick' || PAGE === 'pick')) { limit = PAGE === 'pick' ? 20 : 40; render(); }
   if (scroll) window.scrollTo({ top: document.querySelector('.nav').offsetTop, behavior: 'smooth' });
@@ -814,6 +822,7 @@ function badges(){
   $('#pkReview').textContent = (np - mp.length).toLocaleString();
   $('#pkDone').textContent = all.filter(r => !isPick(r) && (KEEPS.has(r.key) || (r.edited && (PICKS.has(r.key) || r.alts.length >= 2)))).length.toLocaleString();
   const nu = DUPS.filter(x => !dupDone(x, all)).length; $('#bdgDup').hidden = !nu; $('#bdgDup').textContent = nu;
+  $('#bdgRev').hidden = !(np + nu); $('#bdgRev').textContent = (np + nu).toLocaleString();
   $('#bdgDiff').hidden = !nd; $('#bdgDiff').textContent = nd.toLocaleString();
 }
 // ---- 중복 검토 ----
@@ -1506,6 +1515,7 @@ let st; $('#q').addEventListener('input', e => { clearTimeout(st); st = setTimeo
 [['#fDiff','diff'],['#fEdit','edit'],['#fDel','del']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.checked; limit = 40; saveF(); render(); }));
 $('#more').addEventListener('click', () => { limit += 40; render(); });
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (b) go(b.dataset.page); });
+$('#revSeg').addEventListener('click', e => { const b = e.target.closest('[data-rev]'); if (b) go(b.dataset.rev, false); });
 go(PAGE, false);
 $('#heat').addEventListener('click', e => { const td = e.target.closest('td.hc'); if (td) genNew(td.dataset.ax, td.dataset.cat); });
 $('#heat').addEventListener('keydown', e => { const td = e.target.closest('td.hc'); if (td && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); genNew(td.dataset.ax, td.dataset.cat); } });
