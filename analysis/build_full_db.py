@@ -85,9 +85,15 @@ def main():
     gd_path = Path(__file__).parent / "guides_decided.csv"
     gdec = pd.read_csv(gd_path, dtype=str).set_index("id") if gd_path.exists() else pd.DataFrame()
     lb = pd.read_csv(EXP / "update_level1_block.csv")
+    # 검토에서 고르지 않은 레벨 1 묶음 질문은 원본 문구를 그대로 두고 비어 있던 가이드만 채운다
+    ko_path = Path(__file__).parent / "new" / "level1_keep_original.csv"
+    keep_orig = pd.read_csv(ko_path, dtype={"id": int}).set_index("id") if ko_path.exists() else pd.DataFrame()
     for _, r in lb.iterrows():
         st, txt = decided(f"D{r['id']}")
         if st == "skipped":
+            continue
+        if r["id"] in keep_orig.index and st not in ("chosen", "applied"):
+            put(r["id"], **{c: keep_orig.loc[r["id"], c] for c in G}, updated_at=now, **{"변경 구분": "레벨1 묶음 원본 유지(가이드 추가)"})
             continue
         gs = {c: r[c] for c in G}
         if txt and f"D{r['id']}" in gdec.index and gdec.loc[f"D{r['id']}", "문구"] == txt:

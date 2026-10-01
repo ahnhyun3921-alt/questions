@@ -813,7 +813,20 @@ JSON만 출력: {"empathy":"","hint":"","leading":""}`;
 }
 
 // ---- 다운로드 ----
-const COLS = ['id','interest_id','question_text','question_level','empathy_guide','hint_guide','leading_question_guide','created_at','updated_at','deleted_at','지난 다운로드 대비','변경 구분','신규 ID','관심사','목적'];
+const COLS = ['id','interest_id','question_text','question_level','empathy_guide','hint_guide','leading_question_guide','created_at','updated_at','deleted_at','지난 다운로드 대비','변경 구분','신규 ID','관심사','목적','수정 여부'];
+// 원본 DB와 비교한 수정 표시(맨 오른쪽 열). 바뀐 게 없으면 빈 칸.
+function modFlags(r){
+  if (r.newId) return '신규';
+  const o = r.orig; if (!o) return '';
+  const f = [];
+  if (r.text !== o[1]) f.push('문구 수정');
+  if (r.g[0] !== o[3] || r.g[1] !== o[4] || r.g[2] !== o[5]) f.push(o[3] || o[4] || o[5] ? '가이드 수정' : '가이드 추가');
+  if (Number(r.level) !== o[2]) f.push('레벨 수정');
+  if (Number(r.interest_id) !== o[0]) f.push('관심사 수정');
+  if (r.deleted && !o[6]) f.push('비활성화');
+  if (!r.deleted && o[6]) f.push('다시 활성화');
+  return f.join(' · ');
+}
 const cell = v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
 async function download(kind){
   if (!downloads) return;
@@ -826,7 +839,7 @@ async function download(kind){
   const now = new Date();
   const lines = [COLS.join(',')].concat(pick.map(r => [r.id, r.interest_id, r.text, r.level, r.g[0], r.g[1], r.g[2], r.created_at,
     r.edited ? r.edited.at : r.updated_at, r.deletedAt, b ? (DIFF_LABEL[diffOf(r)] || '같음') : '첫 다운로드',
-    r.change + (r.edited ? ' + 페이지 수정' : ''), r.newId, r.cat, r.purpose].map(cell).join(',')));
+    r.change + (r.edited ? ' + 페이지 수정' : ''), r.newId, r.cat, r.purpose, modFlags(r)].map(cell).join(',')));
   const stamp = now.toISOString().slice(0,16).replace(/[-:T]/g, '');
   try {
     await downloads.save({ filename: `nadab_daily_questions_${kind === 'diff' ? 'changes_' : ''}${stamp}.csv`, data: new Blob(['﻿' + lines.join('\n')], { type:'text/csv' }) });

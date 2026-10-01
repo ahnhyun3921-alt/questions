@@ -76,6 +76,7 @@ def duplicate_pairs(rows):
 
 
 def main():
+    orig_db = pd.read_csv(sorted((ROOT / "data").glob("daily_questions_*.csv"))[-1], dtype=str).fillna("").set_index("id")
     full = pd.read_csv(OUT / "daily_questions_revised.csv", dtype=str).fillna("")
     card = pd.read_csv(OUT / "question_scorecard.csv").set_index("질문 ID")
     fin = pd.read_csv(OUT / "final_questions.csv").set_index("질문 ID")
@@ -96,7 +97,7 @@ def main():
     def alternatives(r, sid, cur):
         """추천 수정안 목록: [라벨, 문구]. 지금 개선본 문구와 같은 건 표시만 하고 남긴다."""
         alts = []
-        if r["id"] in keep1 and not r["신규 ID"]:   # 원래 첫 질문은 원본 그대로 — 수정안을 띄우지 않는다
+        if (r["id"] in keep1 and not r["신규 ID"]) or r["변경 구분"].startswith("레벨1 묶음 원본 유지"):   # 첫 질문은 원본 그대로 — 수정안을 띄우지 않는다
             return []
         def add(label, text):
             text = (text or "").strip()
@@ -139,6 +140,8 @@ def main():
         elif r["id"] and int(r["id"]) in block.index:
             b = block.loc[int(r["id"])]
             form, why, source = s(b["F"]), s(b["판정"]), "레벨 1 첫 질문 묶음(DB 661~684)"
+            if r["변경 구분"].startswith("레벨1 묶음 원본 유지"):
+                why = "원본 문구 그대로 · 비어 있던 가이드만 채움"
         if sid is not None and sid in card.index:
             c = card.loc[sid]
             exp, ans, rep = int(c["노출"]), int(c["답변"]), int(c["교체"])
@@ -169,6 +172,11 @@ def main():
             "why": why, "source": source, "srcUrl": src_url, "pred": pred,
             "exp": exp, "ans": ans, "rep": rep,
             "alts": alternatives(r, sid, r["question_text"]), "decided": decision(r, sid),
+            # 원본 DB 값 [interest_id, 문구, 레벨, 가이드 3종, 삭제 여부] — CSV '수정 여부' 열 계산용(신규는 null)
+            "orig": None if r["신규 ID"] or r["id"] not in orig_db.index else [
+                int(orig_db.loc[r["id"], "interest_id"]), orig_db.loc[r["id"], "question_text"], int(orig_db.loc[r["id"], "question_level"]),
+                orig_db.loc[r["id"], "empathy_guide"], orig_db.loc[r["id"], "hint_guide"], orig_db.loc[r["id"], "leading_question_guide"],
+                orig_db.loc[r["id"], "deleted_at"] != ""],
         })
     dups = duplicate_pairs(rows)
     built = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M")
