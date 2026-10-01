@@ -215,44 +215,10 @@ def findings(uni, mdl, ln, ax):
     return out
 
 
-SOURCE_TYPE = {
-    "인터뷰·질문지": ["Vogue 73 Questions", "프루스트 질문지", "피보 질문지", "Hinge 프로필 질문", "AskReddit 인기 스레드", "This or That"],
-    "국내 100문100답·브런치": ["국내 100문 100답", "브런치 100문 100답 양식", "브런치 '내 삶을 돌아보는 질문 100'", "2024 자문자답 100", "브런치 커플 질문 리스트", "코스모폴리탄 썸 질문 25"],
-    "밸런스게임·논쟁": ["커뮤니티 밸런스게임", "커플 밸런스게임 모음", "커플 논쟁 매운맛 20", "연애 논쟁 (깻잎·새우·패딩)", "연애 논쟁 (블루투스)"],
-    "저널링·코칭": ["5분 저널", "Psych Central 저널링 64", "저널링 커뮤니티 인기 질문", "Greater Good in Action", "삶의 수레바퀴 (코칭 도구)", "이키가이 (코칭 도구)"],
-    "심리학 개념 (문항은 쓰지 않고 개념만)": ["Aron 36문항", "IPIP Big Five (공개 문항)", "MBTI 4축 (개념 차용)", "애착 유형", "사랑의 언어", "에니어그램 (핵심 두려움)", "에니어그램 (핵심 욕구)", "테토·에겐 테스트 (개념 차용)"],
-    "나답 내부 자료": ["Drive 통찰질문", "Drive·나답 질문 리스트"],
-}
-
-
-def sources():
-    """신규 질문을 모을 때 참고한 사이트·질문지 목록. 원문 예시와 나답식으로 바꾼 문구를 함께 넣는다."""
-    parts = []
-    for f in ["new_questions.csv", "new_questions_scraped.csv", "new_questions_love.csv"]:
-        n = pd.read_csv(ROOT / "output" / f)
-        for _, r in n.iterrows():
-            name = str(r.get("출처", ""))
-            if name.startswith("Drive·통찰질문"):
-                name = "Drive 통찰질문"
-            orig = r.get("원문") if pd.notna(r.get("원문", None)) else r.get("참고 원문", "")
-            parts.append(dict(name=name, url=r.get("출처 URL", "") if pd.notna(r.get("출처 URL", None)) else "",
-                              orig=str(orig) if pd.notna(orig) else "", ours=str(r.get("문구", ""))))
-    d = pd.DataFrame(parts)
-    out = []
-    for typ, names in SOURCE_TYPE.items():
-        for nm in names:
-            g = d[d.name == nm]
-            if g.empty:
-                continue
-            ex = [dict(orig=o, ours=u) for o, u in zip(g.orig, g.ours) if o or u][:3]
-            out.append(dict(type=typ, name=nm, url=next((u for u in g.url if u), ""), n=int(len(g)), ex=ex))
-    return out
-
-
 def main():
     date, d = load()
     uni, mdl, ln, ax = univariate(d), model(d), length_bins(d), axes(d)
-    out = dict(snapshot=date, sources=sources(), uni=uni, model=mdl, length=ln, axes=ax, findings=findings(uni, mdl, ln, ax))
+    out = dict(snapshot=date, uni=uni, model=mdl, length=ln, axes=ax, findings=findings(uni, mdl, ln, ax))
     f = ROOT / "board" / "data" / "insights.json"
     f.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":"), allow_nan=False))
     print(f"{date}: 문항 {mdl['n_q']} · 결론 {mdl['n_res']} · 평균 {mdl['base']:.1%} · 인사이트 {len(out['findings'])}개 → {f}")
