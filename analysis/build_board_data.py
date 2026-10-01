@@ -91,6 +91,11 @@ def main():
             add("수정안 (권장)", block.loc[int(r["id"]), "권장 문구"])
         return [[l, t, t == cur] for l, t in alts]
 
+    def decision(r, sid):
+        """검토 페이지 결정 상태(chosen/applied/skipped/pending) — 없으면 ''."""
+        dk = str(sid) if sid is not None else (r["신규 ID"] or (f"D{r['id']}" if r["id"] and 661 <= int(r["id"]) <= 684 else ""))
+        return dec.loc[dk, "status"] if dk and len(dec) and dk in dec.index else ""
+
     rows = []
     for _, r in full.iterrows():
         key = r["id"] or r["신규 ID"]
@@ -140,7 +145,7 @@ def main():
             "form": fname, "axis": ax, "axisNote": axnote, "purpose": " ".join(p for p in purpose if p),
             "why": why, "source": source, "srcUrl": src_url, "pred": pred,
             "exp": exp, "ans": ans, "rep": rep,
-            "alts": alternatives(r, sid, r["question_text"]),
+            "alts": alternatives(r, sid, r["question_text"]), "decided": decision(r, sid),
         })
     built = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M")
     out = ROOT / "board" / "data" / "questions.json"

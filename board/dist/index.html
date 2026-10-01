@@ -10,6 +10,7 @@
   --blue:#4e5ff0; --blue-ink:#ffffff; --blue-soft:#eef0ff; --on-blue:rgba(255,255,255,.16);
   --mint:#63d2c6; --mint-soft:#e4f7f4; --mint-ink:#12857a;
   --new:#12857a; --new-soft:#e4f7f4; --mod:#c46a00; --mod-soft:#fff2df; --gone:#d2453e; --gone-soft:#fde8e6;
+  --chart:#4e5ff0; --track:#e9ebf3; --low:#c4501f; --low-soft:#fdeee6; --high:#12857a; --high-soft:#e4f7f4;
   --shadow:0 8px 28px rgba(46,58,140,.07);
   --font:"NanumSquare","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
 }
@@ -18,12 +19,14 @@
   --blue:#5d6cf5; --blue-ink:#ffffff; --blue-soft:#2a2f62; --on-blue:rgba(255,255,255,.13);
   --mint:#63d2c6; --mint-soft:#183b3a; --mint-ink:#7fe3d7;
   --new:#7fe3d7; --new-soft:#183b3a; --mod:#f0b45c; --mod-soft:#3a2c14; --gone:#ff8d86; --gone-soft:#3d1c1d;
+  --chart:#6f7df5; --track:#2b3054; --low:#ff9a6b; --low-soft:#3b2418; --high:#7fe3d7; --high-soft:#183b3a;
   --shadow:0 8px 28px rgba(0,0,0,.35); color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#12142a; --surface:#1c1f3b; --soft:#252947; --ink:#eef0fb; --ink-2:#c2c6e2; --muted:#8c91b2; --line:#2e3358;
   --blue:#5d6cf5; --blue-ink:#ffffff; --blue-soft:#2a2f62; --on-blue:rgba(255,255,255,.13);
   --mint:#63d2c6; --mint-soft:#183b3a; --mint-ink:#7fe3d7;
   --new:#7fe3d7; --new-soft:#183b3a; --mod:#f0b45c; --mod-soft:#3a2c14; --gone:#ff8d86; --gone-soft:#3d1c1d;
+  --chart:#6f7df5; --track:#2b3054; --low:#ff9a6b; --low-soft:#3b2418; --high:#7fe3d7; --high-soft:#183b3a;
   --shadow:0 8px 28px rgba(0,0,0,.35); color-scheme:dark }
 body{background:var(--bg);color:var(--ink);font:400 15px/1.65 var(--font);-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font-family:var(--font)}
@@ -61,12 +64,52 @@ select{border-radius:999px;padding-inline:16px}
 input[type=search]{flex:1 1 220px;min-width:0;border-radius:999px;padding-inline:18px}
 textarea{width:100%;resize:vertical;min-height:2.8em;box-sizing:border-box;line-height:1.55}
 textarea:focus,input:focus,select:focus{border-color:var(--mint);background:var(--surface)}
+.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.tab{appearance:none;border:0;cursor:pointer;text-align:left;font:inherit;background:var(--soft);color:var(--ink-2);border-radius:18px;padding:12px 14px;min-width:0;transition:transform .15s,box-shadow .15s}
+.tab:hover{transform:translateY(-1px)}
+.tab b{display:block;font-size:1.35rem;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.2}
+.tab span{display:block;font-size:.82rem;font-weight:700}
+.tab small{display:block;font-size:.72rem;color:var(--muted);margin-top:2px;line-height:1.35}
+.tab[aria-pressed="true"]{background:var(--blue);color:#fff;box-shadow:0 8px 20px -10px var(--blue)}
+.tab[aria-pressed="true"] b,.tab[aria-pressed="true"] small{color:#fff}
+@media (max-width:720px){.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.tabs .tab:first-child{grid-column:1/-1}}
 .pill{display:inline-flex;gap:6px;align-items:center;font-size:.85rem;font-weight:700;color:var(--ink-2);cursor:pointer;background:var(--soft);padding:7px 14px;border-radius:999px}
 .pill:has(input:checked){background:var(--mint-soft);color:var(--mint-ink);box-shadow:inset 0 0 0 1.5px var(--mint)}
 .pill input{position:absolute;opacity:0;pointer-events:none}
 .hist{font-size:.82rem;color:var(--ink-2);display:grid;gap:6px;margin:8px 0 0;padding:0;list-style:none}
 .hist li{display:flex;gap:10px;flex-wrap:wrap;font-variant-numeric:tabular-nums;background:var(--soft);border-radius:14px;padding:7px 12px}
 summary.note{cursor:pointer;font-weight:700}
+
+
+/* 데이터 영역 */
+.data-head{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--soft);border-radius:20px;padding:14px 16px;display:grid;gap:2px}
+.kpi .v{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.25}
+.kpi .l{font-size:.78rem;color:var(--muted);font-weight:700}
+.kpi .d{font-size:.78rem;font-weight:700;color:var(--ink-2)}
+.chartbox{position:relative;background:var(--soft);border-radius:20px;padding:14px 14px 8px}
+.chartbox svg{display:block;width:100%;height:auto;overflow:visible}
+.chartbox .ttl{font-size:.82rem;font-weight:800;margin-bottom:4px}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:.78rem;font-weight:700;padding:6px 10px;border-radius:10px;white-space:nowrap;transform:translate(-50%,-110%)}
+.top5{display:grid;gap:8px}
+.top5 button{all:unset;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;background:var(--soft);border-radius:16px;padding:10px 14px}
+.top5 button:hover{box-shadow:inset 0 0 0 1.5px var(--mint)}
+.top5 button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.top5 .t{font-weight:700;font-size:.9rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top5 .n{font-size:.8rem;font-weight:800;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.rate{position:relative;height:8px;border-radius:999px;background:var(--track);grid-column:1/-1}
+.rate i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--chart)}
+.rate b{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);border-radius:2px}
+.chip.low{background:var(--low-soft);color:var(--low)} .chip.high{background:var(--high-soft);color:var(--high)}
+.ev{display:grid;gap:10px}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
+.nums div{background:var(--soft);border-radius:14px;padding:8px 12px;display:grid}
+.nums span{font-size:.74rem;color:var(--muted);font-weight:700}
+.nums strong{font-size:1.1rem;font-weight:800;font-variant-numeric:tabular-nums}
+.rate-l{display:flex;justify-content:space-between;font-size:.76rem;color:var(--muted);font-weight:700;margin-top:6px}
+.q{transition:box-shadow .15s ease, transform .15s ease}
+.q:not([open]):hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(46,58,140,.11)}
 
 /* 질문 카드 */
 .list{display:grid;gap:12px}
@@ -134,6 +177,19 @@ a{color:var(--blue)}
 </header>
 
 <div class="wrap">
+  <section class="panel" aria-labelledby="dth">
+    <div class="data-head"><h2 id="dth">데이터로 보는 지금</h2><span class="note" id="dataAt">통계를 불러오는 중이에요.</span></div>
+    <div class="kpis">
+      <div class="kpi"><span class="l">답변율 (답변 ÷ 답변+교체)</span><span class="v" id="kRate">–</span><span class="d" id="kRateD"></span></div>
+      <div class="kpi"><span class="l">교체율 (교체 ÷ 노출)</span><span class="v" id="kRep">–</span><span class="d" id="kRepD"></span></div>
+      <div class="kpi"><span class="l">누적 노출</span><span class="v" id="kExp">–</span><span class="d" id="kExpD"></span></div>
+      <div class="kpi"><span class="l">평균보다 확실히 낮은 질문</span><span class="v" id="kLow">–</span><span class="d">노출 20회 이상 · 추정 답변율이 평균보다 10%p 이상 낮음</span></div>
+    </div>
+    <div class="grid2">
+      <div class="chartbox"><div class="ttl">전체 답변율 추이</div><div id="trend"></div></div>
+      <div class="chartbox"><div class="ttl">교체가 가장 많은 질문</div><div class="top5" id="top5"></div></div>
+    </div>
+  </section>
   <section class="panel" aria-labelledby="dlh">
     <h2 id="dlh">다운로드</h2>
     <span class="hint" id="baseInfo">아직 받은 기록이 없어요. 처음 받으면 이후부터 바뀐 질문이 표시돼요.</span>
@@ -150,6 +206,7 @@ a{color:var(--blue)}
   </section>
 
   <section class="panel" aria-label="찾기">
+    <div class="tabs" id="tabs" role="group" aria-label="보기"></div>
     <div class="row">
       <input type="search" id="q" placeholder="문구나 id로 찾기" aria-label="검색">
       <select id="fChange" aria-label="변경 구분"></select>
@@ -178,9 +235,9 @@ const CAT = {1:'취향',2:'감정',3:'루틴',4:'관계',5:'사랑',6:'가치관
 let toastT; function toast(m){ const t=$('#toast'); t.textContent=m; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2600); }
 const fmt = iso => { try { return new Date(iso).toLocaleString('ko-KR',{dateStyle:'medium',timeStyle:'short'}); } catch { return iso; } };
 
-let BASE = [], BUILT = '', EDITS = new Map(), AIS = new Map(), DLS = [], baseId = null;
+let STATS = [], BASE = [], BUILT = '', EDITS = new Map(), AIS = new Map(), DLS = [], baseId = null;
 let db = null, downloads = null, user = null, sample = null, me = null, canWrite = true;
-let F = { q:'', change:'all', cat:'all', level:'all', axis:'all', diff:false, edit:false, del:false }, limit = 40;
+let F = { q:'', view:'all', change:'all', cat:'all', level:'all', axis:'all', diff:false, edit:false, del:false }, limit = 40;
 const open = new Set(), busy = new Set();
 try { const s = JSON.parse(localStorage.getItem('nadab-board-f2') || 'null'); if (s) F = { ...F, ...s, q:'' }; } catch {}
 const saveF = () => { try { localStorage.setItem('nadab-board-f2', JSON.stringify({ ...F, q:'' })); } catch {} };
@@ -227,10 +284,31 @@ function filters(){
   opt('#fAxis', '자아분석 축 전체', ax.map(a => [a, `${a} (${all.filter(r => r.axis === a && !r.deleted).length})`]), F.axis);
   $('#fLevel').value = F.level; $('#fDiff').checked = F.diff; $('#fEdit').checked = F.edit; $('#fDel').checked = F.del;
 }
+const VIEWS = [
+  ['all', '전체', '활성 질문 모두'],
+  ['pick', '골라야 할 것', '수정안 중 하나를 아직 안 고름'],
+  ['fix', '고쳐야 할 것', '데이터상 답변율이 낮은데 수정안이 없음'],
+  ['new', '신규 질문', '새로 추가하는 질문'],
+  ['mod', '변경된 질문', '문구·관심사·비활성화가 바뀜'],
+];
+const isNewQ = r => r.change === '신규';
+const isMod = r => !isNewQ(r) && (r.edited || !!r.catChange || /^(문구 수정|레벨1|비활성화)/.test(r.change));
+const isPick = r => !r.deleted && !r.edited && r.alts.length >= 2 && !['chosen', 'applied'].includes(r.decided);
+const isFix = r => { if (r.deleted || r.edited || r.change !== '유지') return false; const q = qstat(r.key); return !!q && q.exp >= 20 && q.est < avgRate(latest()) - 0.1; };
+const inView = (r, v) => v === 'all' || (v === 'pick' ? isPick(r) : v === 'fix' ? isFix(r) : v === 'new' ? isNewQ(r) : isMod(r));
+function tabsUI(){
+  const all = rows();
+  $('#tabs').innerHTML = VIEWS.map(([v, l, d]) => {
+    const n = all.filter(r => (F.del || !r.deleted || v === 'mod') && inView(r, v)).length;
+    const dim = v === 'fix' && !STATS.length;
+    return `<button type="button" class="tab" data-view="${v}" aria-pressed="${F.view === v}"><b>${dim ? '–' : n.toLocaleString()}</b><span>${l}</span><small>${dim ? '통계를 불러오는 중' : v === 'fix' && !n ? '지금은 없어요 · 매일 통계로 다시 봐요' : d}</small></button>`;
+  }).join('');
+}
 function visible(){
   const q = F.q.trim().toLowerCase();
   return rows().filter(r =>
-    (F.del || !r.deleted) &&
+    (F.del || !r.deleted || F.view === 'mod') &&
+    inView(r, F.view) &&
     (F.change === 'all' || r.change === F.change) &&
     (F.cat === 'all' || r.cat === F.cat) &&
     (F.level === 'all' || String(r.level) === F.level) &&
@@ -259,17 +337,109 @@ async function historyUI(){
   $('#hist').innerHTML = DLS.length ? DLS.map(d => `<li><span>${esc(fmt(d.at))}</span><span>${esc(who(d.by))}</span><span>${d.kind === 'diff' ? '바뀐 것만' : '전체'} ${d.count}행</span><span>새로 ${d.nNew ?? 0} · 바뀜 ${d.nMod ?? 0} · 빠짐 ${d.nGone ?? 0}</span></li>`).join('') : '<li>아직 없어요.</li>';
 }
 
+
+// ---- 통계(데이터 근거) ----
+const pct = (a, b) => b ? a / b : null;
+const P = x => x == null ? '–' : Math.round(x * 100) + '%';
+const latest = () => STATS[STATS.length - 1] || null;
+const prevSnap = () => STATS[STATS.length - 2] || null;
+function avgRate(s){ return s ? pct(s.totals.ans, s.totals.ans + s.totals.rep) : null; }
+function qstat(k, s = latest()){
+  const v = s && s.q[k]; if (!v) return null;
+  const [exp, ans, rep, nor, rev, aexp, aans, arep] = v;
+  const res = ans + rep, avg = avgRate(s), K = 10;
+  return { exp, ans, rep, nor, rev, aexp, aans, arep, res, rate: pct(ans, res),
+           est: avg == null ? null : (ans + K * avg) / (res + K) };  // 평균 쪽으로 당겨 본 추정 답변율(표본이 적을수록 평균에 가까움)
+}
+function rateChip(k){
+  const q = qstat(k), avg = avgRate(latest());
+  if (!q || !q.res) return '';
+  const low = q.exp >= 20 && q.est < avg - 0.1, high = q.exp >= 20 && q.est > avg + 0.1;
+  return `<span class="chip ${low ? 'low' : high ? 'high' : ''}">답변율 ${P(q.rate)}${low ? ' · 낮음' : high ? ' · 높음' : ''} · 노출 ${q.exp}</span>`;
+}
+function spark(k){
+  const pts = STATS.map(s => { const q = qstat(k, s); return q && q.res ? { d: s.date, r: q.rate } : null; }).filter(Boolean);
+  if (pts.length < 2) return '';
+  const W = 220, H = 44, x = i => 6 + i * (W - 12) / (pts.length - 1), y = r => 6 + (1 - r) * (H - 12);
+  const path = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.r).toFixed(1)}`).join('');
+  const last = pts[pts.length - 1];
+  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="수집일별 답변율 ${pts.map(p => p.d + ' ' + P(p.r)).join(', ')}"><path d="${path}" fill="none" stroke="var(--chart)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${x(pts.length - 1)}" cy="${y(last.r)}" r="4" fill="var(--chart)" stroke="var(--soft)" stroke-width="2"/></svg>`;
+}
+function evidence(r){
+  const s = latest();
+  if (!s) return '<div class="box">통계를 불러오는 중이에요.</div>';
+  const q = qstat(r.key);
+  if (!q) return `<div class="box">${r.newId ? '신규 질문이라 아직 노출 기록이 없어요. 노출이 쌓이면 여기에 근거가 생겨요.' : '통계 사이트에 잡히지 않는 질문이에요(첫 질문 묶음 등).'}</div>`;
+  const avg = avgRate(s), pq = qstat(r.key, prevSnap());
+  const dExp = pq ? q.exp - pq.exp : null, dAns = pq ? q.ans - pq.ans : null;
+  let say;
+  if (!q.res) say = `아직 답변이나 교체가 없어요.`;
+  else {
+    const gap = Math.round((q.rate - avg) * 100);
+    say = `노출 ${q.exp}회 중 답변 ${q.ans}, 교체 ${q.rep}, 미응답 ${q.nor}이에요. 답변율 ${P(q.rate)}로 전체 평균 ${P(avg)}보다 ${Math.abs(gap)}%p ${gap < 0 ? '낮아요' : gap > 0 ? '높아요' : '같아요'}.`;
+    if (q.exp < 20) say += ' 표본이 아직 적어서 추정 답변율은 평균 쪽으로 당겨서 봐요.';
+  }
+  if (q.rev > 1) say += ` 지금 문구는 ${q.rev}번째 버전이고, 이전 버전까지 합친 누적은 노출 ${q.aexp} · 답변 ${q.aans} · 교체 ${q.arep}이에요.`;
+  if (dExp != null && dExp > 0) say += ` 지난 수집(${prevSnap().date}) 이후 노출 +${dExp}, 답변 +${dAns}.`;
+  const w = q.res ? Math.max(2, Math.round(q.rate * 100)) : 0, aw = Math.round(avg * 100);
+  return `<div class="ev">
+    <div class="nums"><div><span>노출</span><strong>${q.exp}</strong></div><div><span>답변</span><strong>${q.ans}</strong></div><div><span>교체</span><strong>${q.rep}</strong></div><div><span>미응답</span><strong>${q.nor}</strong></div><div><span>추정 답변율</span><strong>${P(q.est)}</strong></div></div>
+    ${q.res ? `<div><div class="rate" role="img" aria-label="답변율 ${P(q.rate)}, 평균 ${P(avg)}"><i style="width:${w}%"></i><b style="left:${aw}%"></b></div><div class="rate-l"><span>답변율 ${P(q.rate)}</span><span>세로선 = 전체 평균 ${P(avg)}</span></div></div>` : ''}
+    <div class="box">${esc(say)}</div>
+    ${spark(r.key) ? `<div class="chartbox"><div class="ttl">수집일별 답변율</div>${spark(r.key)}</div>` : ''}
+  </div>`;
+}
+function dataUI(){
+  const s = latest(), p = prevSnap();
+  if (!s){ $('#dataAt').textContent = '아직 받아온 통계가 없어요.'; return; }
+  const avg = avgRate(s), pavg = avgRate(p);
+  $('#dataAt').textContent = `마지막 수집 ${s.date} · 매일 아침 통계 사이트에서 자동으로 받아와요`;
+  $('#kRate').textContent = P(avg);
+  $('#kRateD').textContent = p ? `지난 수집 ${p.date} 대비 ${((avg - pavg) * 100 >= 0 ? '+' : '')}${((avg - pavg) * 100).toFixed(1)}%p` : '';
+  const rr = pct(s.totals.rep, s.totals.exp), prr = p ? pct(p.totals.rep, p.totals.exp) : null;
+  $('#kRep').textContent = P(rr);
+  $('#kRepD').textContent = p ? `지난 수집 대비 ${((rr - prr) * 100 >= 0 ? '+' : '')}${((rr - prr) * 100).toFixed(1)}%p` : '';
+  $('#kExp').textContent = s.totals.exp.toLocaleString();
+  $('#kExpD').textContent = p ? `지난 수집 이후 +${(s.totals.exp - p.totals.exp).toLocaleString()}` : '';
+  const live = rows().filter(r => !r.deleted);
+  $('#kLow').textContent = live.filter(r => { const q = qstat(r.key); return q && q.exp >= 20 && q.est < avg - 0.1; }).length.toLocaleString();
+  // 추이 차트
+  const pts = STATS.map(x => ({ d: x.date, r: avgRate(x), e: x.totals.exp }));
+  const W = 460, H = 150, L = 36, R = 12, T = 12, B = 26;
+  const lo = Math.max(0, Math.floor((Math.min(...pts.map(p => p.r)) - 0.05) * 10) / 10), hi = Math.min(1, Math.ceil((Math.max(...pts.map(p => p.r)) + 0.05) * 10) / 10);
+  const x = i => pts.length === 1 ? (L + W - R) / 2 : L + i * (W - L - R) / (pts.length - 1), y = r => T + (hi - r) / (hi - lo) * (H - T - B);
+  const ticks = []; for (let t = lo; t <= hi + 1e-9; t += 0.05) ticks.push(Math.round(t * 100) / 100);
+  const grid = ticks.filter((t, i) => i % 2 === 0).map(t => `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--track)" stroke-width="1"/><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${Math.round(t * 100)}%</text>`).join('');
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y(p.r)}`).join('');
+  const labels = pts.map((p, i) => (i === 0 || i === pts.length - 1) ? `<text x="${x(i)}" y="${H - 6}" text-anchor="${i === 0 && pts.length > 1 ? 'start' : 'end'}" font-size="11" fill="var(--muted)">${p.d.slice(5)}</text>` : '').join('');
+  const dots = pts.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.r)}" r="${i === pts.length - 1 ? 5 : 3.5}" fill="var(--chart)" stroke="var(--soft)" stroke-width="2"/>`).join('');
+  const hits = pts.map((p, i) => `<rect x="${x(i) - 14}" y="${T}" width="28" height="${H - T - B}" fill="transparent" data-i="${i}"/>`).join('');
+  $('#trend').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="전체 답변율 추이: ${pts.map(p => p.d + ' ' + P(p.r)).join(', ')}">${grid}<path d="${line}" fill="none" stroke="var(--chart)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dots}${labels}<text x="${x(pts.length - 1)}" y="${y(pts[pts.length - 1].r) - 10}" text-anchor="end" font-size="12" font-weight="800" fill="var(--ink)">${P(pts[pts.length - 1].r)}</text>${hits}</svg><div class="tip" hidden></div>${pts.length < 3 ? '<div class="note" style="margin-top:4px">수집이 쌓일수록 추이가 그려져요.</div>' : ''}`;
+  const box = $('#trend'), tip = box.querySelector('.tip');
+  box.querySelectorAll('rect[data-i]').forEach(el => {
+    const show = () => { const p = pts[+el.dataset.i], svg = box.querySelector('svg').getBoundingClientRect(), bb = box.getBoundingClientRect(), sx = svg.width / W;
+      tip.textContent = `${p.d} · 답변율 ${P(p.r)} · 노출 ${p.e.toLocaleString()}`; tip.style.left = (svg.left - bb.left + x(+el.dataset.i) * sx) + 'px'; tip.style.top = (svg.top - bb.top + y(p.r) * sx) + 'px'; tip.hidden = false; };
+    el.addEventListener('mouseenter', show); el.addEventListener('mouseleave', () => tip.hidden = true);
+  });
+  // 교체 많은 질문
+  const top = live.map(r => ({ r, q: qstat(r.key) })).filter(x => x.q && x.q.rep).sort((a, b) => b.q.rep - a.q.rep || a.q.rate - b.q.rate).slice(0, 5);
+  $('#top5').innerHTML = top.map(({ r, q }) => `<button type="button" data-jump="${esc(r.key)}"><span class="t">${esc(r.text)}</span><span class="n">교체 ${q.rep} · 답변율 ${P(q.rate)}</span><span class="rate" aria-hidden="true"><i style="width:${Math.max(2, Math.round((q.rate || 0) * 100))}%"></i><b style="left:${Math.round(avg * 100)}%"></b></span></button>`).join('') + `<div class="note">막대는 답변율, 세로선은 전체 평균이에요. 누르면 그 질문을 열어요.</div>`;
+}
+
 // ---- 카드 ----
 function card(r){
   const d = diffOf(r);
   const chips = [
     d ? `<span class="chip d-${d}">${DIFF_LABEL[d]}</span>` : '',
     r.edited ? `<span class="chip blue">페이지에서 고침</span>` : '',
+    isPick(r) ? `<span class="chip d-mod">골라 주세요</span>` : ['chosen', 'applied'].includes(r.decided) && !r.edited ? `<span class="chip mint">검토에서 고름</span>` : '',
+    isFix(r) ? `<span class="chip low">고쳐야 할 것 · AI 제안 받기</span>` : '',
     `<span class="chip">${esc(r.change)}</span>`,
     `<span class="chip">${esc(r.cat)}${r.catChange ? ` · ${esc(r.catChange)}` : ''}</span>`,
     r.level === 1 ? `<span class="chip mint">레벨 1 · 첫 질문</span>` : `<span class="chip">레벨 2</span>`,
     r.form ? `<span class="chip">${esc(r.form)}</span>` : '',
     r.axis ? `<span class="chip mint">${esc(r.axis)}</span>` : '',
+    rateChip(r.key),
   ].join('');
   return `<details class="q" data-key="${esc(r.key)}"${open.has(r.key) ? ' open' : ''}>
     <summary><span class="qno">Q.${esc(r.key)}${r.newId ? `<span class="nid">${esc(r.newId)}</span>` : ''}</span>
@@ -285,16 +455,17 @@ function optionsOf(r){
 }
 function detail(r){
   const d = diffOf(r);
-  const rate = r.exp ? `노출 ${r.exp} · 답변 ${r.ans} · 교체 ${r.rep} · 답변율 ${r.ans + r.rep ? Math.round(r.ans / (r.ans + r.rep) * 100) : 0}%` : '';
+  const rate = '';
   const e = r.edited, k = esc(r.key), opts = optionsOf(r), b = busy.has(r.key);
   return `<div class="body">
     ${d === 'mod' ? `<div class="diff"><b>지난 다운로드 이후 바뀌었어요.</b> 문구·가이드·레벨·관심사·비활성 중 하나 이상이 달라졌어요.</div>` : ''}
+    <div class="sec"><h3>데이터 근거</h3>${evidence(r)}</div>
     <div class="sec"><h3>이 질문의 목적</h3>
       <div class="box"><div>${esc(r.purpose)}</div>${r.axis ? `<div><b>자아분석</b> ${esc(r.axis)} · ${esc(r.axisNote)}</div>` : ''}${r.why ? `<div><b>바뀐 이유</b> ${esc(r.why)}</div>` : ''}${r.source ? `<div><b>출처</b> ${esc(r.source)}${/^https?:/.test(r.srcUrl) ? ` · <a href="${esc(r.srcUrl)}" target="_blank" rel="noopener">원문 보기</a>` : ''}</div>` : ''}</div>
     </div>
     <div class="grid2">
       <dl class="box"><dt>DB id</dt><dd>${k}</dd>${r.newId ? `<dt>신규 ID</dt><dd>${esc(r.newId)}${r.set ? ` · ${esc(r.set)}` : ''}</dd>` : ''}${r.statsId ? `<dt>통계 질문 ID</dt><dd>#${r.statsId}</dd>` : ''}</dl>
-      <dl class="box">${rate ? `<dt>성과</dt><dd>${esc(rate)}</dd>` : ''}${r.pred ? `<dt>예상 답변율</dt><dd>${Math.round(r.pred * 100)}%</dd>` : ''}${r.deleted ? `<dt>상태</dt><dd>비활성 · ${esc(r.deletedAt)}</dd>` : ''}${e ? `<dt>페이지 수정</dt><dd data-who="${esc(e.by || '')}">${esc(fmt(e.at))}</dd>` : ''}${!rate && !r.pred && !r.deleted && !e ? '<dt>성과</dt><dd>아직 노출 전이에요.</dd>' : ''}</dl>
+      <dl class="box">${rate ? `<dt>성과</dt><dd>${esc(rate)}</dd>` : ''}${r.pred ? `<dt>예상 답변율</dt><dd>${Math.round(r.pred * 100)}%</dd>` : ''}${r.deleted ? `<dt>상태</dt><dd>비활성 · ${esc(r.deletedAt)}</dd>` : ''}${e ? `<dt>페이지 수정</dt><dd data-who="${esc(e.by || '')}">${esc(fmt(e.at))}</dd>` : ''}${!r.pred && !r.deleted && !e ? `<dt>수집 기준</dt><dd>${STATS.length ? esc(STATS[STATS.length - 1].date) : '–'}</dd>` : ''}</dl>
     </div>
     <div class="sec"><h3>추천 수정안</h3>
       <span class="hint">눌러서 고르면 아래 문구에 채워져요</span>
@@ -325,7 +496,7 @@ function detail(r){
 }
 async function render(){
   if (!BASE.length) return;
-  summary();
+  summary(); dataUI(); tabsUI();
   const vis = visible(), shown = vis.slice(0, limit);
   $('#count').textContent = `${vis.length.toLocaleString()}개`;
   $('#list').innerHTML = shown.length ? shown.map(card).join('') : '<div class="empty">조건에 맞는 질문이 없어요.</div>';
@@ -473,8 +644,10 @@ let st; $('#q').addEventListener('input', e => { clearTimeout(st); st = setTimeo
 [['#fChange','change'],['#fCat','cat'],['#fLevel','level'],['#fAxis','axis']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.value; limit = 40; saveF(); render(); }));
 [['#fDiff','diff'],['#fEdit','edit'],['#fDel','del']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.checked; limit = 40; saveF(); render(); }));
 $('#more').addEventListener('click', () => { limit += 40; render(); });
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (!b) return; F.view = b.dataset.view; limit = 40; saveF(); render(); });
 $('#baseSel').addEventListener('change', e => { baseId = e.target.value; historyUI(); render(); });
 $('#dlAll').addEventListener('click', () => download('all'));
+$('#top5').addEventListener('click', e => { const b = e.target.closest('[data-jump]'); if (!b) return; const k = b.dataset.jump; F.q = k; $('#q').value = k; open.add(k); limit = 40; render(); setTimeout(() => document.querySelector(`details.q[data-key="${CSS.escape(k)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); });
 $('#dlDiff').addEventListener('click', () => download('diff'));
 
 // ---- 시작 ----
@@ -491,6 +664,7 @@ $('#dlDiff').addEventListener('click', () => download('diff'));
   db = await cuse('db');
   if (!db){ $('#baseInfo').textContent = '이 화면에서는 다운로드 기록과 수정 저장을 쓸 수 없어요. 파일 받기는 돼요.'; render(); return; }
   let firstEdits = true;
+  db.collection('stats').orderBy('date', 'asc').limit(90).onSnapshot(qs => { STATS = qs.docs.map(d => d.data()); render(); }, () => {});
   db.collection('edits').onSnapshot(qs => {
     EDITS = new Map(qs.docs.map(d => [d.id, d.data()]));
     if (firstEdits || F.edit || F.diff){ firstEdits = false; return render(); }
