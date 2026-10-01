@@ -5,6 +5,7 @@
 각 행: DB 열 + 목적(purpose) + 바뀐 이유 + 출처 + 자아분석 축 + 성과 수치
 """
 import json
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -66,10 +67,34 @@ def main():
                          ["new_questions.csv", "new_questions_scraped.csv", "new_questions_love.csv",
                           "new_questions_fun.csv", "new_questions_self.csv"]]).set_index("신규 ID")
 
+    rw = pd.read_csv(Path(__file__).parent / "rewrites.csv").fillna("").set_index("질문 ID")
+    dec_path = ROOT / "data" / "decisions.csv"
+    dec = pd.read_csv(dec_path, dtype=str).fillna("").set_index("id") if dec_path.exists() else pd.DataFrame()
+    clean = lambda t: re.sub(r"^\([^)]*\)\s*", "", t).strip()
+
+    def alternatives(r, sid, cur):
+        """추천 수정안 목록: [라벨, 문구]. 지금 개선본 문구와 같은 건 표시만 하고 남긴다."""
+        alts = []
+        def add(label, text):
+            text = (text or "").strip()
+            if text and not text.startswith("(") and "중복만 제거" not in text and all(text != t for _, t in alts):
+                alts.append([label, text])
+        if r["기존 question_text"]:
+            add("지금 DB 문구", r["기존 question_text"])
+        if sid is not None and sid in rw.index:
+            add("수정안 1 (권장)", rw.loc[sid, "수정안 1 (권장)"])
+            add("수정안 2 (대안)", clean(rw.loc[sid, "수정안 2 (대안)"]))
+        dk = str(sid) if sid is not None else (f"D{r['id']}" if r["id"] and 661 <= int(r["id"]) <= 684 else "")
+        if dk and len(dec) and dk in dec.index and dec.loc[dk, "status"] in ("chosen", "applied"):
+            add("검토에서 고른 문구", dec.loc[dk, "text"])
+        if r["id"] and r["id"].isdigit() and int(r["id"]) in block.index:
+            add("수정안 (권장)", block.loc[int(r["id"]), "권장 문구"])
+        return [[l, t, t == cur] for l, t in alts]
+
     rows = []
     for _, r in full.iterrows():
         key = r["id"] or r["신규 ID"]
-        sid = stats_id_of(r["id"]) if r["id"] else None
+        sid = stats_id_of(r["id"]) if r["id"] and not r["신규 ID"] else None
         cat = CAT.get(int(float(r["interest_id"])), "")
         level = int(float(r["question_level"]))
         form, ax, axnote, why, source, src_url, pred = "", "", "", "", "", "", None
@@ -115,6 +140,7 @@ def main():
             "form": fname, "axis": ax, "axisNote": axnote, "purpose": " ".join(p for p in purpose if p),
             "why": why, "source": source, "srcUrl": src_url, "pred": pred,
             "exp": exp, "ans": ans, "rep": rep,
+            "alts": alternatives(r, sid, r["question_text"]),
         })
     built = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M")
     out = ROOT / "board" / "data" / "questions.json"

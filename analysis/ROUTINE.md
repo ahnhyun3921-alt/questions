@@ -73,8 +73,13 @@ git add -A && git commit -m "Monthly question review: <날짜>" && git push -u o
 ## 8. 질문 개선함 페이지 (BE 전달용)
 https://claude.ai/artifact/1F4W6W5WHQsnM6YsXUm4ea
 ```bash
-python analysis/build_full_db.py && python analysis/build_board_data.py
+python analysis/record_decisions.py <decisions 덤프 폴더>   # 검토 페이지 선택 먼저 반영
+python analysis/build_final_list.py && python analysis/build_db_export.py && python analysis/build_full_db.py
+python analysis/build_board_data.py && python analysis/build_board_page.py
 ```
-`board/index.html`을 `files: {"data/questions.json": "board/data/questions.json"}`와 함께 같은 경로로 다시 게시한다(capabilities는 생략해 유지).
+`board/dist/index.html`(나눔스퀘어를 넣어 만든 페이지)을 `url`과 `files: {"data/questions.json": "board/data/questions.json"}`로 다시 게시한다(capabilities는 생략해 유지).
+검토 페이지에서 수정안 1이 아닌 문구를 고른 질문은 `analysis/guides_decided.csv`에 그 문구에 맞는 가이드를 먼저 쓴다(문구가 다르면 적용되지 않는다).
+신규 질문 DB id는 `analysis/new/new_db_ids.csv`에 고정돼 있고, 새 신규 질문만 다음 번호를 받는다.
+AI 추천은 db `ai/{id}`에 쌓인다.
 페이지에서 고친 내용은 db `edits/{key}`(key = DB id 또는 신규 ID)에, 다운로드 기록은 `downloads`에 쌓인다. 둘 다 사용자 데이터라 루틴이 쓰지 않는다.
 `edits`는 ArtifactData `list`로 읽어 다음 개선본에 반영할지 사용자에게 보고한다.

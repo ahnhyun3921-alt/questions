@@ -27,7 +27,9 @@ def main(dump_dir: str):
     if not rows:
         print("선택 기록 없음")
         return
-    df = pd.DataFrame(rows).sort_values("id")
+    df = pd.DataFrame(rows)
+    df["id"] = df["id"].astype(str)
+    df = df.sort_values("id")
     df.to_csv(out, index=False, encoding="utf-8-sig")
     print(df["status"].value_counts().to_string())
     # 반영함으로 표시했는데 통계상 Revision이 안 바뀐 질문 = 관리자 도구 반영 누락 의심

@@ -34,6 +34,16 @@ def main():
     ch = f[f["가이드 점검"].fillna("") != ""].merge(gw, on="질문 ID", how="left", suffixes=("_현재", ""))
     for c in G:
         ch[c] = ch.apply(lambda r: r[c] if r["가이드 처리"] == "재작성" else r[f"{c}_현재"], axis=1)
+    # 검토 페이지에서 수정안 1이 아닌 문구를 골랐다면 그 문구에 맞춰 쓴 가이드(guides_decided.csv)
+    gd_path = Path(__file__).parent / "guides_decided.csv"
+    if gd_path.exists():
+        gd = pd.read_csv(gd_path, dtype=str).set_index("id")
+        for i, r in ch.iterrows():
+            k = str(r["질문 ID"])
+            if k in gd.index and gd.loc[k, "문구"] == r["최종 권장 문구"]:
+                for c in G:
+                    ch.at[i, c] = gd.loc[k, c]
+                ch.at[i, "가이드 처리"] = "재작성"
     up = ch.rename(columns={"DB id": "id", "최종 권장 문구": "question_text", "기존 문구": "기존 question_text", "질문 ID": "통계 질문 ID"})
     up = up[["id", "통계 질문 ID", "기존 question_text", "question_text", *G, "가이드 처리", "조치", "이유"]]
     up.to_csv(EXP / "update_existing.csv", index=False, encoding="utf-8-sig")

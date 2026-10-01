@@ -26,13 +26,16 @@ def main():
     d = d.fillna({"원인 진단": "", "수정 원칙": "", "수정안 1 (권장)": "", "수정안 2 (대안)": "", "조치 유형": ""})
 
     dec_path = ROOT / "data" / "decisions.csv"
-    dec = pd.read_csv(dec_path).set_index("id") if dec_path.exists() else pd.DataFrame()
-    d["검토 상태"] = d["질문 ID"].map(dec["status"]) if len(dec) else None
-    d["검토에서 고른 문구"] = d["질문 ID"].map(dec["text"]) if len(dec) else None
+    dec = pd.read_csv(dec_path, dtype={"id": str}).set_index("id") if dec_path.exists() else pd.DataFrame()
+    d["검토 상태"] = d["질문 ID"].astype(str).map(dec["status"]) if len(dec) else None
+    d["검토에서 고른 문구"] = d["질문 ID"].astype(str).map(dec["text"]) if len(dec) else None
 
     def final(r):
         # 검토 페이지에서 사용자가 고른 문구가 있으면 그것이 최우선
         if isinstance(r.get("검토에서 고른 문구"), str) and r.get("검토 상태") in ("chosen", "applied"):
+            # 수정안 2가 '(새 질문 없이 중복만 제거)' 같은 처리 지시였다면 문구가 아니라 비활성화
+            if "중복만 제거" in r["검토에서 고른 문구"]:
+                return "(비활성화)"
             return r["검토에서 고른 문구"]
         o1 = r["수정안 1 (권장)"]
         if o1.startswith("(통합"):

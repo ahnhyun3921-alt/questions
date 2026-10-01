@@ -80,27 +80,39 @@ def main():
         put(r["id"], deleted_at=now, **{"변경 구분": "비활성화(중복 통합)"})
 
     # 3) 레벨 1 첫 질문 묶음(661~684)
+    gd_path = Path(__file__).parent / "guides_decided.csv"
+    gdec = pd.read_csv(gd_path, dtype=str).set_index("id") if gd_path.exists() else pd.DataFrame()
     lb = pd.read_csv(EXP / "update_level1_block.csv")
     for _, r in lb.iterrows():
         st, txt = decided(f"D{r['id']}")
         if st == "skipped":
             continue
+        gs = {c: r[c] for c in G}
+        if txt and f"D{r['id']}" in gdec.index and gdec.loc[f"D{r['id']}", "문구"] == txt:
+            gs = {c: gdec.loc[f"D{r['id']}", c] for c in G}
         put(r["id"], **{"기존 question_text": r["기존 question_text"], "question_text": txt or r["question_text"],
-                        **{c: r[c] for c in G}, "updated_at": now, "변경 구분": "레벨1 묶음 재작성"})
+                        **gs, "updated_at": now, "변경 구분": "레벨1 묶음 재작성"})
     for i in db.loc[db.question_text.str.contains("QA 소셜 집계", na=False), "id"]:
         put(i, deleted_at=now, **{"변경 구분": "비활성화(테스트 행)"})
 
-    # 4) 신규
+    # 4) 신규 — DB id는 기존 최대 id 다음부터 매기고 analysis/new/new_db_ids.csv에 고정한다(다시 만들어도 같은 번호)
+    idmap_path = Path(__file__).parent / "new" / "new_db_ids.csv"
+    idmap = (pd.read_csv(idmap_path, dtype=str).set_index("신규 ID")["DB id"].to_dict() if idmap_path.exists() else {})
+    next_id = max([int(x) for x in db["id"] if str(x).isdigit()] + [int(v) for v in idmap.values()]) + 1
     nw = pd.read_csv(EXP / "insert_new.csv")
     keep = []
     for _, r in nw.iterrows():
         st, txt = decided(r["신규 ID"])
         if st == "skipped":
             continue
-        keep.append({"id": "", "interest_id": r["interest_id"], "question_text": txt or r["question_text"],
+        if r["신규 ID"] not in idmap:
+            idmap[r["신규 ID"]] = str(next_id)
+            next_id += 1
+        keep.append({"id": idmap[r["신규 ID"]], "interest_id": r["interest_id"], "question_text": txt or r["question_text"],
                      "question_level": r["question_level"], **{c: r[c] for c in G},
                      "created_at": now, "updated_at": now, "deleted_at": "", "변경 구분": "신규",
                      "신규 ID": r["신규 ID"], "세트": r["세트"], "분석 축": r.get("분석 축", "") if isinstance(r.get("분석 축"), str) else ""})
+    pd.DataFrame(sorted(idmap.items(), key=lambda kv: int(kv[1])), columns=["신규 ID", "DB id"]).to_csv(idmap_path, index=False, encoding="utf-8-sig")
     out = pd.concat([db, pd.DataFrame(keep)], ignore_index=True)
     out["deleted_at"] = out["deleted_at"].fillna("")
 
