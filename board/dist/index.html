@@ -56,7 +56,9 @@ h1{font-size:2rem;font-weight:800;margin:0;letter-spacing:-.02em;line-height:1.2
 .nav .bdg{display:inline-block;min-width:1.4em;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:.72rem;background:var(--mod-soft);color:var(--mod);font-variant-numeric:tabular-nums}
 .nav button[aria-selected="true"] .bdg{background:rgba(255,255,255,.22);color:#fff}
 .nav .bdg[hidden]{display:none}
-.pg{display:grid;gap:16px}
+.tile{min-width:0}.tile .l{overflow-wrap:anywhere}
+.pg{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+.pg > .panel{min-width:0}
 body[data-page="pick"] .q-only{display:none} body:not([data-page="pick"]) .pick-only{display:none}
 .dups{display:grid;gap:12px}
 .dpair{background:var(--surface);border-radius:24px;padding:18px;display:grid;gap:12px;box-shadow:var(--shadow)}
@@ -140,6 +142,34 @@ summary.note{cursor:pointer;font-weight:700}
 .dist .lg button{all:unset;cursor:pointer;border-radius:6px;padding:1px 4px}
 .dist .lg button:hover,.dist .lg button[aria-pressed="true"]{background:var(--soft);color:var(--ink)}
 .dist .lg button:focus-visible{outline:2px solid var(--blue)}
+#forest{position:relative}
+.finds{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.find{background:var(--soft);border-radius:20px;padding:14px 16px;display:grid;gap:6px;align-content:start;border-left:5px solid var(--muted)}
+.find.neg{border-left-color:var(--low)} .find.pos{border-left-color:var(--high)} .find.gap{border-left-color:var(--mod)}
+.find .k{font-size:.72rem;font-weight:800;color:var(--ink-2)}
+.find h3{margin:0;font-size:.98rem;font-weight:800}
+.find p{margin:0;font-size:.86rem;line-height:1.55;color:var(--ink)}
+.find .act{font-size:.82rem;color:var(--ink-2);background:var(--surface);border-radius:12px;padding:8px 10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.axrow{display:grid;grid-template-columns:96px minmax(0,1fr) minmax(0,1fr);gap:6px 14px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:.82rem}
+.axrow:first-child{border-top:0}
+.axrow .nm{font-weight:800}
+.axrow .cnt{display:grid;gap:3px}
+.axrow .cnt span{display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink-2)}
+.axrow .cnt i{display:block;height:7px;border-radius:999px}
+.axrow .rt{position:relative;height:28px}
+.axrow .rt .tr{position:absolute;left:0;right:0;top:13px;height:2px;background:var(--track)}
+.axrow .rt .ci{position:absolute;top:10px;height:8px;border-radius:999px;background:color-mix(in srgb,var(--chart) 28%,transparent)}
+.axrow .rt .pt{position:absolute;top:8px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--chart);box-shadow:0 0 0 2px var(--soft)}
+.axrow .rt .av{position:absolute;top:4px;bottom:4px;width:2px;background:var(--ink);opacity:.6}
+.axrow .rt .lb{position:absolute;right:0;top:-6px;font-size:.72rem;font-weight:800;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.axhead{display:grid;grid-template-columns:96px minmax(0,1fr) minmax(0,1fr);gap:14px;font-size:.72rem;font-weight:800;color:var(--muted)}
+@media (max-width:640px){.axrow,.axhead{grid-template-columns:76px minmax(0,1fr) minmax(0,1fr);gap:4px 8px}}
+.heat{border-collapse:separate;border-spacing:3px;font-size:.8rem;font-variant-numeric:tabular-nums;min-width:520px;width:100%}
+.heat th{font-size:.74rem;color:var(--ink-2);font-weight:800;padding:4px 6px;text-align:center}
+.heat th:first-child{text-align:left}
+.heat td{text-align:center;font-weight:800;border-radius:8px;padding:8px 4px}
+.heat td.zero{background:transparent!important;color:var(--gone);box-shadow:inset 0 0 0 1.5px var(--gone)}
 .dist .bar{display:flex;gap:2px;height:22px;border-radius:8px;overflow:hidden;background:var(--surface)}
 .dist .bar i{display:block;height:100%;min-width:2px}
 .dist .bl{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:center;font-size:.8rem;font-weight:800;color:var(--ink-2)}
@@ -256,6 +286,7 @@ a{color:var(--blue)}
   <button type="button" role="tab" data-page="pick" aria-selected="false" aria-controls="pg-q">골라 주세요<span class="bdg" id="bdgPick" hidden></span></button>
   <button type="button" role="tab" data-page="q" aria-selected="true" aria-controls="pg-q">전체 질문</button>
   <button type="button" role="tab" data-page="dup" aria-selected="false" aria-controls="pg-dup">중복 검토<span class="bdg" id="bdgDup" hidden></span></button>
+  <button type="button" role="tab" data-page="ins" aria-selected="false" aria-controls="pg-ins">분석</button>
   <button type="button" role="tab" data-page="data" aria-selected="false" aria-controls="pg-data">데이터</button>
   <button type="button" role="tab" data-page="dl" aria-selected="false" aria-controls="pg-dl">다운로드·업로드<span class="bdg" id="bdgDiff" hidden></span></button>
 </div></nav>
@@ -272,6 +303,37 @@ a{color:var(--blue)}
     </div>
   </section>
   <section class="dups" id="dups"></section>
+  </div>
+  <div class="pg" id="pg-ins" role="tabpanel" data-page="ins" hidden>
+  <section class="panel" aria-labelledby="insh">
+    <div class="data-head"><h2 id="insh">나답 질문 분석 리포트</h2><span class="note" id="insMeta">분석 결과를 불러오는 중이에요.</span></div>
+    <div class="finds" id="finds"></div>
+  </section>
+  <section class="panel" aria-labelledby="forh">
+    <div class="brk-head"><h2 id="forh" style="margin:0">무엇이 답변율을 움직이나</h2>
+      <div class="seg2" id="forSeg" role="group" aria-label="분석 방식"><button type="button" data-m="multi" aria-pressed="true">함께 보기(다변량)</button><button type="button" data-m="uni" aria-pressed="false">따로 보기(단변량)</button></div></div>
+    <p class="note" style="margin:0" id="forNote"></p>
+    <div class="chartbox"><div id="forest"></div></div>
+    <div class="legend"><span><i style="background:var(--chart)"></i>확실한 효과 (95% CI가 0을 넘지 않음)</span><span><i style="background:transparent;box-shadow:inset 0 0 0 2px var(--muted)"></i>불확실</span></div>
+  </section>
+  <section class="panel" aria-labelledby="axh">
+    <h2 id="axh">자아분석 축: 얼마나 묻고, 얼마나 답하나</h2>
+    <div class="chartbox"><div id="axChart"></div></div>
+    <div class="legend"><span><i style="background:var(--muted)"></i>지금 DB 문항 수</span><span><i style="background:var(--chart)"></i>개선 후 문항 수</span><span><i style="background:var(--ink);width:2px"></i>전체 평균 답변율</span></div>
+  </section>
+  <section class="panel" aria-labelledby="hmh">
+    <h2 id="hmh">축 × 관심사 — 어디가 비어 있나</h2>
+    <p class="note" style="margin:0">개선 후 활성 질문 수예요. 페이지에서 고친 관심사·비활성화까지 반영해요. 0인 칸은 그 관심사에서 그 축을 묻는 질문이 없다는 뜻이에요.</p>
+    <div class="chartbox" style="overflow-x:auto"><div id="heat"></div></div>
+  </section>
+  <section class="panel" aria-labelledby="lenh">
+    <h2 id="lenh">문구 길이별 답변율</h2>
+    <div class="chartbox"><div id="lenChart"></div></div>
+  </section>
+  <section class="panel">
+    <details><summary class="note"><b>방법과 한계</b></summary>
+      <div class="note" style="display:grid;gap:6px;margin-top:8px" id="method"></div></details>
+  </section>
   </div>
   <div class="pg" id="pg-data" role="tabpanel" data-page="data" hidden>
   <section class="panel" aria-labelledby="disth">
@@ -599,7 +661,7 @@ function summary(){
   $('#tEdits').textContent = EDITS.size.toLocaleString();
   const b = baseline();
   $('#tDiff').textContent = b ? all.filter(r => diffOf(r)).length.toLocaleString() : '–';
-  $('#tDiffL').textContent = b ? (b.orig ? `${ORIG_LABEL} 대비 바뀐 질문` : `${fmt(b.at)} 다운로드 이후 바뀐 질문`) : '지난 다운로드 이후 바뀐 질문';
+  $('#tDiffL').textContent = b ? (b.orig ? '원본 DB 대비 바뀐 질문' : `${fmt(b.at)} 다운로드 이후 바뀐 질문`) : '지난 다운로드 이후 바뀐 질문';
 }
 async function historyUI(){
   const ids = [...new Set(DLS.map(d => d.by).filter(Boolean))];
@@ -667,7 +729,7 @@ function evidence(r){
 let PAGE = 'q';
 try { PAGE = localStorage.getItem('nadab-board-page') || 'q'; } catch {}
 function go(pg, scroll = true){
-  PAGE = ['pick', 'q', 'dup', 'data', 'dl'].includes(pg) ? pg : 'q';
+  PAGE = ['pick', 'q', 'dup', 'ins', 'data', 'dl'].includes(pg) ? pg : 'q';
   const was = document.body.dataset.page; document.body.dataset.page = PAGE;
   try { localStorage.setItem('nadab-board-page', PAGE); } catch {}
   document.querySelectorAll('#nav [data-page]').forEach(b => b.setAttribute('aria-selected', b.dataset.page === PAGE));
@@ -739,6 +801,80 @@ function distUI(){
   // 전체 질문 탭 위 작은 분포(개선 후)
   $('#distMini').innerHTML = `<div class="bl"><span>관심사 분포</span><div class="bar" role="img" aria-label="개선 후 ${cats.map((c, i) => `${c} ${n1[i]}개`).join(', ')}">${cats.map((c, i) => `<i style="width:${n1[i] / t1 * 100}%;background:${col(i)}" title="${c} ${n1[i]}개 (${P(n1[i] / t1)})"></i>`).join('')}</div></div>
     <div class="lg">${cats.map((c, i) => `<button type="button" data-cat="${c}" aria-pressed="${F.cat === c}"><span class="sw" style="background:${col(i)}"></span>${c} ${n1[i]} · ${P(n1[i] / t1)}</button>`).join('')}</div>`;
+}
+// ---- 분석 리포트 ----
+let INS = null, FMODE = 'multi';
+const pp = x => `${x >= 0 ? '+' : ''}${(x * 100).toFixed(1)}%p`;
+function insUI(){
+  if (!INS || !BASE.length) return;
+  const m = INS.model, s = latest();
+  $('#insMeta').textContent = `통계 ${INS.snapshot} 기준 · 문항 ${m.n_q.toLocaleString()}개 · 결론(답변+교체) ${m.n_res.toLocaleString()}회 · 평균 답변율 ${P(m.base)}`;
+  const KL = { neg: '낮추는 요인', pos: '올리는 요인', gap: '빈 곳', neutral: '참고' };
+  $('#finds').innerHTML = INS.findings.map(f => `<article class="find ${f.kind}"><span class="k">${KL[f.kind] || '참고'}</span><h3>${esc(f.title)}</h3><p>${esc(f.body)}</p>${f.action ? `<div class="act"><b>그래서</b> ${esc(f.action)}</div>` : ''}</article>`).join('');
+  forestUI(); axUI(); heatUI(); lenUI();
+  $('#method').innerHTML = [
+    `<div><b>데이터</b> 통계 사이트의 문항별 '현재 Revision' 실적(${INS.snapshot}). 답변율 = 답변 ÷ (답변 + 교체). 미응답은 결론이 나지 않은 노출이라 뺐어요.</div>`,
+    `<div><b>문구 특성</b> 기존 질문마다 붙인 태그(시점 고정, 경험 전제, 즉답, 감정 무게, 자기노출, 은유)와 글자 수, 형식, 관심사.</div>`,
+    `<div><b>따로 보기(단변량)</b> 그 특성이 있는 질문과 없는 질문의 답변율 차이와 95% 신뢰구간.</div>`,
+    `<div><b>함께 보기(다변량)</b> 문항 단위 이항 로지스틱 회귀로 모든 특성을 동시에 넣어 각 특성의 효과만 떼어 봤어요. ${esc(m.ref)}. 문항마다 들쭉날쭉한 정도(과산포)를 반영해 신뢰구간을 계산했고(척도 ${m.scale}), 평균 답변율 ${P(m.base)}에서의 %p 차이로 바꿔 보여 줘요.</div>`,
+    `<div><b>한계</b> 문항당 노출이 아직 적어(대부분 10회 미만) 구간이 넓어요. 관찰 데이터라 인과로 단정할 수 없고, 노출 순서·사용자 구성의 영향은 통제하지 못했어요. 매달 통계가 쌓이면 다시 계산해요.</div>`].join('');
+}
+function forestUI(){
+  const multi = FMODE === 'multi';
+  const items = multi ? INS.model.terms.map(t => ({ g: t.group, n: t.name, v: t.pp, lo: t.pp_lo, hi: t.pp_hi, sig: t.p < 0.05, tip: `오즈비 ${t.or_} (95% CI ${t.or_lo}~${t.or_hi}) · p=${t.p}` }))
+    : INS.uni.map(u => ({ g: u.group, n: u.name, v: u.diff, lo: u.lo, hi: u.hi, sig: u.lo > 0 || u.hi < 0, tip: `해당 ${P(u.rate)} vs 나머지 ${P(u.rest)} · 문항 ${u.nq} · 결론 ${u.res}` }));
+  $('#forNote').textContent = multi ? `다른 특성을 모두 함께 고려했을 때 각 특성이 평균 답변율(${P(INS.model.base)})을 얼마나 바꾸는지예요. ${INS.model.ref}.` : '그 특성이 있는 질문과 없는 질문의 답변율 차이예요. 다른 특성과 겹친 효과가 섞여 있어요.';
+  const groups = [...new Set(items.map(i => i.g))], rowsH = [];
+  groups.forEach(g => { rowsH.push({ head: g }); items.filter(i => i.g === g).forEach(i => rowsH.push(i)); });
+  const W = 720, L = 150, R = 70, rh = 24, H = rowsH.length * rh + 34;
+  const xmin = Math.min(-0.3, ...items.map(i => i.lo)), xmax = Math.max(0.2, ...items.map(i => i.hi));
+  const x = v => L + (v - xmin) / (xmax - xmin) * (W - L - R);
+  const ticks = []; for (let t = Math.ceil(xmin * 10) / 10; t <= xmax + 1e-9; t += 0.1) ticks.push(+t.toFixed(1));
+  let y = 8, body = '';
+  rowsH.forEach(r => {
+    if (r.head){ body += `<text x="0" y="${y + 15}" font-size="12" font-weight="800" fill="var(--ink-2)">${esc(r.head)}</text>`; y += rh; return; }
+    const cy = y + rh / 2;
+    body += `<g class="fr" data-tip="${esc(r.n + ' · ' + pp(r.v) + ' (95% CI ' + pp(r.lo) + ' ~ ' + pp(r.hi) + ') · ' + r.tip)}">
+      <rect x="0" y="${y}" width="${W}" height="${rh}" fill="transparent"/>
+      <text x="12" y="${cy + 4}" font-size="12" fill="var(--ink)">${esc(r.n)}</text>
+      <line x1="${x(r.lo)}" x2="${x(r.hi)}" y1="${cy}" y2="${cy}" stroke="${r.sig ? 'var(--chart)' : 'var(--muted)'}" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="${x(r.v)}" cy="${cy}" r="5" fill="${r.sig ? 'var(--chart)' : 'var(--soft)'}" stroke="${r.sig ? 'var(--soft)' : 'var(--muted)'}" stroke-width="2"/>
+      <text x="${W}" y="${cy + 4}" font-size="11" text-anchor="end" font-weight="${r.sig ? 800 : 400}" fill="${r.sig ? 'var(--ink)' : 'var(--muted)'}">${pp(r.v)}</text></g>`;
+    y += rh; });
+  const axis = ticks.map(t => `<line x1="${x(t)}" x2="${x(t)}" y1="4" y2="${y}" stroke="${t === 0 ? 'var(--ink)' : 'var(--track)'}" stroke-width="${t === 0 ? 1.5 : 1}"/><text x="${x(t)}" y="${y + 16}" font-size="11" text-anchor="middle" fill="var(--muted)">${t > 0 ? '+' : ''}${Math.round(t * 100)}%p</text>`).join('');
+  $('#forest').innerHTML = `<svg viewBox="0 0 ${W} ${y + 24}" role="img" aria-label="요인별 답변율 효과">${axis}${body}</svg><div class="tip" hidden></div>`;
+}
+function axUI(){
+  const ax = INS.axes, avg = INS.model.base, maxN = Math.max(...ax.map(a => Math.max(a.now, a.aft)));
+  const lo = 0.2, hi = 0.8, pos = v => `${(Math.min(Math.max(v, lo), hi) - lo) / (hi - lo) * 100}%`;
+  $('#axChart').innerHTML = `<div class="axhead"><span>축</span><span>문항 수</span><span>답변율 · 95% CI (20~80%)</span></div>` + ax.map(a => `<div class="axrow">
+    <span class="nm">${esc(a.name)}</span>
+    <span class="cnt"><span><i style="width:${a.now / maxN * 100}%;background:var(--muted)"></i>${a.now}</span><span><i style="width:${a.aft / maxN * 100}%;background:var(--chart)"></i>${a.aft}</span></span>
+    <span class="rt" title="${esc(a.name)} 답변율 ${P(a.rate)} (95% CI ${P(a.ci[0])}~${P(a.ci[1])}) · 결론 ${a.res}회">${a.rate == null ? '<span class="lb">실적 없음</span>' : `<span class="tr"></span><span class="ci" style="left:${pos(a.ci[0])};width:calc(${pos(a.ci[1])} - ${pos(a.ci[0])})"></span><span class="av" style="left:${pos(avg)}"></span><span class="pt" style="left:${pos(a.rate)}"></span><span class="lb">${P(a.rate)}</span>`}</span></div>`).join('');
+}
+function heatUI(){
+  const all = rows().filter(r => !r.deleted && r.axis), cats = Object.values(CAT);
+  const axes = [...new Set(INS.axes.map(a => a.name))];
+  const n = (a, c) => all.filter(r => r.axis === a && r.cat === c).length;
+  const max = Math.max(1, ...axes.flatMap(a => cats.map(c => n(a, c))));
+  $('#heat').innerHTML = `<table class="heat"><thead><tr><th>축 / 관심사</th>${cats.map(c => `<th>${c}</th>`).join('')}<th>합계</th></tr></thead><tbody>` +
+    axes.map(a => { const vals = cats.map(c => n(a, c));
+      return `<tr><th>${esc(a)}</th>${vals.map((v, i) => { const t = v / max, bg = `color-mix(in srgb, var(--chart) ${Math.round(12 + t * 80)}%, var(--surface))`;
+        return v ? `<td style="background:${bg};color:${t > 0.5 ? '#fff' : 'var(--ink)'}" title="${esc(a)} × ${cats[i]}: ${v}문항">${v}</td>` : `<td class="zero" title="${esc(a)} × ${cats[i]}: 없음">0</td>`; }).join('')}<td>${vals.reduce((x, y) => x + y, 0)}</td></tr>`; }).join('') + '</tbody></table>';
+}
+function lenUI(){
+  const b = INS.length, W = 640, H = 220, L = 40, Bm = 40, T = 14, bw = (W - L) / b.length;
+  const y = v => T + (1 - v) * (H - T - Bm);
+  const grid = [0, 0.25, 0.5, 0.75, 1].map(t => `<line x1="${L}" x2="${W}" y1="${y(t)}" y2="${y(t)}" stroke="var(--track)"/><text x="${L - 6}" y="${y(t) + 4}" font-size="11" text-anchor="end" fill="var(--muted)">${t * 100}%</text>`).join('');
+  const bars = b.map((d, i) => { const cx = L + bw * i + bw / 2, w = Math.min(56, bw * 0.55);
+    if (d.rate == null) return '';
+    return `<g><title>${d.name}: 답변율 ${P(d.rate)} (95% CI ${P(d.ci[0])}~${P(d.ci[1])}) · 문항 ${d.nq} · 결론 ${d.res}</title>
+      <path d="M${cx - w / 2},${y(0)} V${y(d.rate) + 4} q0,-4 4,-4 H${cx + w / 2 - 4} q4,0 4,4 V${y(0)} Z" fill="var(--chart)" opacity="${d.res < 50 ? 0.45 : 1}"/>
+      <line x1="${cx}" x2="${cx}" y1="${y(d.ci[0])}" y2="${y(d.ci[1])}" stroke="var(--ink)" stroke-width="1.5"/><line x1="${cx - 6}" x2="${cx + 6}" y1="${y(d.ci[1])}" y2="${y(d.ci[1])}" stroke="var(--ink)" stroke-width="1.5"/><line x1="${cx - 6}" x2="${cx + 6}" y1="${y(d.ci[0])}" y2="${y(d.ci[0])}" stroke="var(--ink)" stroke-width="1.5"/>
+      <text x="${cx}" y="${y(d.ci[1]) - 6}" font-size="11" font-weight="800" text-anchor="middle" fill="var(--ink)">${P(d.rate)}</text>
+      <text x="${cx}" y="${H - 22}" font-size="11" text-anchor="middle" fill="var(--ink-2)">${d.name}</text><text x="${cx}" y="${H - 8}" font-size="10" text-anchor="middle" fill="var(--muted)">문항 ${d.nq}${d.res < 50 ? ' · 표본 적음' : ''}</text></g>`; }).join('');
+  const avg = `<line x1="${L}" x2="${W}" y1="${y(INS.model.base)}" y2="${y(INS.model.base)}" stroke="var(--ink)" stroke-dasharray="4 4" opacity=".6"/><text x="${W}" y="${y(INS.model.base) - 5}" font-size="10" text-anchor="end" fill="var(--ink-2)">평균 ${P(INS.model.base)}</text>`;
+  $('#lenChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="문구 길이별 답변율">${grid}${bars}${avg}</svg><p class="note" style="margin:6px 0 0">세로 선은 95% 신뢰구간이에요. 흐린 막대는 결론 50회 미만이라 참고만 해요.</p>`;
 }
 let BRK = 'form';
 function breakdown(){
@@ -887,7 +1023,7 @@ function detail(r){
 }
 async function render(){
   if (!BASE.length) return;
-  summary(); dataUI(); tabsUI(); badges(); dupUI();
+  summary(); dataUI(); tabsUI(); badges(); dupUI(); if (INS) heatUI();
   const vis = visible(), shown = vis.slice(0, limit);
   const act = activeFilters();
   $('#count').textContent = `${vis.length.toLocaleString()}개${act.length ? ` · 필터: ${act.join(', ')}` : ''}`;
@@ -1120,6 +1256,11 @@ let st; $('#q').addEventListener('input', e => { clearTimeout(st); st = setTimeo
 $('#more').addEventListener('click', () => { limit += 40; render(); });
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (b) go(b.dataset.page); });
 go(PAGE, false);
+$('#forSeg').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b) return; FMODE = b.dataset.m; document.querySelectorAll('#forSeg button').forEach(x => x.setAttribute('aria-pressed', x === b)); forestUI(); });
+$('#forest').addEventListener('mousemove', e => { const g = e.target.closest('.fr'), tip = $('#forest .tip'); if (!tip) return;
+  if (!g){ tip.hidden = true; return; } const box = $('#forest').getBoundingClientRect(); tip.hidden = false; tip.textContent = g.dataset.tip;
+  tip.style.left = Math.min(Math.max(e.clientX - box.left, 120), box.width - 120) + 'px'; tip.style.top = (e.clientY - box.top - 8) + 'px'; });
+$('#forest').addEventListener('mouseleave', () => { const t = $('#forest .tip'); if (t) t.hidden = true; });
 $('#brkSeg').addEventListener('click', e => { const b = e.target.closest('[data-by]'); if (!b) return; BRK = b.dataset.by; document.querySelectorAll('#brkSeg button').forEach(x => x.setAttribute('aria-pressed', x === b)); breakdown(); });
 $('#distMini').addEventListener('click', e => { const t = e.target.closest('[data-cat]'); if (!t) return; F.cat = F.cat === t.dataset.cat ? 'all' : t.dataset.cat; limit = 40; saveF(); filters(); render(); });
 $('#dist').addEventListener('click', e => { const t = e.target.closest('tr[data-cat]'); if (!t) return; resetFilters(); F.view = 'all'; F.cat = t.dataset.cat; limit = 40; saveF(); filters(); render(); go('q'); });
@@ -1180,6 +1321,7 @@ $('#upHist').addEventListener('click', async e => {
     BASE0 = j.rows.slice().sort((a, b) => Number(a.key) - Number(b.key)); BASE = BASE0; BUILT = j.builtAt; DUPS = j.dups || [];
     $('#built').textContent = `개선본 ${j.builtAt} 기준 · 전체 ${BASE.length.toLocaleString()}행`;
     filters(); render();
+    fetch('data/insights.json').then(r => r.json()).then(j => { INS = j; insUI(); }).catch(() => { $('#insMeta').textContent = '분석 결과를 불러오지 못했어요.'; });
   } catch { $('#list').innerHTML = '<div class="empty">질문 데이터를 불러오지 못했어요. 새로고침해 주세요.</div>'; return; }
   cuse('downloads').then(d => { downloads = d; $('#dlAll').disabled = $('#dlDiff').disabled = !d; });
   cuse('sample').then(s => { sample = s; if (s) document.querySelectorAll('[data-guide]').forEach(b => b.hidden = false); document.querySelectorAll('details.q[open]').forEach(el => refreshOpts(el.dataset.key)); });

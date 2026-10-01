@@ -75,9 +75,9 @@ https://claude.ai/artifact/1F4W6W5WHQsnM6YsXUm4ea
 ```bash
 python analysis/record_decisions.py <decisions 덤프 폴더>   # 검토 페이지 선택 먼저 반영
 python analysis/build_final_list.py && python analysis/build_db_export.py && python analysis/build_full_db.py
-python analysis/build_board_data.py && python analysis/build_board_page.py
+python analysis/build_board_stats.py && python analysis/build_board_data.py && python analysis/build_insights.py && python analysis/build_board_page.py
 ```
-`board/dist/index.html`(나눔스퀘어를 넣어 만든 페이지)을 `url`과 `files: {"data/questions.json": "board/data/questions.json"}`로 다시 게시한다(capabilities는 생략해 유지).
+`board/dist/index.html`(나눔스퀘어를 넣어 만든 페이지)을 `url`과 `files: {"data/questions.json": "board/data/questions.json", "data/insights.json": "board/data/insights.json"}`로 다시 게시한다(capabilities는 생략해 유지).
 검토 페이지에서 수정안 1이 아닌 문구를 고른 질문은 `analysis/guides_decided.csv`에 그 문구에 맞는 가이드를 먼저 쓴다(문구가 다르면 적용되지 않는다).
 신규 질문 DB id는 `analysis/new/new_db_ids.csv`에 고정돼 있고, 새 신규 질문만 다음 번호를 받는다.
 AI 추천은 db `ai/{id}`에 쌓인다.
@@ -145,3 +145,13 @@ AI 추천은 db `ai/{id}`에 쌓인다.
 - 그래서 8단계에서 개선함을 다시 게시해도 BE의 최신본은 그대로 유지돼요.
 - 루틴은 `uploads`, `uplog`, `upmeta`를 쓰지 않아요.
 - 다음 달 분석의 기준이 될 최신 DB가 필요하면 ArtifactData로 `upmeta/current`와 `uploads`를 읽어서 쓰면 돼요.
+
+## 13. 분석 탭 (`build_insights.py`)
+
+- 최신 통계로 다음을 다시 계산해요.
+  - 요인별 단변량 비교
+  - 다변량 로지스틱 회귀: 문항 단위 이항 모델이에요. 과산포가 있으면 신뢰구간을 넓히고, 척도가 1보다 작으면 1로 둬요.
+  - 길이 구간별 답변율 (Wilson 95% CI)
+  - 축별 문항 수와 답변율
+- 결과에서 '핵심 인사이트' 문장을 만들어요. '확실'이라고 쓰는 건 95% 신뢰구간이 0을 넘지 않을 때만이에요.
+- 7단계 요약에 인사이트 중 바뀐 것을 한 줄 넣어요. 예: "경험 전제 효과 -7%p → -5%p".
