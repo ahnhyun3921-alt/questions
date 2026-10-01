@@ -2,7 +2,8 @@
 
 1) 후보 뽑기:  python analysis/monthly_picks.py candidates --month 2026-11 [--keeps keeps.json]
    → output/monthly_picks/<month>.json  ({month, avg, items:[{key, text, form, cat, stats, reason, opts:[]}]})
-   기준: 최신 스냅숏의 '현재 Revision'에서 노출 5회 이상, 추정 답변율(평균 쪽으로 당김, K=10)이 평균보다 10%p 넘게 낮음.
+   기준: 결론(답변+교체) 5회 이상이고, 평가 모델 사후 확률 P(진짜 답변율 < 평균 − 10%p) ≥ 0.8
+         (board/data/insights.json — 같은 스냅숏일 때. 없으면 예전 K=10 추정 규칙).
    제외: 개선본 문구가 지금 서비스 문구와 달라 이미 수정이 기다리는 질문, 비활성 질문,
          원래 DB의 레벨 1(첫 질문) 기존 질문(원본 그대로 두기로 함),
          keeps.json(개선함 db `keeps` 컬렉션을 받은 것)에 최근 90일 안에 '그대로 두기'가 있는 질문.
@@ -47,21 +48,32 @@ def candidates(month, keeps_path):
             if at and datetime.fromisoformat(at.replace("Z", "+00:00")) >= cut:
                 kept.add(str(d.get("doc_id") or d.get("id") or data.get("key")))
     keep1 = {str(i) for i in original_first_ids()}   # 원래 첫 질문은 원본 그대로
+    # 평가 모델(build_insights.py) 사후: P(진짜 답변율 < 평균 − 10%p). 같은 스냅숏일 때만 쓴다.
+    ins_path = ROOT / "board" / "data" / "insights.json"
+    ins = json.loads(ins_path.read_text()) if ins_path.exists() else {}
+    post = ins.get("model", {}).get("post", {}) if ins.get("snapshot") == snap.stem else {}
+    fix_p = ins.get("model", {}).get("policy", {}).get("fix_p", 0.8)
     items = []
     for k, v in st["q"].items():
         exp, ans, rep = v[0], v[1], v[2]
         r = rows.get(k)
-        if not r or r["deleted"] or k in kept or k in keep1 or exp < MIN_EXP:
+        if not r or r["deleted"] or k in kept or k in keep1 or ans + rep < MIN_EXP:
             continue
         if r["text"].strip() != str(live_text.get(k, "")).strip():
             continue  # 이미 수정안이 개선본에 있고 반영을 기다림
-        est = (ans + K * avg) / (ans + rep + K)
-        if est >= avg - GAP:
-            continue
+        if post:
+            if k not in post or post[k][1] < fix_p:
+                continue
+            p_low = post[k][1]
+        else:   # 모델이 없으면 예전 규칙(평균 쪽으로 K=10 당긴 추정)
+            if (ans + K * avg) / (ans + rep + K) >= avg - GAP:
+                continue
+            p_low = None
         rate = ans / (ans + rep) if ans + rep else 0
         items.append({"key": k, "text": r["text"], "form": r["form"], "cat": r["cat"], "level": r["level"],
                       "stats": {"date": snap.stem, "exp": exp, "ans": ans, "rep": rep, "rate": round(rate, 3), "avg": round(avg, 3)},
-                      "reason": f"노출 {exp}회 · 답변율 {rate:.0%} (평균 {avg:.0%}) · 교체 {rep}회",
+                      "reason": f"결론 {ans + rep}회 · 답변율 {rate:.0%} (평균 {avg:.0%}) · 교체 {rep}회"
+                                + (f" · 평균보다 10%p 넘게 낮을 확률 {p_low:.0%}" if p_low is not None else ""),
                       "g": r["g"], "opts": []})
     items.sort(key=lambda x: x["stats"]["rate"])
     OUT.mkdir(parents=True, exist_ok=True)

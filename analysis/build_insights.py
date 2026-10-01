@@ -59,7 +59,7 @@ def load():
         if k not in st["q"] or k not in db.index or (pd.notna(dl) and str(dl).strip()):
             continue
         v = st["q"][k]
-        rows.append(dict(key=k, ans=v[1], rep=v[2], exp=v[0], L=len(str(db.loc[k, "question_text"])),
+        rows.append(dict(key=k, ans=v[1], rep=v[2], exp=v[0], L=len(str(db.loc[k, "question_text"])), level=int(db.loc[k, "question_level"]),
                          cat=CAT.get(int(db.loc[k, "interest_id"]), ""), axis=axis.loc[sid, "분석 축"] if sid in axis.index else "",
                          **{c: t[c] for c in "TPEWSFC"}))
     return snap.stem, pd.DataFrame(rows)
@@ -86,41 +86,87 @@ def univariate(d):
     return out
 
 
+# 평가 모델의 특성 정의 — 페이지(JS)의 modelPred도 같은 이름·조건을 쓴다
+SPEC = [  # (이름, 무리, 조건)
+    ("시점 고정", "문구 특성", lambda d: d["T"] > 0), ("특정 날 시점", "문구 특성", lambda d: d["T"] == 2),
+    ("경험 전제", "문구 특성", lambda d: d["P"] > 0), ("특정 경험 전제", "문구 특성", lambda d: d["P"] == 2),
+    ("즉답 가능", "문구 특성", lambda d: d["E"] == 1), ("깊은 성찰", "문구 특성", lambda d: d["E"] == 3),
+    ("감정 무게", "문구 특성", lambda d: d["W"] >= 2), ("무거운 감정", "문구 특성", lambda d: d["W"] == 3),
+    ("자기노출", "문구 특성", lambda d: d["S"] >= 2), ("높은 자기노출", "문구 특성", lambda d: d["S"] == 3),
+    ("은유·모호", "문구 특성", lambda d: d["C"] == 1), ("40자 초과", "문구 특성", lambda d: d["L"] > 40),
+    ("레벨 1", "노출 맥락", lambda d: d["level"] == 1),
+] + [("형식: " + n, "질문 형식", (lambda f: lambda d: d["F"] == f)(f)) for f, n in FORM.items() if f != "t"] \
+  + [("관심사: " + c, "관심사", (lambda c: lambda d: d["cat"] == c)(c)) for c in CAT.values() if c != "가치관"]
+
+
+def design(d, mean_logl=None):
+    X = pd.DataFrame({n: f(d).astype(float) for n, _, f in SPEC})
+    ll = np.log(d["L"].astype(float))
+    mean_logl = float(ll.mean()) if mean_logl is None else mean_logl
+    X["문구 길이"] = ll - mean_logl     # 로그 글자 수(가운데 맞춤) — 효과는 '두 배 길어질 때'로 보고
+    return X, mean_logl
+
+
 def model(d):
-    """문항 단위 이항 회귀(답변 수 / 교체 수). 문항마다 답변율이 들쭉날쭉한 만큼(과산포)
-    표준오차를 넓혀서(quasi-binomial, Pearson χ² 척도) 같은 문항 응답이 서로 독립이 아님을 반영한다."""
-    X = pd.DataFrame({name: f(d).astype(float) for _, name, _, f in FACTORS})
-    for f, name in FORM.items():
-        if f != "t":   # 기준 = 성향·습관(가장 많은 형식)
-            X["형식: " + name] = (d["F"] == f).astype(float)
-    for c in CAT.values():
-        if c != "가치관":   # 기준 = 가치관
-            X["관심사: " + c] = (d["cat"] == c).astype(float)
-    X = X.loc[:, X.sum() >= 10]
-    X = sm.add_constant(X)
-    m = (d.ans + d.rep) > 0
-    glm = sm.GLM(np.column_stack([d.ans[m], d.rep[m]]), X[m.values], family=sm.families.Binomial())
-    res = glm.fit(scale="X2")
-    if res.scale < 1:   # 과소산포로 나오면 구간을 좁히지 않도록 보통 이항(척도 1)을 쓴다 — 보수적으로
-        res = glm.fit(scale=1.0)
-    base = d.ans.sum() / (d.ans.sum() + d.rep.sum())
-    out = []
-    for name in X.columns:
-        if name == "const":
-            continue
-        b, se, p = res.params[name], res.bse[name], res.pvalues[name]
-        lo, hi = b - Z * se, b + Z * se
-        # 평균 답변율에서 그 요인이 있을 때와 없을 때의 차이(%p) — 로짓 척도를 확률로 바꿔 직관적으로 보이게 한다
-        lg = np.log(base / (1 - base))
-        to_p = lambda x: 1 / (1 + np.exp(-(lg + x))) - base
-        group = "질문 형식" if name.startswith("형식") else "관심사" if name.startswith("관심사") else "문구 특성"
-        out.append(dict(name=name.split(": ")[-1], group=group, beta=round(b, 4), or_=round(float(np.exp(b)), 3),
-                        or_lo=round(float(np.exp(lo)), 3), or_hi=round(float(np.exp(hi)), 3), p=round(float(p), 4),
-                        pp=round(float(to_p(b)), 4), pp_lo=round(float(to_p(lo)), 4), pp_hi=round(float(to_p(hi)), 4)))
-    # 생성기의 '예상 답변율' 계산용: 절편과 항별 계수(로짓)
-    coef = {"const": round(float(res.params["const"]), 5), **{n: round(float(res.params[n]), 5) for n in X.columns if n != "const"}}
-    return dict(coef=coef, n_q=int(m.sum()), scale=round(float(res.scale), 3), n_res=int(d.ans.sum() + d.rep.sum()), base=round(float(base), 4),
-                ref="형식은 성향·습관, 관심사는 가치관 대비", terms=out)
+    """릿지 규제 베타-이항 회귀(analysis/qmodel.py). λ는 문항 단위 5겹 교차검증으로 고른다.
+    효과 구간은 문항 부트스트랩(200회) 백분위, p는 부호가 뒤집힌 비율의 두 배(양측)."""
+    from qmodel import BetaBinomialRidge, kfold_eval, bb_loglik  # noqa: F401
+    from scipy.stats import spearmanr
+    d = d[(d.ans + d.rep) > 0].reset_index(drop=True)
+    a, n = d.ans.values.astype(float), (d.ans + d.rep).values.astype(float)
+    X, mean_logl = design(d)
+    names = list(X.columns)
+    Xv = X.values
+    # λ 고르기
+    cv = {lam: np.mean([kfold_eval(Xv, a, n, lambda: BetaBinomialRidge(lam), k=5, seed=s)["ll"] for s in range(2)]) for lam in [3, 10, 30]}
+    lam = max(cv, key=cv.get)
+    fit = BetaBinomialRidge(lam).fit(Xv, a, n)
+    base = a.sum() / n.sum()
+    lg = np.log(base / (1 - base))
+    to_p = lambda x: float(1 / (1 + np.exp(-(lg + x))) - base)
+    rng = np.random.default_rng(7)
+    boots = []
+    for _ in range(200):
+        ix = rng.integers(0, len(a), len(a))
+        boots.append(BetaBinomialRidge(lam).fit(Xv[ix], a[ix], n[ix]).coef_[1:])
+    boots = np.array(boots)
+    group = {nm: g for nm, g, _ in SPEC}
+    group["문구 길이"] = "문구 특성"
+    terms = []
+    for j, nm in enumerate(names):
+        scale = np.log(2) if nm == "문구 길이" else 1.0      # 길이는 '두 배'당 효과
+        b, bs = fit.coef_[1 + j] * scale, boots[:, j] * scale
+        lo, hi = np.percentile(bs, [2.5, 97.5])
+        p = min(1.0, 2 * min((bs > 0).mean(), (bs < 0).mean()))
+        terms.append(dict(name=nm.split(": ")[-1] + (" (2배)" if nm == "문구 길이" else ""), key=nm, group=group[nm], beta=round(float(b), 4),
+                          or_=round(float(np.exp(b)), 3), or_lo=round(float(np.exp(lo)), 3), or_hi=round(float(np.exp(hi)), 3), p=round(float(p), 4),
+                          pp=round(to_p(b), 4), pp_lo=round(to_p(lo), 4), pp_hi=round(to_p(hi), 4)))
+    # 모델 평가: 기준 모델과 교차검증 로그우도·순위 상관·보정
+    def cvll(cols):
+        Xc = X[cols].values if cols else np.zeros((len(a), 0))
+        return float(np.mean([kfold_eval(Xc, a, n, lambda: BetaBinomialRidge(lam), k=5, seed=s)["ll"] for s in range(2)]))
+    old = [c for c in names if c in ("시점 고정", "경험 전제", "즉답 가능", "감정 무게", "자기노출", "은유·모호", "40자 초과") or c.startswith(("형식: ", "관심사: "))]
+    m0 = cvll([])
+    evals = [dict(name="평균만", ll=0.0), dict(name="관심사만", ll=round(cvll([c for c in names if c.startswith("관심사: ")]) - m0, 1)),
+             dict(name="이전 모델 특성", ll=round(cvll(old) - m0, 1)), dict(name="지금 모델", ll=round(float(cv[lam]) - m0, 1))]
+    ev_new = kfold_eval(Xv, a, n, lambda: BetaBinomialRidge(lam), k=5, seed=0)
+    ev_old = kfold_eval(X[old].values, a, n, lambda: BetaBinomialRidge(lam), k=5, seed=0)
+    big = n >= 6
+    rho_new = float(spearmanr(ev_new["preds"][big], a[big] / n[big]).statistic)
+    rho_old = float(spearmanr(ev_old["preds"][big], a[big] / n[big]).statistic)
+    q = pd.qcut(ev_new["preds"], 5, labels=False)
+    calib = [dict(pred=round(float(np.average(ev_new["preds"][q == b], weights=n[q == b])), 4), obs=round(float(a[q == b].sum() / n[q == b].sum()), 4),
+                  n=int(n[q == b].sum())) for b in range(5)]
+    # 문항별 사후: 특성 예측 μ 쪽으로 φ만큼 당긴 추정과, 평균±10%p 밖일 확률
+    mu = fit.mu(Xv)
+    pb = fit.prob_below(Xv, a, n, base - 0.10)
+    pa = 1 - fit.prob_below(Xv, a, n, base + 0.10)
+    post = {k: [round(float(m_), 4), round(float(pb_), 3), round(float(pa_), 3)] for k, m_, pb_, pa_ in zip(d.key, mu, pb, pa)}
+    coef = {"const": round(float(fit.coef_[0]), 5), **{nm: round(float(fit.coef_[1 + j]), 5) for j, nm in enumerate(names)}}
+    return dict(kind="betabinomial-ridge", coef=coef, phi=round(fit.phi_, 3), lam=lam, mean_logl=round(mean_logl, 5),
+                n_q=int(len(a)), n_res=int(n.sum()), base=round(float(base), 4), ref="형식은 성향·습관, 관심사는 가치관 대비",
+                terms=terms, evals=evals, rho=dict(new=round(rho_new, 3), old=round(rho_old, 3), n=int(big.sum())), calib=calib, post=post,
+                policy=dict(fix_p=0.8, good_p=0.8, explore_n=20, gap=0.10), scale=1.0)
 
 
 def length_bins(d):
@@ -148,6 +194,10 @@ def axes(d):
 
 ACTION = {
     "경험 전제": "'~한 적 있다면'을 빼고 누구나 답할 수 있는 상황으로 바꿔요.",
+    "특정 경험 전제": "특정 경험(연애 중, 운동 등)이 있어야 답할 수 있는 질문은 '없다면 ~' 대안을 붙이거나 일반 상황으로 바꿔요.",
+    "특정 날 시점": "'오늘·이번 주'처럼 특정 날에 묶지 말고 '요즘'이나 시점 없는 문장으로 바꿔요.",
+    "레벨 1": "첫 질문(레벨 1) 자리는 답변이 잘 나와요. 가볍고 즉답 가능한 질문을 이 자리에 둬요.",
+    "문구 길이 (2배)": "문구가 길수록 답변율이 떨어져요. 군더더기를 덜어 30자 안팎으로 줄여요.",
     "시점 고정": "'오늘·이번 주'를 '요즘'이나 시점 없는 문장으로 바꿔요.",
     "은유·모호": "은유를 걷어내고 구체적인 대상을 물어요.",
     "즉답 가능": "첫 질문과 신규 질문은 바로 답할 수 있는 형태를 기본으로 해요.",
@@ -180,13 +230,23 @@ def findings(uni, mdl, ln, ax):
                         action=" ".join(ACTION[x["name"]] for x in pos[:3] if x["name"] in ACTION) or "이 특성을 신규 질문의 기본값으로 둬요."))
     # 단독으로는 크게 차이 나지만 다른 요인을 넣으면 사라지는 것 = 다른 특성과 겹쳐 있음
     u = {x["name"]: x for x in uni if x["group"] == "문구 특성"}
-    conf = [x for x in terms if x["group"] == "문구 특성" and x["p"] >= 0.05 and x["name"] in u and (u[x["name"]]["lo"] > 0 or u[x["name"]]["hi"] < 0)]
+    tk = {x["name"]: x for x in terms}
+    # 같은 특성의 '강한 단계'(예: 특정 경험 전제)가 효과를 가져간 경우는 겹침이 아니라 강도 문제로 따로 설명한다
+    child = {"경험 전제": "특정 경험 전제", "시점 고정": "특정 날 시점", "즉답 가능": "깊은 성찰", "감정 무게": "무거운 감정", "자기노출": "높은 자기노출"}
+    strength = [(par, ch) for par, ch in child.items() if ch in tk and tk[ch]["p"] < 0.05 and par in tk and tk[par]["p"] >= 0.05]
+    for par, ch in strength:
+        out.append(dict(kind="neg", title="전제의 강도가 갈라요",
+                        body=f"'{par}'는 가벼운 수준(대부분이 답할 수 있는 정도)이면 {pct(tk[par]['pp'])}로 거의 차이가 없지만, "
+                             f"'{ch}'(특정 경험이 있어야 답함)이면 {pct(tk[par]['pp'] + tk[ch]['pp'])}까지 떨어져요.",
+                        action=ACTION.get(ch, "")))
+    skip = {par for par, _ in strength}
+    conf = [x for x in terms if x["group"] == "문구 특성" and x["p"] >= 0.05 and x["name"] not in skip and x["name"] in u and (u[x["name"]]["lo"] > 0 or u[x["name"]]["hi"] < 0)]
     if conf:
         out.append(dict(kind="neutral", title="겹쳐 있어서 커 보였던 요인",
                         body=", ".join(f"'{x['name']}'(단독 {pct(u[x['name']]['diff'])} → 함께 보면 {pct(x['pp'])}, 불확실)" for x in conf)
                              + "은 따로 보면 답변율이 확실히 다르지만, 경험 전제·형식 같은 다른 특성과 함께 붙어 다녀서 생긴 차이가 커요.",
                         action="문구를 고칠 때는 이 요인만 지우기보다, 같이 붙어 있는 경험 전제·형식을 함께 바꿔야 효과가 나요."))
-    null = [x for x in terms if x["group"] == "문구 특성" and x["p"] >= 0.05 and x not in conf]
+    null = [x for x in terms if x["group"] == "문구 특성" and x["p"] >= 0.05 and x not in conf and x["name"] not in skip]
     if null:
         out.append(dict(kind="neutral", title="영향이 뚜렷하지 않은 요인",
                         body=", ".join(f"'{x['name']}'" for x in null) + "는 따로 봐도, 함께 봐도 답변율과 뚜렷한 관계가 없어요.",
@@ -198,8 +258,8 @@ def findings(uni, mdl, ln, ax):
         out.append(dict(kind="neutral", title="문구 길이",
                         body=f"{best['name']} 답변율 {best['rate']:.0%}, {worst['name']} {worst['rate']:.0%}예요. "
                              + ("짧은 질문이 확실히 유리해요." if sure else "신뢰구간이 겹쳐서 길이만으로는 차이가 확실하지 않아요.")
-                             + f" 다만 다변량 모델에서 '40자 초과'의 효과는 {pct(next((x['pp'] for x in terms if x['name'] == '40자 초과'), 0))}로 불확실해요 — 짧은 질문엔 즉답형이 많아서예요.",
-                        action="길이보다 즉답 가능 여부를 먼저 봐요. 40자 안팎은 읽기 편한 정도의 기준이에요."))
+                             + (lambda t: f" 다른 특성을 함께 고려해도 문구가 두 배 길어지면 답변율이 {pct(t['pp'])}(95% CI {num(t['pp_lo'])}~{num(t['pp_hi'])}%p) 달라져요." if t else "")(next((x for x in terms if x['name'] == '문구 길이 (2배)'), None)),
+                        action="40자라는 경계보다 '짧을수록 낫다'가 맞아요. 군더더기를 덜어 30자 안팎으로 줄여요."))
     small = sorted(ax, key=lambda a: a["aft"])[:3]
     out.append(dict(kind="gap", title="자아분석 축 커버리지",
                     body="개선 후 가장 얇은 축은 " + ", ".join(f"{a['name']}({a['aft']}문항)" for a in small)

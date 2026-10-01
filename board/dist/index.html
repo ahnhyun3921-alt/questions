@@ -196,7 +196,7 @@ summary.note{cursor:pointer;font-weight:700}
 .coef th{font-size:.72rem;color:var(--muted);text-align:right;padding:6px 8px;font-weight:800}
 .coef th:first-child,.coef td:first-child{text-align:left}
 .coef td{border-top:1px solid var(--line);padding:6px 8px;text-align:right}
-.coef td.g{color:var(--muted);font-size:.74rem}
+.coef .g{color:var(--muted);font-size:.72rem;margin-left:4px}
 .finds{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
 .find{background:var(--soft);border-radius:20px;padding:14px 16px;display:grid;gap:6px;align-content:start;border-left:5px solid var(--muted)}
 .find.neg{border-left-color:var(--low)} .find.pos{border-left-color:var(--high)} .find.gap{border-left-color:var(--mod)}
@@ -444,7 +444,7 @@ a{color:var(--blue)}
       <div class="kpi"><span class="l">답변율 (답변 ÷ 답변+교체)</span><span class="v" id="kRate">–</span><span class="d" id="kRateD"></span></div>
       <div class="kpi"><span class="l">교체율 (교체 ÷ 노출)</span><span class="v" id="kRep">–</span><span class="d" id="kRepD"></span></div>
       <div class="kpi"><span class="l">누적 노출</span><span class="v" id="kExp">–</span><span class="d" id="kExpD"></span></div>
-      <div class="kpi"><span class="l">평균보다 확실히 낮은 질문</span><span class="v" id="kLow">–</span><span class="d">노출 5회 이상 · 추정 답변율이 평균보다 10%p 이상 낮음</span></div>
+      <div class="kpi"><span class="l">평균보다 확실히 낮은 질문</span><span class="v" id="kLow">–</span><span class="d">결론 5회 이상 · 모델 사후 확률 80% 이상으로 평균보다 10%p 넘게 낮음</span></div>
     </div>
     <div class="grid2">
       <div class="chartbox"><div class="ttl">전체 답변율 추이</div><div id="trend"></div></div>
@@ -473,12 +473,12 @@ a{color:var(--blue)}
     <div class="flow" id="flow"></div>
   </section>
   <section class="panel" aria-labelledby="eqh">
-    <h2 id="eqh">예측식과 계수</h2>
+    <h2 id="eqh">평가 모델 · 검증 · 운영 규칙</h2>
     <div id="eq"></div>
   </section>
   <section class="panel" aria-labelledby="forh">
     <div class="brk-head"><h2 id="forh" style="margin:0">무엇이 답변율을 움직이나</h2>
-      <div class="seg2" id="forSeg" role="group" aria-label="분석 방식"><button type="button" data-m="multi" aria-pressed="true">함께 보기(다변량)</button><button type="button" data-m="uni" aria-pressed="false">따로 보기(단변량)</button></div></div>
+      <div class="seg2" id="forSeg" role="group" aria-label="분석 방식"><button type="button" data-m="multi" aria-pressed="true">함께 보기(평가 모델)</button><button type="button" data-m="uni" aria-pressed="false">따로 보기(단변량)</button></div></div>
     <p class="note" style="margin:0" id="forNote"></p>
     <div class="chartbox"><div id="forest"></div></div>
     <div class="legend"><span><i style="background:var(--chart)"></i>확실한 효과 (95% CI가 0을 넘지 않음)</span><span><i style="background:transparent;box-shadow:inset 0 0 0 2px var(--muted)"></i>불확실</span></div>
@@ -781,7 +781,7 @@ const doneSince = (r, at) => (r.edited && r.edited.at >= at) || (KEEPS.get(r.key
 const pickKind = r => { const p = pickOf(r); return p && !doneSince(r, p.at) ? 'month' : 'review'; };
 const isPick = r => { if (r.deleted) return false; const p = pickOf(r); if (p && !doneSince(r, p.at)) return true;
   return !r.edited && !KEEPS.has(r.key) && r.alts.length >= 2 && !['chosen', 'applied'].includes(r.decided); };
-const isFix = r => { if (r.deleted || r.edited || r.change !== '유지' || isPick(r)) return false; const q = qstat(r.key); return !!q && q.exp >= MIN_EXP && q.est < avgRate(latest()) - 0.1; };
+const isFix = r => { if (r.deleted || r.edited || r.change !== '유지' || isPick(r)) return false; const q = qstat(r.key); return !!q && q.low; };
 const inView = (r, v) => v === 'all' || (v === 'off' ? r.deleted : v === 'fix' ? isFix(r) : v === 'new' ? isNewQ(r) : isMod(r));
 function tabsUI(){
   const all = rows();
@@ -846,14 +846,19 @@ function avgRate(s){ return s ? pct(s.totals.ans, s.totals.ans + s.totals.rep) :
 function qstat(k, s = latest()){
   const v = s && s.q[k]; if (!v) return null;
   const [exp, ans, rep, nor, rev, aexp, aans, arep] = v;
-  const res = ans + rep, avg = avgRate(s), K = 10;
-  return { exp, ans, rep, nor, rev, aexp, aans, arep, res, rate: pct(ans, res),
-           est: avg == null ? null : (ans + K * avg) / (res + K) };  // 평균 쪽으로 당겨 본 추정 답변율(표본이 적을수록 평균에 가까움)
+  const res = ans + rep, avg = avgRate(s), M = INS?.model, po = M?.post?.[k];
+  // 모델 사후 추정: 특성으로 예측한 값(μ) 쪽으로 데이터가 정한 만큼(φ) 당긴 답변율. 모델이 없으면 평균 쪽으로 K=10.
+  const usePost = po && M.phi && s.date === INS.snapshot;
+  const est = usePost ? (ans + M.phi * po[0]) / (res + M.phi) : avg == null ? null : (ans + 10 * avg) / (res + 10);
+  const pol = M?.policy || { fix_p: 0.8, good_p: 0.8 };
+  const low = usePost ? res >= MIN_EXP && po[1] >= pol.fix_p : exp >= MIN_EXP && est < avg - 0.1;
+  const high = usePost ? res >= MIN_EXP && po[2] >= pol.good_p : exp >= MIN_EXP && est > avg + 0.1;
+  return { exp, ans, rep, nor, rev, aexp, aans, arep, res, rate: pct(ans, res), est, low, high, pBelow: usePost ? po[1] : null, pAbove: usePost ? po[2] : null, mu: usePost ? po[0] : null };
 }
 function rateChip(k){
   const q = qstat(k), avg = avgRate(latest());
   if (!q || !q.res) return '';
-  const low = q.exp >= MIN_EXP && q.est < avg - 0.1, high = q.exp >= MIN_EXP && q.est > avg + 0.1;
+  const low = q.low, high = q.high;
   return `<span class="chip ${low ? 'low' : high ? 'high' : ''}">답변율 ${P(q.rate)}${low ? ' · 낮음' : high ? ' · 높음' : ''} · 노출 ${q.exp}</span>`;
 }
 function spark(k){
@@ -985,14 +990,15 @@ function insUI(){
     `<div><b>데이터</b> 통계 사이트의 문항별 '현재 Revision' 실적(${INS.snapshot}). 답변율 = 답변 ÷ (답변 + 교체). 미응답은 결론이 나지 않은 노출이라 뺐어요.</div>`,
     `<div><b>문구 특성</b> 기존 질문마다 붙인 태그(시점 고정, 경험 전제, 즉답, 감정 무게, 자기노출, 은유)와 글자 수, 형식, 관심사.</div>`,
     `<div><b>따로 보기(단변량)</b> 그 특성이 있는 질문과 없는 질문의 답변율 차이와 95% 신뢰구간.</div>`,
-    `<div><b>함께 보기(다변량)</b> 문항 단위 이항 로지스틱 회귀로 모든 특성을 동시에 넣어 각 특성의 효과만 떼어 봤어요. ${esc(m.ref)}. 문항마다 들쭉날쭉한 정도(과산포)를 반영해 신뢰구간을 계산했고(척도 ${m.scale}), 평균 답변율 ${P(m.base)}에서의 %p 차이로 바꿔 보여 줘요.</div>`,
+    `<div><b>함께 보기(평가 모델)</b> 릿지 규제 베타-이항 회귀로 모든 특성을 동시에 넣어 각 특성의 효과만 떼어 봤어요. ${esc(m.ref)}. 문항마다 진짜 답변율이 다른 정도(φ=${Math.round(m.phi)})를 모델이 직접 추정하고, 구간은 문항 부트스트랩 200회 백분위예요. 규제 때문에 효과가 0 쪽으로 조금 작게 나와요(보수적). 평균 답변율 ${P(m.base)}에서의 %p 차이로 바꿔 보여 줘요.</div>`,
+    `<div><b>검증</b> 문항 단위 5겹 교차검증으로 처음 보는 문항의 답변을 얼마나 맞히는지 쟀어요. 평균만 쓴 모델 대비 로그우도 +${(m.evals || []).find(e => e.name === '지금 모델')?.ll ?? '–'}, 순위 상관 ${m.rho?.new}(이전 모델 ${m.rho?.old}).</div>`,
     `<div><b>한계</b> 문항당 노출이 아직 적어(대부분 10회 미만) 구간이 넓어요. 관찰 데이터라 인과로 단정할 수 없고, 노출 순서·사용자 구성의 영향은 통제하지 못했어요. 매달 통계가 쌓이면 다시 계산해요.</div>`].join('');
 }
 function forestUI(){
   const multi = FMODE === 'multi';
   const items = multi ? INS.model.terms.map(t => ({ g: t.group, n: t.name, v: t.pp, lo: t.pp_lo, hi: t.pp_hi, sig: t.p < 0.05, tip: `오즈비 ${t.or_} (95% CI ${t.or_lo}~${t.or_hi}) · p=${t.p}` }))
     : INS.uni.map(u => ({ g: u.group, n: u.name, v: u.diff, lo: u.lo, hi: u.hi, sig: u.lo > 0 || u.hi < 0, tip: `해당 ${P(u.rate)} vs 나머지 ${P(u.rest)} · 문항 ${u.nq} · 결론 ${u.res}` }));
-  $('#forNote').textContent = multi ? `다른 특성을 모두 함께 고려했을 때 각 특성이 평균 답변율(${P(INS.model.base)})을 얼마나 바꾸는지예요. ${INS.model.ref}.` : '그 특성이 있는 질문과 없는 질문의 답변율 차이예요. 다른 특성과 겹친 효과가 섞여 있어요.';
+  $('#forNote').textContent = multi ? `평가 모델(릿지 베타-이항)로 다른 특성을 모두 함께 고려했을 때 각 특성이 평균 답변율(${P(INS.model.base)})을 얼마나 바꾸는지예요. ${INS.model.ref}. 구간은 부트스트랩 95%.` : '그 특성이 있는 질문과 없는 질문의 답변율 차이예요. 다른 특성과 겹친 효과가 섞여 있어요.';
   const groups = [...new Set(items.map(i => i.g))], rowsH = [];
   groups.forEach(g => { rowsH.push({ head: g }); items.filter(i => i.g === g).forEach(i => rowsH.push(i)); });
   const W = 720, L = 150, R = 70, rh = 24, H = rowsH.length * rh + 34;
@@ -1057,14 +1063,17 @@ function genNew(axis, cat){
 }
 const catId = c => Number(Object.keys(CAT).find(k => CAT[k] === c));
 // 생성 후보의 예상 답변율 — 분석 탭 다변량 모델 계수로 계산(태그는 AI가 붙인 값)
+// 생성 후보 평가: 모델 예상 답변율 + 제작 점수(빈 곳 보너스 − 중복·겹침·가정형 감점)
+const HYP = /(한다면|하다면|이라면|라면|있다면|없다면|만약|된다면|할 수 있다면)/;
 function predict(c){
-  const k = INS?.model?.coef; if (!k) return null;
-  const t = c.tags || {}, f = FORMN[c.form] || '';
-  let z = k.const;
-  const add = (n, on) => { if (on && k[n] != null) z += k[n]; };
-  add('시점 고정', t.T > 0); add('경험 전제', t.P > 0); add('즉답 가능', t.E === 1); add('감정 무게', t.W >= 2); add('자기노출', t.S >= 2); add('은유·모호', t.C === 1); add('40자 초과', c.text.length > 40);
-  add('형식: ' + f, true); add('관심사: ' + GEN.cat, true);
-  return 1 / (1 + Math.exp(-z));
+  const r = modelPred(c.tags || {}, c.form, GEN.cat, c.text.length, c.level); if (!r) return null;
+  const cellN = rows().filter(x => !x.deleted && x.axis === GEN.axis && x.cat === GEN.cat).length;
+  const gap = cellN === 0 ? 0.05 : cellN <= 2 ? 0.03 : 0;
+  const sim = similarTo('', c.text), ov = c.topic ? topicOverlap(c.topic).level : 'new';
+  const pen = (sim ? 0.10 : 0) + (ov === 'many' ? 0.05 : ov === 'some' ? 0.02 : 0) + (HYP.test(c.text) ? 0.03 : 0);
+  c.lo = r.lo; c.hi = r.hi; c.score = r.p + gap - pen;
+  c.scoreWhy = [`예상 ${P(r.p)}`, gap ? `빈 곳 +${Math.round(gap * 100)}` : '', sim ? '중복 −10' : '', ov === 'many' ? '소재 겹침 −5' : ov === 'some' ? '소재 일부 겹침 −2' : '', HYP.test(c.text) ? '가정형 −3' : ''].filter(Boolean).join(' · ');
+  return r.p;
 }
 function cellEvidence(){
   const all = rows().filter(r => !r.deleted), inCat = all.filter(r => r.cat === GEN.cat), cell = inCat.filter(r => r.axis === GEN.axis);
@@ -1192,7 +1201,7 @@ JSON만 출력: {"questions":[{"text":"","empathy":"","hint":"","leading":"","le
       tags: { T: num(q.tags?.T, 0), P: num(q.tags?.P, 0), E: num(q.tags?.E, 2), W: num(q.tags?.W, 1), S: num(q.tags?.S, 1), C: num(q.tags?.C, 0) } }));
     if (!got.length) throw { code: 'empty' };
     got.forEach(c => c.pred = predict(c));
-    GEN.cands = got.sort((a, b) => (b.pred ?? 0) - (a.pred ?? 0)).concat(GEN.cands.filter(c => c.done));
+    GEN.cands = got.sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).concat(GEN.cands.filter(c => c.done));
   } catch (e) { GEN.err = e?.code === 'not_granted' ? 'AI를 쓸 수 없는 화면이에요.' : e?.code === 'rate_limited' ? '요청이 많아요. 잠시 후 다시 해 주세요.' : '질문을 만들지 못했어요. 다시 눌러 주세요.'; if (e?.code === 'not_granted') sample = null; }
   finally { GEN.busyQ = false; genUI(); stepsUI(); }
 }
@@ -1201,13 +1210,14 @@ function genUI(){
   const avg = INS?.model?.base ?? avgRate(latest()), TG = { T: '시점', P: '경험 전제', E: '인지 노력', W: '감정 무게', S: '자기노출', C: '은유' };
   el.innerHTML = `<div class="gen">
     <div class="row"><button class="btn primary" type="button" data-ggo ${sample && !GEN.busyQ ? '' : 'disabled'}>${GEN.busyQ ? 'AI가 쓰는 중…' : `고른 소재 ${GEN.sel.size}개로 질문 ${GEN.n}개 만들기`}</button>
-      <span class="note">예상 답변율은 분석 탭 다변량 모델로 계산한 값이에요(평균 ${P(avg)}). 높은 순으로 보여 줘요.</span></div>
+      <span class="note">예상 답변율은 분석 탭 평가 모델로 계산해요(평균 ${P(avg)}). 제작 점수(예상 답변율 + 빈 곳 보너스 − 중복·겹침·가정형 감점) 높은 순이에요.</span></div>
     ${GEN.err ? `<span class="note" style="color:var(--gone)">${esc(GEN.err)}</span>` : ''}
     <div class="cands">${GEN.cands.map((c, i) => { const sim = c.done ? null : similarTo('', c.text), w = lint(c.text);
       const hyp = /(한다면|하다면|이라면|라면|있다면|없다면|만약|된다면|할 수 있다면)/.test(c.text);
       return `<div class="gcard${c.done ? ' done' : ''}">
         <textarea data-gt="${i}" aria-label="질문 문구" ${c.done ? 'disabled' : ''}>${esc(c.text)}</textarea>
-        ${c.pred != null ? `<div class="pred"><span>예상 답변율 ${P(c.pred)}</span><span class="rate"><i style="width:${c.pred * 100}%"></i><b style="left:${avg * 100}%"></b></span></div>` : ''}
+        ${c.pred != null ? `<div class="pred"><span>예상 답변율 ${P(c.pred)} <span class="note">(80% ${P(c.lo)}~${P(c.hi)})</span></span><span class="rate"><i style="width:${c.pred * 100}%"></i><b style="left:${avg * 100}%"></b></span></div>
+        <span class="g"><b>제작 점수 ${Math.round(c.score * 100)}</b> = ${esc(c.scoreWhy)}</span>` : ''}
         <span class="g">레벨 ${c.level} · ${esc(FORMN[c.form] || c.form || '')}${c.topic ? ' · 소재 ' + esc(c.topic) : ''}${c.why ? ' · ' + esc(c.why) : ''}</span>
         <span class="g">태그 · ${Object.entries(c.tags || {}).map(([k, v]) => `${TG[k]} ${v}`).join(' · ')}</span>
         <span class="g">가이드 · ${esc([c.empathy, c.hint, c.leading].join(' / '))}</span>
@@ -1229,10 +1239,10 @@ async function genAdd(i){
   } catch { toast('추가하지 못했어요.'); }
 }
 // 질문 카드 수정 칸의 예상 답변율(문구로 태그·형식을 자동 추정)
-function cardPred(text, cat){
+function cardPred(text, cat, level = 2){
   if (!INS?.model?.coef || !text) return '';
-  const f = guessForm(text), r = modelPred(guessTags(text, f), f, cat, text.length); if (!r) return '';
-  return `예상 답변율 ${P(r.p)} · 평균 대비 ${pp(r.p - INS.model.base)} <span class="note">(문구로 자동 추정 · ${FORMN[f]})</span>`;
+  const f = guessForm(text), r = modelPred(guessTags(text, f), f, cat, text.length, level); if (!r) return '';
+  return `예상 답변율 ${P(r.p)} (80% 범위 ${P(r.lo)}~${P(r.hi)}) · 평균 대비 ${pp(r.p - INS.model.base)} <span class="note">(문구로 자동 추정 · ${FORMN[f]})</span>`;
 }
 // ---- 질문 모델: 구조도 · 진단기 · 예측식 ----
 const TAGDEF = [
@@ -1262,13 +1272,20 @@ function guessTags(t, f){
     S: /약점|비밀|부끄|고백|콤플렉스/.test(t) ? 2 : 1,
     C: /온도|날씨로|색깔로|모양|맛으로|계절로/.test(t) ? 1 : 0 };
 }
-function modelPred(tags, form, cat, len){
-  const k = INS?.model?.coef; if (!k) return null;
+// 평가 모델(릿지 베타-이항, analysis/build_insights.py의 SPEC과 같은 특성)로 새 질문의 답변율과 80% 예측 구간을 계산
+function modelPred(tags, form, cat, len, level = 2){
+  const M = INS?.model, k = M?.coef; if (!k) return null;
   const f = FORMN[form] || '';
-  const terms = [['시점 고정', tags.T > 0], ['경험 전제', tags.P > 0], ['즉답 가능', tags.E === 1], ['감정 무게', tags.W >= 2], ['자기노출', tags.S >= 2], ['은유·모호', tags.C === 1],
-    ['40자 초과', len > 40], ['형식: ' + f, true], ['관심사: ' + cat, true]].filter(([n, on]) => on && k[n] != null).map(([n]) => [n, k[n]]);
-  const z = k.const + terms.reduce((a, [, b]) => a + b, 0), sig = x => 1 / (1 + Math.exp(-x)), p = sig(z);
-  return { p, parts: terms.map(([n, b]) => ({ n: n.replace(/^(형식|관심사): /, '$1 '), pp: p - sig(z - b) })) };
+  const x = [['시점 고정', tags.T > 0], ['특정 날 시점', tags.T === 2], ['경험 전제', tags.P > 0], ['특정 경험 전제', tags.P === 2],
+    ['즉답 가능', tags.E === 1], ['깊은 성찰', tags.E === 3], ['감정 무게', tags.W >= 2], ['무거운 감정', tags.W === 3],
+    ['자기노출', tags.S >= 2], ['높은 자기노출', tags.S === 3], ['은유·모호', tags.C === 1], ['40자 초과', len > 40], ['레벨 1', Number(level) === 1],
+    ['형식: ' + f, true], ['관심사: ' + cat, true]].filter(([n, on]) => on && k[n] != null).map(([n]) => [n, k[n]]);
+  if (k['문구 길이'] != null && M.mean_logl != null && len > 0) x.push(['문구 길이', k['문구 길이'] * (Math.log(len) - M.mean_logl)]);
+  const z = k.const + x.reduce((a, [, b]) => a + b, 0), sig = v => 1 / (1 + Math.exp(-v)), p = sig(z);
+  // 새 질문의 진짜 답변율 θ ~ Beta(pφ, (1-p)φ) — 80% 구간(정규 근사)
+  const sd = M.phi ? Math.sqrt(p * (1 - p) / (M.phi + 1)) : 0;
+  return { p, lo: Math.max(0, p - 1.2816 * sd), hi: Math.min(1, p + 1.2816 * sd),
+    parts: x.filter(([, b]) => Math.abs(b) > 1e-4).map(([n, b]) => ({ n: n.replace(/^(형식|관심사): /, '$1 '), pp: p - sig(z - b) })) };
 }
 function flowUI(){
   const m = INS?.model, st = (n, t, d, i) => `<div class="fstep"><i>${i}</i><b>${t}</b><span>${d}</span></div>`, ar = '<span class="farr" aria-hidden="true">→</span>';
@@ -1276,25 +1293,52 @@ function flowUI(){
     <div class="flane"><h3>분석 — 질문이 왜 답을 받는지</h3><div class="fsteps">
       ${st(1, '통계 수집', `문항별 노출·답변·교체 (월 1회, 최신 ${esc(INS?.snapshot || '')})`, 'A1')}${ar}
       ${st(2, '특성 태깅', '시점·경험 전제·인지 노력·감정 무게·자기노출·은유 + 형식·관심사·길이 + 자아분석 축', 'A2')}${ar}
-      ${st(3, '축소 추정', `문항 답변율을 평균 쪽으로 당겨(K=10) 표본이 적은 문항의 우연을 줄임`, 'A3')}${ar}
-      ${st(4, '다변량 모델', `이항 로지스틱 회귀 — 문항 ${m ? m.n_q : '–'}개, 결론 ${m ? m.n_res.toLocaleString() : '–'}회로 특성별 효과 추정`, 'A4')}${ar}
-      ${st(5, '진단·우선순위', '예상 답변율, 낮은 문항 → 고쳐야 할 것·월간 골라 주세요', 'A5')}
+      ${st(3, '사후 추정', `문항 답변율을 특성 예측 쪽으로 φ=${m ? Math.round(m.phi) : '–'}만큼 당겨 표본이 적은 문항의 우연을 줄임`, 'A3')}${ar}
+      ${st(4, '평가 모델', `릿지 베타-이항 회귀 — 문항 ${m ? m.n_q : '–'}개, 결론 ${m ? m.n_res.toLocaleString() : '–'}회, 교차검증으로 검증`, 'A4')}${ar}
+      ${st(5, '판정·우선순위', '사후 확률 ≥80%로 수정 대상·우수 판정 → 고쳐야 할 것·월간 골라 주세요·첫 질문 후보', 'A5')}
     </div></div>
     <div class="flane"><h3>제작 — 무엇을 어떻게 새로 만들지</h3><div class="fsteps">
       ${st(1, '빈 곳 찾기', '축 × 관심사 문항 수, 얇은 축·0칸', 'B1')}${ar}
       ${st(2, '근거 추출', '그 칸·관심사의 잘 되는/안 되는 질문, 형식별 답변율, 확실한 효과', 'B2')}${ar}
       ${st(3, '소재 뽑기', 'AI가 근거로 넓은 일상 소재 제안 → 기존 질문과 겹침 판정', 'B3')}${ar}
       ${st(4, '생성', '형식·레벨·톤 조건으로 질문 + 가이드 + 태그 작성', 'B4')}${ar}
-      ${st(5, '예측·필터', 'A4 모델로 예상 답변율, 비슷한 질문·가정형·규칙 검사', 'B5')}${ar}
+      ${st(5, '예측·점수', 'A4 모델로 예상 답변율·80% 범위, 제작 점수(빈 곳 보너스 − 중복·겹침·가정형)', 'B5')}${ar}
       ${st(6, '검토·배포', '사람이 고르고 고쳐 신규 추가 → CSV → DB', 'B6')}
     </div></div>
     <div class="floop">↻ 배포한 질문이 노출되면 다음 달 A1 통계로 들어가 모델이 다시 학습돼요. 예측과 실제의 차이가 모델을 고쳐 가요.</div>`;
 }
 function eqUI(){
   const m = INS?.model; if (!m) return;
-  const k = m.coef, t = m.terms;
-  $('#eq').innerHTML = `<div class="eqf">logit(답변율) = ${k.const.toFixed(2)} ${t.map(x => `${x.beta >= 0 ? '+' : '−'} ${Math.abs(x.beta).toFixed(2)}·[${esc(x.name)}]`).join(' ')}</div>
-    <p class="note" style="margin:0">[ ]는 그 특성이 있으면 1, 없으면 0. 답변율 = 1 / (1 + e<sup>−logit</sup>). 기준은 ${esc(m.ref)}이에요. 오즈비가 1보다 크면 답변율을 올리고, 작으면 낮춰요.</p>
+  const k = m.coef, t = m.terms, ev = m.evals || [], cal = m.calib || [], pol = m.policy || {};
+  const maxE = Math.max(1, ...ev.map(e => e.ll));
+  const W = 260, H = 200, L = 34, B = 26, sx = v => L + (v - 0.3) / 0.35 * (W - L - 8), sy = v => H - B - (v - 0.3) / 0.35 * (H - B - 8);
+  const calSvg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="보정: 예측 대비 실제 답변율" style="max-width:300px">
+    ${[0.3, 0.4, 0.5, 0.6].map(v => `<line x1="${L}" x2="${W - 8}" y1="${sy(v)}" y2="${sy(v)}" stroke="var(--track)"/><text x="${L - 4}" y="${sy(v) + 4}" font-size="10" text-anchor="end" fill="var(--muted)">${v * 100}%</text><text x="${sx(v)}" y="${H - 8}" font-size="10" text-anchor="middle" fill="var(--muted)">${v * 100}%</text>`).join('')}
+    <line x1="${sx(0.3)}" y1="${sy(0.3)}" x2="${sx(0.65)}" y2="${sy(0.65)}" stroke="var(--muted)" stroke-dasharray="4 4"/>
+    <polyline points="${cal.map(c => `${sx(c.pred)},${sy(c.obs)}`).join(' ')}" fill="none" stroke="var(--chart)" stroke-width="2"/>
+    ${cal.map(c => `<circle cx="${sx(c.pred)}" cy="${sy(c.obs)}" r="5" fill="var(--chart)" stroke="var(--soft)" stroke-width="2"><title>예측 ${P(c.pred)} → 실제 ${P(c.obs)} (결론 ${c.n}회)</title></circle>`).join('')}</svg>`;
+  $('#eq').innerHTML = `
+    <div class="gcols">
+      <div class="gbox"><h3>어떤 모델인가</h3><span><b>릿지 규제 베타-이항 회귀</b> (문항 ${m.n_q}개, 결론 ${m.n_res.toLocaleString()}회)</span>
+        <ul><li>문항마다 진짜 답변율이 다르다고 보고(베타 분포), 그 평균을 특성으로 설명해요.</li>
+        <li>특성이 겹쳐도 흔들리지 않게 계수를 규제해요(λ=${m.lam}, 교차검증으로 선택).</li>
+        <li>문항별 추정 = (답변 + φ·예측) ÷ (결론 + φ), φ=${Math.round(m.phi)} — 결론이 ${Math.round(m.phi)}회쯤 쌓여야 실제 값과 예측을 반반 믿어요.</li>
+        <li>새 질문은 예측과 함께 80% 범위를 내요. 범위가 넓은 건 같은 특성이라도 문항마다 차이가 크기 때문이에요.</li></ul></div>
+      <div class="gbox"><h3>검증 — 처음 보는 문항을 얼마나 맞히나</h3>
+        <span class="note" style="margin:0">문항 단위 5겹 교차검증 로그우도 개선(평균만 쓴 모델 대비, 클수록 좋음)</span>
+        ${ev.map(e => `<div class="cb" style="grid-template-columns:110px minmax(0,1fr) 44px"><span>${esc(e.name)}</span><span class="bar2"><i style="left:0;width:${Math.max(0, e.ll) / maxE * 100}%;background:${e.name === '지금 모델' ? 'var(--chart)' : 'var(--muted)'}"></i></span><span class="n">+${e.ll}</span></div>`).join('')}
+        <span>순위 상관(결론 6회 이상 ${m.rho?.n}문항): 지금 모델 <b>${m.rho?.new}</b> · 이전 모델 ${m.rho?.old}</span></div>
+      <div class="gbox"><h3>보정 — 예측한 만큼 실제로 나오나</h3>${calSvg}<span class="note" style="margin:0">예측을 5구간으로 나눠 실제 답변율과 비교. 점선에 가까울수록 정확해요.</span></div>
+      <div class="gbox"><h3>운영 규칙</h3><ul>
+        <li><b>수정 대상</b>: 결론 ${MIN_EXP}회 이상이고, 진짜 답변율이 평균보다 10%p 넘게 낮을 확률 ≥ ${Math.round((pol.fix_p || 0.8) * 100)}% → 고쳐야 할 것 · 월간 골라 주세요</li>
+        <li><b>우수</b>: 평균보다 10%p 넘게 높을 확률 ≥ ${Math.round((pol.good_p || 0.8) * 100)}% → 첫 질문(레벨 1) 후보</li>
+        <li><b>탐색</b>: 신규 질문은 결론 ${pol.explore_n || 20}회가 모일 때까지 판정 보류(예측만 참고)</li>
+        <li><b>제작 점수</b> = 예상 답변율 + 빈 곳 보너스(0칸 +5, 1~2칸 +3) − 중복 10 − 소재 겹침 5/2 − 가정형 3</li>
+        <li><b>재학습</b>: 매달 통계로 λ·φ·계수를 다시 맞추고 검증 결과를 갱신</li></ul></div>
+    </div>
+    <h3 style="margin:6px 0 0;font-size:.9rem">예측식</h3>
+    <div class="eqf">logit(답변율) = ${k.const.toFixed(2)} ${t.map(x => `${x.beta >= 0 ? '+' : '−'} ${Math.abs(x.beta).toFixed(2)}·[${esc(x.name)}]`).join(' ')}</div>
+    <p class="note" style="margin:0">[ ]는 그 특성이 있으면 1, 없으면 0(문구 길이는 로그 글자 수, 표는 두 배당 효과). 답변율 = 1 / (1 + e<sup>−logit</sup>). 기준은 ${esc(m.ref)}이에요. 구간은 문항 부트스트랩 200회예요.</p>
     <table class="coef"><thead><tr><th>특성</th><th>계수(β)</th><th>오즈비 (95% CI)</th><th>평균에서 %p</th><th>p</th></tr></thead><tbody>${t.map(x => `<tr><td>${esc(x.name)} <span class="g">${esc(x.group)}</span></td><td>${x.beta >= 0 ? '+' : ''}${x.beta.toFixed(2)}</td><td>${x.or_.toFixed(2)} (${x.or_lo.toFixed(2)}~${x.or_hi.toFixed(2)})</td><td style="font-weight:${x.p < 0.05 ? 800 : 400}">${pp(x.pp)}</td><td>${x.p < 0.001 ? '<0.001' : x.p.toFixed(3)}</td></tr>`).join('')}</tbody></table>`;
 }
 function dgInit(){
@@ -1309,7 +1353,7 @@ function dgUI(){
   $('#dgTags').innerHTML = TAGDEF.map(([k, n, opts]) => `<div class="dgtag"><b>${n}${k in DG.manual ? '' : ' <span class="note">자동</span>'}</b><div class="opts2">${opts.map(([v, l]) => `<button type="button" data-tk="${k}" data-tv="${v}" aria-pressed="${tags[k] === v}">${l}</button>`).join('')}</div></div>`).join('')
     + `<div class="dgtag"><b>형식</b><span>${esc(FORMN[form])}${$('#dgForm').value === 'auto' ? ' <span class="note">자동</span>' : ''}</span></div>`;
   if (!text){ $('#dgOut').innerHTML = '<p class="note">문구를 넣어 보세요.</p>'; return; }
-  const r = modelPred(tags, form, cat, text.length), avg = INS?.model?.base;
+  const r = modelPred(tags, form, cat, text.length, $('#dgLv')?.value || 2), avg = INS?.model?.base;
   if (!r){ $('#dgOut').innerHTML = '<p class="note">모델을 불러오는 중이에요.</p>'; return; }
   const max = Math.max(0.05, ...r.parts.map(x => Math.abs(x.pp))), sim = similarTo('', text), w = lint(text);
   const tips = [];
@@ -1318,7 +1362,7 @@ function dgUI(){
   if (tags.C === 1) tips.push('은유를 걷어내고 구체적으로 물어보세요.');
   if (form === 'h') tips.push('가정형보다 지금의 나를 바로 묻는 문장이 좋아요.');
   if (form === 'o') tips.push('예/아니오 질문은 선호·양자택일로 바꿔요.');
-  $('#dgOut').innerHTML = `<div class="dgbig"><span class="v">${P(r.p)}</span><span class="note">예상 답변율 · 평균 ${P(avg)} 대비 ${pp(r.p - avg)}</span></div>
+  $('#dgOut').innerHTML = `<div class="dgbig"><span class="v">${P(r.p)}</span><span class="note">예상 답변율 · 80% 범위 ${P(r.lo)}~${P(r.hi)} · 평균 ${P(avg)} 대비 ${pp(r.p - avg)}</span></div>
     <div class="contrib">${r.parts.sort((a, b) => a.pp - b.pp).map(x => `<div class="cb"><span>${esc(x.n)}</span><span class="bar2"><span class="mid"></span><i style="${x.pp < 0 ? `right:50%;width:${Math.abs(x.pp) / max * 50}%;background:var(--low)` : `left:50%;width:${x.pp / max * 50}%;background:var(--high)`}"></i></span><span class="n">${pp(x.pp)}</span></div>`).join('') || '<span class="note">기준 질문과 같아요.</span>'}</div>
     <span class="note" style="margin:0">막대 = 다른 조건은 그대로 두고 그 특성만 없앴을 때와의 차이</span>
     ${sim ? `<span class="w" style="font-size:.8rem;color:var(--mod);font-weight:700">비슷한 질문: Q.${esc(sim.r.key)} "${esc(sim.r.text)}" (${Math.round(sim.v * 100)}%)</span>` : ''}
@@ -1381,7 +1425,7 @@ function dataUI(){
   $('#kExp').textContent = s.totals.exp.toLocaleString();
   $('#kExpD').textContent = p ? `지난 수집 이후 +${(s.totals.exp - p.totals.exp).toLocaleString()}` : '';
   const live = rows().filter(r => !r.deleted);
-  $('#kLow').textContent = live.filter(r => { const q = qstat(r.key); return q && q.exp >= MIN_EXP && q.est < avg - 0.1; }).length.toLocaleString();
+  $('#kLow').textContent = live.filter(r => { const q = qstat(r.key); return q && q.low; }).length.toLocaleString();
   // 추이 차트
   const pts = STATS.map(x => ({ d: x.date, r: avgRate(x), e: x.totals.exp }));
   const W = 460, H = 150, L = 36, R = 12, T = 12, B = 26;
@@ -1465,7 +1509,7 @@ function detail(r){
     </div>
     <form class="form" data-form="${k}">
       <h3 style="margin:0">직접 고쳐 쓰기</h3>
-      <div><div class="lbl">질문 문구 · 자유롭게 고쳐 쓰고 저장하면 돼요</div><textarea id="t-${k}" name="text" rows="2">${esc(r.text)}</textarea><div class="warn" id="w-${k}">${esc(lint(r.text).join(' '))}</div><div class="simwarn" id="sw-${k}"></div><div class="cardpred" id="pr-${k}">${cardPred(r.text, r.cat)}</div></div>
+      <div><div class="lbl">질문 문구 · 자유롭게 고쳐 쓰고 저장하면 돼요</div><textarea id="t-${k}" name="text" rows="2">${esc(r.text)}</textarea><div class="warn" id="w-${k}">${esc(lint(r.text).join(' '))}</div><div class="simwarn" id="sw-${k}"></div><div class="cardpred" id="pr-${k}">${cardPred(r.text, r.cat, r.level)}</div></div>
       <div><div class="lbl">공감 가이드 · empathy_guide</div><textarea id="g0-${k}" name="g0" rows="2">${esc(r.g[0])}</textarea></div>
       <div><div class="lbl">힌트 가이드 · hint_guide</div><textarea id="g1-${k}" name="g1" rows="2">${esc(r.g[1])}</textarea></div>
       <div><div class="lbl">유도 질문 · leading_question_guide</div><textarea id="g2-${k}" name="g2" rows="2">${esc(r.g[2])}</textarea></div>
@@ -1647,7 +1691,7 @@ list.addEventListener('change', e => {
   if (radio.value === 'own'){ ta.focus(); ta.select(); toast('문구를 직접 써 주세요. 가이드도 함께 고칠 수 있어요.'); return; }
   const o = optionsOf(r).find(x => x.key === radio.value); if (!o) return;
   ta.value = o.text;
-  { const pr = document.getElementById('pr-' + k); if (pr) pr.innerHTML = cardPred(o.text, r.cat); }
+  { const pr = document.getElementById('pr-' + k); if (pr) pr.innerHTML = cardPred(o.text, r.cat, r.level); }
   { const sw = document.getElementById('sw-' + k), m = similarTo(k, o.text); if (sw) sw.textContent = m ? `비슷한 질문이 있어요: Q.${m.r.key} "${m.r.text}" (${Math.round(m.v * 100)}%)` : ''; }
   document.getElementById('w-' + k).textContent = lint(o.text).join(' ');
   if (o.g) ['g0','g1','g2'].forEach((n, i) => { if (o.g[i]) document.getElementById(n + '-' + k).value = o.g[i]; });
@@ -1655,7 +1699,7 @@ list.addEventListener('change', e => {
 });
 list.addEventListener('input', e => {
   if (e.target.name === 'text'){ const k = e.target.closest('form').dataset.form; const w = document.getElementById('w-' + k); if (w) w.textContent = lint(e.target.value).join(' ');
-    { const pr = document.getElementById('pr-' + k), r = rows().find(x => x.key === k); if (pr && r) pr.innerHTML = cardPred(e.target.value, CAT[document.getElementById('ct-' + k)?.value] || r.cat); }
+    { const pr = document.getElementById('pr-' + k), r = rows().find(x => x.key === k); if (pr && r) pr.innerHTML = cardPred(e.target.value, CAT[document.getElementById('ct-' + k)?.value] || r.cat, Number(document.getElementById('lv-' + k)?.value || r.level)); }
     const sw = document.getElementById('sw-' + k), m = similarTo(k, e.target.value);
     if (sw) sw.textContent = m ? `비슷한 질문이 있어요: Q.${m.r.key} "${m.r.text}" (${Math.round(m.v * 100)}%)` : ''; }
 });
@@ -1724,7 +1768,7 @@ $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-pag
 $('#revSeg').addEventListener('click', e => { const b = e.target.closest('[data-rev]'); if (b) go(b.dataset.rev, false); });
 go(PAGE, false);
 $('#dgText').addEventListener('input', () => { DG.manual = {}; dgUI(); });
-$('#dgCat').addEventListener('change', dgUI); $('#dgForm').addEventListener('change', dgUI);
+$('#dgCat').addEventListener('change', dgUI); $('#dgForm').addEventListener('change', dgUI); $('#dgLv').addEventListener('change', dgUI);
 $('#dgTags').addEventListener('click', e => { const b = e.target.closest('[data-tk]'); if (!b) return; DG.manual[b.dataset.tk] = Number(b.dataset.tv); dgUI(); });
 $('#dgAI').addEventListener('click', dgAI);
 $('#gmSeg').addEventListener('click', e => { const b = e.target.closest('[data-gm]'); if (!b) return; GM = b.dataset.gm;
@@ -1750,7 +1794,7 @@ $('#dgAdd').addEventListener('click', async () => {
   const g = ['dgG0', 'dgG1', 'dgG2'].map(id => ($('#' + id).value || '').trim());
   if (g.some(x => !x)) return toast('가이드 3종을 채워 주세요. AI로 채울 수도 있어요.');
   const form = $('#dgForm').value === 'auto' ? guessForm(text) : $('#dgForm').value, cat = $('#dgCat').value;
-  const r = modelPred({ ...guessTags(text, form), ...DG.manual }, form, cat, text.length);
+  const r = modelPred({ ...guessTags(text, form), ...DG.manual }, form, cat, text.length, $('#dgLv').value);
   const ids = BASE.map(x => Number(x.key)).concat([...ADDED.values()].map(a => Number(a.id))).filter(Number.isFinite), id = Math.max(...ids) + 1;
   const btn = $('#dgAdd'); btn.disabled = true;
   try {
@@ -1836,7 +1880,7 @@ $('#upHist').addEventListener('click', async e => {
     BASE0 = j.rows.slice().sort((a, b) => Number(a.key) - Number(b.key)); BASE = BASE0; BUILT = j.builtAt; DUPS = j.dups || [];
     $('#built').textContent = `개선본 ${j.builtAt} 기준 · 전체 ${BASE.length.toLocaleString()}행`;
     filters(); render();
-    fetch('data/insights.json').then(r => r.json()).then(j => { INS = j; insUI(); heatUI(); genAll(); flowUI(); eqUI(); dgInit(); dgUI(); }).catch(() => { $('#insMeta').textContent = '분석 결과를 불러오지 못했어요.'; });
+    fetch('data/insights.json').then(r => r.json()).then(j => { INS = j; insUI(); heatUI(); genAll(); flowUI(); eqUI(); dgInit(); dgUI(); render(); }).catch(() => { $('#insMeta').textContent = '분석 결과를 불러오지 못했어요.'; });
   } catch { $('#list').innerHTML = '<div class="empty">질문 데이터를 불러오지 못했어요. 새로고침해 주세요.</div>'; return; }
   cuse('downloads').then(d => { downloads = d; $('#dlAll').disabled = $('#dlDiff').disabled = !d; });
   cuse('sample').then(s => { sample = s; if ($('#dgAI')) { $('#dgAI').hidden = !s; $('#dgGuide').hidden = !s; } if (s) document.querySelectorAll('[data-guide]').forEach(b => b.hidden = false); document.querySelectorAll('details.q[open]').forEach(el => refreshOpts(el.dataset.key)); });
