@@ -138,21 +138,6 @@ def main():
     out = pd.concat([db, pd.DataFrame(keep)], ignore_index=True)
     out["deleted_at"] = out["deleted_at"].fillna("")
 
-    # 6) 관심사 재배정 일괄 적용(analysis/recat_applied.csv — 개선함 '관심사 재배정' 후보 전체).
-    #    사람이 중심인 질문은 가치관보다 관계·사랑이 우선. '관심사 변경'은 원본 DB 관심사 기준으로 다시 적는다.
-    ra_path = Path(__file__).parent / "recat_applied.csv"
-    if ra_path.exists():
-        orig = pd.read_csv(sorted((ROOT / "data").glob("daily_questions_*.csv"))[-1], dtype=str).set_index("id")["interest_id"]
-        name = {v: k for k, v in INTEREST_ID.items()}
-        out["id"] = out["id"].astype(str)
-        for _, r in pd.read_csv(ra_path, dtype=str).iterrows():
-            m = out["id"] == r["DB id"]
-            if not m.any():
-                continue
-            out.loc[m, "interest_id"] = INTEREST_ID[r["제안 관심사"]]
-            o = name.get(int(float(orig[r["DB id"]]))) if r["DB id"] in orig.index else None
-            out.loc[m, "관심사 변경"] = f"{o}→{r['제안 관심사']}" if o and o != r["제안 관심사"] else ""
-
     out.to_csv(ROOT / "output" / "daily_questions_revised.csv", index=False, encoding="utf-8-sig")
     live = out[out.deleted_at == ""]
     out["관심사 변경"] = out["관심사 변경"].fillna("")
