@@ -108,6 +108,9 @@ textarea:focus,input:focus,select:focus{border-color:var(--mint);background:var(
 .pill{display:inline-flex;gap:6px;align-items:center;font-size:.85rem;font-weight:700;color:var(--ink-2);cursor:pointer;background:var(--soft);padding:7px 14px;border-radius:999px}
 .pill:has(input:checked){background:var(--mint-soft);color:var(--mint-ink);box-shadow:inset 0 0 0 1.5px var(--mint)}
 .pill input{position:absolute;opacity:0;pointer-events:none}
+.uprev{background:var(--soft);border-radius:18px;padding:14px 16px;display:grid;gap:8px;font-size:.88rem}
+.uprev ul{margin:0;padding-left:18px;display:grid;gap:3px}
+.uprev .err{color:var(--gone);font-weight:700}
 .hist{font-size:.82rem;color:var(--ink-2);display:grid;gap:6px;margin:8px 0 0;padding:0;list-style:none}
 .hist li{display:flex;gap:10px;flex-wrap:wrap;font-variant-numeric:tabular-nums;background:var(--soft);border-radius:14px;padding:7px 12px}
 summary.note{cursor:pointer;font-weight:700}
@@ -316,6 +319,21 @@ a{color:var(--blue)}
       <ul class="hist" id="hist"></ul>
     </details>
   </section>
+  <section class="panel" aria-labelledby="uph">
+    <h2 id="uph">CSV 올려서 최신본으로</h2>
+    <p class="note" style="margin:0">BE에서 고친 CSV(관리자 DB 열 형식)를 올리면 그 내용이 페이지의 최신본이 돼요. 화면·다운로드·비교가 모두 이 파일을 기준으로 바뀌고, 올린 뒤에 페이지에서 고친 것만 그 위에 더해져요. 엑셀에서 저장한 CSV도 읽어요.</p>
+    <span class="hint" id="upInfo">아직 올린 최신본이 없어요.</span>
+    <div class="row">
+      <label class="btn primary" for="upFile" id="upLabel">CSV 고르기</label>
+      <input type="file" id="upFile" accept=".csv,text/csv" hidden>
+      <button class="btn" type="button" id="upClear" hidden>올린 최신본 해제</button>
+    </div>
+    <div id="upPreview"></div>
+    <details>
+      <summary class="note">올린 기록</summary>
+      <ul class="hist" id="upHist"></ul>
+    </details>
+  </section>
 
   </div>
   <div class="pg" id="pg-q" role="tabpanel" data-page="q pick">
@@ -372,7 +390,7 @@ const saveF = () => { try { localStorage.setItem('nadab-board-f2', JSON.stringif
 
 function eff(r){
   const e = EDITS.get(r.key);
-  if (!e) return r;
+  if (!e || (UPMETA?.id && r.uploaded && (e.at || '') < UPMETA.at)) return r;   // 올린 최신본보다 먼저 고친 건 파일 내용이 우선
   return { ...r, text: e.text ?? r.text, g: [e.g0 ?? r.g[0], e.g1 ?? r.g[1], e.g2 ?? r.g[2]],
     level: e.level ?? r.level, interest_id: e.interest_id ?? r.interest_id, cat: CAT[e.interest_id ?? r.interest_id], edited: e,
     ...(typeof e.deleted === 'boolean' && e.deleted !== r.deleted ? { deleted: e.deleted, deletedAt: e.deleted ? dbTime(e.at) : '' } : {}) };
@@ -397,6 +415,102 @@ function diffOf(r){
 }
 const DIFF_LABEL = { new:'새로 생김', mod:'바뀜', gone:'빠짐' };
 const rows = () => BASE.map(eff);
+// ---- 올린 CSV(최신본) ----
+let BASE0 = [], UPMETA = null, UPROWS = null, UPLOG = [], upPending = null;
+const UPCOLS = ['id','interest_id','question_text','question_level','empathy_guide','hint_guide','leading_question_guide','created_at','updated_at','deleted_at'];
+function mergeUpload(){
+  if (!UPMETA?.id || !UPROWS){ BASE = BASE0; return; }
+  const seen = new Set();
+  BASE = BASE0.map(r => { const u = UPROWS.get(r.key); if (!u) return r; seen.add(r.key);
+    return { ...r, interest_id: u[1], cat: CAT[u[1]], text: u[2], level: u[3], g: [u[4], u[5], u[6]], created_at: u[7] || r.created_at, updated_at: u[8] || r.updated_at,
+      deleted: !!u[9], deletedAt: u[9], uploaded: true }; });
+  UPROWS.forEach((u, k) => { if (seen.has(k)) return;
+    BASE.push({ key: k, id: k, newId: '', statsId: null, interest_id: u[1], cat: CAT[u[1]], level: u[3], text: u[2], oldText: '', g: [u[4], u[5], u[6]],
+      deleted: !!u[9], deletedAt: u[9], created_at: u[7], updated_at: u[8], change: '업로드로 추가', catChange: '', set: '', form: '', axis: '', axisNote: '',
+      purpose: '올린 CSV에만 있는 질문이에요.', why: '', source: 'BE 업로드', srcUrl: '', pred: null, exp: null, ans: null, rep: null, alts: [], decided: '', orig: null, uploaded: true }); });
+  BASE.sort((a, b) => Number(a.key) - Number(b.key));
+}
+// 따옴표·줄바꿈·BOM을 다루는 CSV 파서
+function parseCSV(t){
+  t = t.replace(/^\ufeff/, ''); const out = []; let row = [], f = '', q = false;
+  for (let i = 0; i < t.length; i++){ const c = t[i];
+    if (q){ if (c === '"'){ if (t[i + 1] === '"'){ f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true; else if (c === ','){ row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r'){ if (c === '\r' && t[i + 1] === '\n') i++; row.push(f); out.push(row); row = []; f = ''; }
+    else f += c; }
+  if (f !== '' || row.length){ row.push(f); out.push(row); }
+  return out.filter(r => r.some(x => x.trim() !== ''));
+}
+async function readCSVFile(file){
+  const buf = await file.arrayBuffer();
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch { return new TextDecoder('euc-kr').decode(buf); }  // 엑셀 저장본(CP949)
+}
+function checkUpload(table){
+  const head = table[0].map(h => h.trim()), idx = Object.fromEntries(UPCOLS.map(c => [c, head.indexOf(c)]));
+  const miss = UPCOLS.filter(c => idx[c] < 0 && !['created_at', 'updated_at'].includes(c));
+  if (miss.length) return { errors: [`필요한 열이 없어요: ${miss.join(', ')}`] };
+  const errors = [], map = new Map();
+  table.slice(1).forEach((r, n) => { const g = c => idx[c] < 0 ? '' : (r[idx[c]] ?? '').trim(), line = n + 2;
+    const id = g('id'), it = Number(g('interest_id')), lv = Number(g('question_level'));
+    if (!/^\d+$/.test(id)) return errors.push(`${line}행: id가 숫자가 아니에요 (${id || '빈 칸'})`);
+    if (map.has(id)) return errors.push(`${line}행: id ${id}가 두 번 나와요`);
+    if (!CAT[it]) errors.push(`${line}행(id ${id}): interest_id는 1~6이어야 해요`);
+    if (![1, 2].includes(lv)) errors.push(`${line}행(id ${id}): question_level은 1 또는 2여야 해요`);
+    if (!g('question_text')) errors.push(`${line}행(id ${id}): question_text가 비어 있어요`);
+    map.set(id, [id, it, g('question_text'), lv, g('empathy_guide'), g('hint_guide'), g('leading_question_guide'), g('created_at'), g('updated_at'), g('deleted_at')]); });
+  return { errors, map };
+}
+function uploadSummary(map){
+  const cur = new Map(rows().map(r => [r.key, r])), c = { text: 0, guide: 0, level: 0, cat: 0, off: 0, on: 0, added: 0, same: 0 }, conflict = [];
+  map.forEach((u, k) => { const r = cur.get(k); if (!r){ c.added++; return; }
+    let d = false;
+    if (r.text !== u[2]){ c.text++; d = true; }
+    if (r.g[0] !== u[4] || r.g[1] !== u[5] || r.g[2] !== u[6]){ c.guide++; d = true; }
+    if (Number(r.level) !== u[3]){ c.level++; d = true; }
+    if (Number(r.interest_id) !== u[1]){ c.cat++; d = true; }
+    if (!r.deleted && u[9]){ c.off++; d = true; } if (r.deleted && !u[9]){ c.on++; d = true; }
+    if (!d) c.same++; else if (r.edited) conflict.push(k); });
+  const missing = [...cur.keys()].filter(k => !map.has(k) && !cur.get(k).deleted);
+  return { c, conflict, missing };
+}
+function upPreviewUI(){
+  const el = $('#upPreview'); if (!upPending){ el.innerHTML = ''; return; }
+  const { name, errors, map } = upPending;
+  if (errors.length){ el.innerHTML = `<div class="uprev"><b>${esc(name)}를 읽지 못했어요.</b><ul>${errors.slice(0, 6).map(e => `<li class="err">${esc(e)}</li>`).join('')}${errors.length > 6 ? `<li>외 ${errors.length - 6}건</li>` : ''}</ul><div><button class="btn" type="button" data-upcancel>닫기</button></div></div>`; return; }
+  const { c, conflict, missing } = uploadSummary(map);
+  el.innerHTML = `<div class="uprev"><b>${esc(name)} · ${map.size.toLocaleString()}행</b>
+    <ul><li>지금 페이지와 같음 ${c.same.toLocaleString()}행</li><li>문구 ${c.text} · 가이드 ${c.guide} · 레벨 ${c.level} · 관심사 ${c.cat}행이 달라요</li>
+    <li>비활성화 ${c.off} · 다시 활성화 ${c.on}</li><li>페이지에 없던 id ${c.added}개 (그대로 추가돼요)</li>
+    ${missing.length ? `<li>파일에 없는 활성 질문 ${missing.length}개 — 지금 내용 그대로 둬요 (예: ${missing.slice(0, 5).map(k => 'Q.' + k).join(', ')})</li>` : ''}
+    ${conflict.length ? `<li class="err">페이지에서 고친 ${conflict.length}건이 파일과 달라요 — 파일 내용이 우선해요 (예: ${conflict.slice(0, 5).map(k => 'Q.' + k).join(', ')})</li>` : ''}</ul>
+    <div class="row"><button class="btn primary" type="button" data-upapply ${db && canWrite ? '' : 'disabled'}>이 파일을 최신본으로</button><button class="btn" type="button" data-upcancel>취소</button></div></div>`;
+}
+async function applyUpload(){
+  if (!db || !upPending?.map) return;
+  const id = 'u' + Date.now(), list = [...upPending.map.values()], size = 250, chunks = Math.ceil(list.length / size), at = new Date().toISOString();
+  const btn = document.querySelector('[data-upapply]'); if (btn){ btn.disabled = true; btn.textContent = '올리는 중…'; }
+  try {
+    for (let i = 0; i < chunks; i++) await db.doc(`uploads/${id}_${i}`).set({ uid: id, n: i, rows: list.slice(i * size, (i + 1) * size) });
+    const meta = { id, at, by: me?.id || null, name: upPending.name, count: list.length, chunks };
+    await db.doc(`uplog/${id}`).set(meta);
+    await db.doc('upmeta/current').set(meta);
+    upPending = null; upPreviewUI(); toast('올린 파일을 최신본으로 했어요.');
+  } catch { toast('올리지 못했어요. 잠시 후 다시 해 주세요.'); if (btn){ btn.disabled = false; btn.textContent = '이 파일을 최신본으로'; } }
+}
+async function loadUpload(meta){
+  if (!meta?.id){ UPROWS = null; mergeUpload(); return; }
+  const qs = await db.collection('uploads').where('uid', '==', meta.id).get();
+  const parts = qs.docs.map(d => d.data()).sort((a, b) => a.n - b.n);
+  if (parts.length < meta.chunks) return;   // 아직 다 안 올라옴 — 다음 스냅숏에서 다시
+  UPROWS = new Map(parts.flatMap(p => p.rows).map(u => [String(u[0]), u])); mergeUpload();
+}
+async function upInfoUI(){
+  const ids = [...new Set([UPMETA?.by, ...UPLOG.map(d => d.by)].filter(Boolean))];
+  const ps = user && ids.length ? await user.profiles(ids) : {}, who = id => (ps[id] && ps[id].name) || '누군가';
+  $('#upInfo').textContent = UPMETA?.id ? `지금 최신본: ${UPMETA.name} · ${UPMETA.count.toLocaleString()}행 · ${fmt(UPMETA.at)} · ${who(UPMETA.by)}` : `아직 올린 최신본이 없어요. 지금은 개선본(${BUILT}) 기준이에요.`;
+  $('#upClear').hidden = !UPMETA?.id;
+  $('#upHist').innerHTML = UPLOG.length ? UPLOG.map(d => `<li><span>${esc(fmt(d.at))}</span><span>${esc(who(d.by))}</span><span>${esc(d.name)} · ${d.count}행</span>${UPMETA?.id === d.id ? '<span class="chip mint">지금 최신본</span>' : `<button class="btn" type="button" data-uprestore="${esc(d.id)}" ${db && canWrite ? '' : 'disabled'}>이 파일로 되돌리기</button>`}</li>`).join('') : '<li>아직 없어요.</li>';
+}
 
 function lint(t){
   const w = [];
@@ -1028,12 +1142,33 @@ $('#baseSel').addEventListener('change', e => { baseId = e.target.value; history
 $('#dlAll').addEventListener('click', () => download('all'));
 $('#top5').addEventListener('click', e => { const b = e.target.closest('[data-jump]'); if (!b) return; const k = b.dataset.jump; F.q = k; F.view = 'all'; $('#q').value = k; go('q', false); open.add(k); limit = 40; render(); setTimeout(() => document.querySelector(`details.q[data-key="${CSS.escape(k)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); });
 $('#dlDiff').addEventListener('click', () => download('diff'));
+$('#upFile').addEventListener('change', async e => {
+  const f = e.target.files?.[0]; e.target.value = ''; if (!f) return;
+  try { const t = parseCSV(await readCSVFile(f)); upPending = t.length ? { name: f.name, ...checkUpload(t) } : { name: f.name, errors: ['빈 파일이에요.'] }; }
+  catch { upPending = { name: f.name, errors: ['파일을 읽지 못했어요.'] }; }
+  upPending.errors = upPending.errors || []; upPreviewUI();
+});
+$('#upPreview').addEventListener('click', e => {
+  if (e.target.closest('[data-upcancel]')){ upPending = null; upPreviewUI(); }
+  if (e.target.closest('[data-upapply]')) applyUpload();
+});
+$('#upClear').addEventListener('click', async e => {
+  if (!db) return; const b = e.currentTarget;
+  if (!b.classList.contains('armed')){ b.classList.add('armed'); b.textContent = '한 번 더 누르면 개선본 기준으로 돌아가요'; setTimeout(() => { b.classList.remove('armed'); b.textContent = '올린 최신본 해제'; }, 4000); return; }
+  try { await db.doc('upmeta/current').set({ id: null, at: new Date().toISOString(), by: me?.id || null }); toast('개선본 기준으로 돌아갔어요.'); } catch { toast('바꾸지 못했어요.'); }
+});
+$('#upHist').addEventListener('click', async e => {
+  const b = e.target.closest('[data-uprestore]'); if (!b || !db) return;
+  const m = UPLOG.find(d => d.id === b.dataset.uprestore); if (!m) return;
+  b.disabled = true;
+  try { await db.doc('upmeta/current').set({ ...m, at: new Date().toISOString() }); toast(`${m.name}을 최신본으로 되돌렸어요.`); } catch { toast('바꾸지 못했어요.'); b.disabled = false; }
+});
 
 // ---- 시작 ----
 (async () => {
   try {
     const j = await (await fetch('data/questions.json')).json();
-    BASE = j.rows.slice().sort((a, b) => Number(a.key) - Number(b.key)); BUILT = j.builtAt; DUPS = j.dups || [];
+    BASE0 = j.rows.slice().sort((a, b) => Number(a.key) - Number(b.key)); BASE = BASE0; BUILT = j.builtAt; DUPS = j.dups || [];
     $('#built').textContent = `개선본 ${j.builtAt} 기준 · 전체 ${BASE.length.toLocaleString()}행`;
     filters(); render();
   } catch { $('#list').innerHTML = '<div class="empty">질문 데이터를 불러오지 못했어요. 새로고침해 주세요.</div>'; return; }
@@ -1055,6 +1190,13 @@ $('#dlDiff').addEventListener('click', () => download('diff'));
   db.collection('dupok').onSnapshot(qs => { DUPOK = new Map(qs.docs.map(d => [d.id, d.data()])); dupUI(); badges(); }, () => {});
   db.collection('keeps').onSnapshot(qs => { KEEPS = new Map(qs.docs.map(d => [d.id, d.data()])); render(); }, () => {});
   db.collection('ai').onSnapshot(qs => { AIS = new Map(qs.docs.map(d => [d.id, d.data()])); qs.docChanges().forEach(c => refreshOpts(c.doc.id)); }, () => {});
+  db.doc('upmeta/current').onSnapshot(async d => {
+    const m = d.exists ? d.data() : null;
+    const loaded = UPROWS !== null;
+    if ((m?.id || null) === (UPMETA?.id || null) && loaded === !!m?.id){ UPMETA = m; upInfoUI(); return; }   // 같은 파일이면 다시 읽지 않는다
+    UPMETA = m; try { await loadUpload(m); } catch {} upInfoUI(); filters(); render();
+  }, () => {});
+  db.collection('uplog').orderBy('at', 'desc').limit(30).onSnapshot(qs => { UPLOG = qs.docs.map(d => d.data()); upInfoUI(); }, () => {});
   db.collection('downloads').orderBy('at', 'desc').limit(50).onSnapshot(qs => {
     DLS = qs.docs.map(d => ({ id: d.id, ...d.data() }));
     if (!baseId || !DLS.some(d => d.id === baseId)) baseId = DLS[0]?.id || null;
