@@ -275,10 +275,63 @@ def findings(uni, mdl, ln, ax):
     return out
 
 
+LEVELS = [
+    (1, "입문", "가볍고 바로 답하는 질문 — 선호·양자택일·상상, 시점·경험 전제·은유 없음", "처음 기록하는 날, 오랜만에 돌아온 날"),
+    (2, "일상", "평소의 나를 관찰하는 질문 — 성향·습관, 가벼운 생각", "기록이 습관이 되는 시기의 기본"),
+    (3, "성찰", "생각을 정리하거나 기억을 꺼내는 질문 — 개념·가치, 일화 회상, 특정 경험, 감정·자기노출 보통 이상", "기록이 쌓인 사용자에게 섞어서"),
+    (4, "깊이", "무거운 감정이나 깊은 자기노출을 다루는 질문", "충분히 쌓인 뒤, 주 1회 이하 · 연속 금지"),
+]
+JOURNEY = [  # 기록 횟수 구간 → 레벨 비율(%)
+    ("1~3회째", {1: 100}), ("4~14회째", {1: 40, 2: 60}), ("15~30회째", {1: 20, 2: 50, 3: 30}), ("31회째부터", {2: 45, 3: 40, 4: 15}),
+]
+
+
+def level_of(t, cur):
+    """제안 레벨. 원래 레벨 1(첫 질문)은 그대로 1로 둔다."""
+    if cur == 1:
+        return 1
+    if t["W"] == 3 or t["S"] == 3:
+        return 4
+    if t["E"] == 3 or (t["W"] >= 2 and t["S"] >= 2) or t["F"] in ("r", "d") or t["P"] == 2:
+        return 3
+    if t["T"] == 0 and t["P"] == 0 and t["E"] == 1 and t["W"] == 1 and t["S"] <= 1 and t["C"] == 0 and t["F"] in ("p", "c", "h"):
+        return 1
+    return 2
+
+
+def levels(d, mdl):
+    """4단계 레벨 구조 제안: 개선본 활성 질문마다 태그로 레벨을 매기고, 레벨별 실적·분포·여정별 기대 답변율을 낸다."""
+    rows = json.loads((ROOT / "board" / "data" / "questions.json").read_text())["rows"]
+    tags = pd.read_csv(Path(__file__).parent / "question_tags.csv").set_index("id")
+    T = {str(stats_to_db(int(i))): r.to_dict() for i, r in tags.iterrows()}
+    for f in ["new_questions.csv", "new_questions_scraped.csv", "new_questions_love.csv", "new_questions_fun.csv", "new_questions_self.csv"]:
+        n = pd.read_csv(ROOT / "output" / f).set_index("신규 ID")
+        for r in rows:
+            if r["newId"] in n.index:
+                T[r["key"]] = n.loc[r["newId"], list("TPEWSFC")].to_dict()
+    stq = {k: (a, rp) for k, a, rp in zip(d.key, d.ans, d.rep)}
+    post = mdl.get("post", {})
+    live = [r for r in rows if not r["deleted"] and r["key"] in T]
+    lv = {r["key"]: level_of(T[r["key"]], r["level"]) for r in live}
+    out = []
+    for L, name, desc, when in LEVELS:
+        ks = [k for k, v in lv.items() if v == L]
+        a = sum(stq[k][0] for k in ks if k in stq)
+        n = sum(stq[k][0] + stq[k][1] for k in ks if k in stq)
+        mus = [post[k][0] for k in ks if k in post]
+        out.append(dict(level=L, name=name, desc=desc, when=when, n=len(ks), res=int(n), rate=round(a / n, 4) if n else None, ci=wilson(a, n),
+                        mu=round(float(np.mean(mus)), 4) if mus else None,
+                        from_cur={c: sum(1 for r in live if lv[r["key"]] == L and r["level"] == c) for c in (1, 2)},
+                        by_cat={c: sum(1 for r in live if lv[r["key"]] == L and r["cat"] == c) for c in CAT.values()}))
+    rate = {x["level"]: x["rate"] for x in out}
+    journey = [dict(stage=s_, mix=mix, expect=round(sum(rate[l] * w for l, w in mix.items()) / 100, 4)) for s_, mix in JOURNEY]
+    return dict(levels=out, journey=journey, n=len(live), lv=lv, untagged=sum(1 for r in rows if not r["deleted"]) - len(live))
+
+
 def main():
     date, d = load()
     uni, mdl, ln, ax = univariate(d), model(d), length_bins(d), axes(d)
-    out = dict(snapshot=date, uni=uni, model=mdl, length=ln, axes=ax, findings=findings(uni, mdl, ln, ax))
+    out = dict(snapshot=date, uni=uni, model=mdl, length=ln, axes=ax, levels=levels(d, mdl), findings=findings(uni, mdl, ln, ax))
     f = ROOT / "board" / "data" / "insights.json"
     f.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":"), allow_nan=False))
     print(f"{date}: 문항 {mdl['n_q']} · 결론 {mdl['n_res']} · 평균 {mdl['base']:.1%} · 인사이트 {len(out['findings'])}개 → {f}")

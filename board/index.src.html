@@ -9,6 +9,7 @@
   --mint:#63d2c6; --mint-soft:#e4f7f4; --mint-ink:#12857a;
   --new:#12857a; --new-soft:#e4f7f4; --mod:#c46a00; --mod-soft:#fff2df; --gone:#d2453e; --gone-soft:#fde8e6;
   --c1:#2a78d6; --c2:#eb6834; --c3:#1baf7a; --c4:#eda100; --c5:#e87ba4; --c6:#008300;
+  --lv1:#8a96f5; --lv2:#6b79f2; --lv3:#4e5ff0; --lv4:#2c38b8; --lvt1:#1e2240; --lvt2:#1e2240; --lvt3:#fff; --lvt4:#fff;
   --chart:#4e5ff0; --track:#e9ebf3; --low:#c4501f; --low-soft:#fdeee6; --high:#12857a; --high-soft:#e4f7f4;
   --shadow:0 8px 28px rgba(46,58,140,.07);
   --font:"NanumSquare","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
@@ -19,6 +20,7 @@
   --mint:#63d2c6; --mint-soft:#183b3a; --mint-ink:#7fe3d7;
   --new:#7fe3d7; --new-soft:#183b3a; --mod:#f0b45c; --mod-soft:#3a2c14; --gone:#ff8d86; --gone-soft:#3d1c1d;
   --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500; --c5:#d55181; --c6:#008300;
+  --lv1:#4f5dba; --lv2:#6876e6; --lv3:#8b97f8; --lv4:#b8c0fc; --lvt1:#fff; --lvt2:#fff; --lvt3:#12142a; --lvt4:#12142a;
   --chart:#6f7df5; --track:#2b3054; --low:#ff9a6b; --low-soft:#3b2418; --high:#7fe3d7; --high-soft:#183b3a;
   --shadow:0 8px 28px rgba(0,0,0,.35); color-scheme:dark } }
 :root[data-theme="dark"]{
@@ -27,6 +29,7 @@
   --mint:#63d2c6; --mint-soft:#183b3a; --mint-ink:#7fe3d7;
   --new:#7fe3d7; --new-soft:#183b3a; --mod:#f0b45c; --mod-soft:#3a2c14; --gone:#ff8d86; --gone-soft:#3d1c1d;
   --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500; --c5:#d55181; --c6:#008300;
+  --lv1:#4f5dba; --lv2:#6876e6; --lv3:#8b97f8; --lv4:#b8c0fc; --lvt1:#fff; --lvt2:#fff; --lvt3:#12142a; --lvt4:#12142a;
   --chart:#6f7df5; --track:#2b3054; --low:#ff9a6b; --low-soft:#3b2418; --high:#7fe3d7; --high-soft:#183b3a;
   --shadow:0 8px 28px rgba(0,0,0,.35); color-scheme:dark }
 body{background:var(--bg);color:var(--ink);font:400 15px/1.65 var(--font);-webkit-font-smoothing:antialiased}
@@ -195,6 +198,15 @@ summary.note{cursor:pointer;font-weight:700}
 .coef th:first-child,.coef td:first-child{text-align:left}
 .coef td{border-top:1px solid var(--line);padding:6px 8px;text-align:right}
 .coef .g{color:var(--muted);font-size:.72rem;margin-left:4px}
+.lvcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.lvc{background:var(--soft);border-radius:18px;padding:12px 14px;display:grid;gap:6px;align-content:start;border-top:5px solid var(--lvc)}
+.lvc h3{margin:0;font-size:.95rem} .lvc .d{font-size:.8rem;color:var(--ink-2);line-height:1.5} .lvc .m{font-size:.76rem;color:var(--muted);font-weight:700}
+.lvc .big{font-size:1.4rem;font-weight:800;font-variant-numeric:tabular-nums}
+.sh{margin:6px 0 0;font-size:.9rem}
+.jr{display:grid;grid-template-columns:90px minmax(0,1fr) 54px;gap:10px;align-items:center;font-size:.8rem;padding:5px 0}
+.jr .bar{display:flex;gap:2px;height:22px;border-radius:7px;overflow:hidden}
+.jr .bar i{display:grid;place-items:center;font-style:normal;font-size:.7rem;font-weight:800;color:#fff;min-width:0;overflow:hidden;white-space:nowrap}
+.jr .e{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
 .finds{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
 .find{background:var(--soft);border-radius:20px;padding:14px 16px;display:grid;gap:6px;align-content:start;border-left:5px solid var(--muted)}
 .find.neg{border-left-color:var(--low)} .find.pos{border-left-color:var(--high)} .find.gap{border-left-color:var(--mod)}
@@ -434,7 +446,7 @@ a{color:var(--blue)}
   </div>
   <div class="pg" id="pg-ana" role="tabpanel" data-page="ins" hidden>
   <nav class="subnav" aria-label="분석 바로가기" id="anaNav">
-    <a href="#dth">지금 숫자</a><a href="#insh">핵심 인사이트</a><a href="#mdh">질문 모델</a><a href="#forh">요인 효과</a><a href="#axh">자아분석 축</a><a href="#disth">관심사 분포</a><a href="#lenh">문구 길이</a><a href="#method-sec">방법과 한계</a>
+    <a href="#dth">지금 숫자</a><a href="#insh">핵심 인사이트</a><a href="#lvh">레벨 구조</a><a href="#mdh">질문 모델</a><a href="#forh">요인 효과</a><a href="#axh">자아분석 축</a><a href="#disth">관심사 분포</a><a href="#lenh">문구 길이</a><a href="#method-sec">방법과 한계</a>
   </nav>
   <section class="panel" aria-labelledby="dth">
     <div class="data-head"><h2 id="dth">데이터로 보는 지금</h2><span class="note" id="dataAt">통계를 불러오는 중이에요.</span></div>
@@ -464,6 +476,27 @@ a{color:var(--blue)}
   <section class="panel" aria-labelledby="insh">
     <div class="data-head"><h2 id="insh">나답 질문 분석 리포트</h2><span class="note" id="insMeta">분석 결과를 불러오는 중이에요.</span></div>
     <div class="finds" id="finds"></div>
+  </section>
+  <section class="panel" aria-labelledby="lvh">
+    <h2 id="lvh">레벨 구조 제안 — 4단계</h2>
+    <p class="note" style="margin:0">지금은 레벨이 1(첫 질문)과 2(나머지) 두 개뿐이에요. 질문의 깊이(인지 노력·감정 무게·자기노출·경험 전제·형식)로 4단계를 나누면 레벨이 올라갈수록 답변율이 내려가요. 레벨을 '깊이이자 난이도'로 쓰고, 기록이 쌓일수록 깊은 질문을 섞는 구조를 제안해요. 원래 레벨 1은 그대로 입문으로 둬요.</p>
+    <div class="lvcards" id="lvCards"></div>
+    <h3 class="sh">기록 여정 — 언제 어떤 레벨을 섞나</h3>
+    <div class="chartbox"><div id="lvJourney"></div></div>
+    <div class="gcols">
+      <div class="gbox"><h3>내보내는 규칙</h3><ul>
+        <li>처음 3회는 입문만 — 첫 경험에서 바로 답하게</li>
+        <li>7일 넘게 쉬다 돌아오면 다음 2회는 입문</li>
+        <li>연속 2번 교체하면 다음 질문은 한 단계 낮춤</li>
+        <li>깊이(레벨 4)는 31회째부터, 주 1회 이하, 연속 금지 · 원하지 않으면 끌 수 있게</li>
+        <li>같은 자아분석 축이 연속으로 나오지 않게 섞기</li></ul></div>
+      <div class="gbox"><h3>적용 방법</h3><ul>
+        <li>DB <code>question_level</code>을 1~4로 넓혀요(지금 1은 그대로 1).</li>
+        <li>앱의 질문 뽑기에 '기록 횟수 → 레벨 비율' 표를 넣어요.</li>
+        <li>질문 목록 카드의 <b>제안 L1~L4</b> 표시로 개별 질문을 확인·조정할 수 있어요.</li>
+        <li id="lvUntag">태그가 없는 질문(페이지에서 만든 질문 등)은 레벨을 따로 정해야 해요.</li></ul></div>
+      <div class="gbox"><h3>관심사별 레벨 분포</h3><div id="lvCat"></div></div>
+    </div>
   </section>
   <section class="panel" aria-labelledby="mdh">
     <h2 id="mdh">나답 질문 모델</h2>
@@ -1380,6 +1413,21 @@ JSON만: {"T":0,"P":0,"E":1,"W":1,"S":1,"C":0,"F":"c"}`, { modelTier: 'quick', c
   } catch (e) { if (e?.code === 'not_granted'){ sample = null; b.hidden = true; } toast('태그를 붙이지 못했어요.'); }
   finally { b.disabled = false; b.textContent = 'AI로 태그 붙이기'; }
 }
+// ---- 레벨 구조 제안 ----
+function lvUI(){
+  const L = INS?.levels; if (!L) return;
+  const avg = INS.model?.base;
+  $('#lvCards').innerHTML = L.levels.map(x => `<div class="lvc" style="--lvc:var(--lv${x.level})"><span class="m">레벨 ${x.level}</span><h3>${esc(x.name)}</h3>
+    <span class="d">${esc(x.desc)}</span><span class="m">언제: ${esc(x.when)}</span>
+    <span><span class="big">${P(x.rate)}</span> <span class="note">실제 답변율 (95% ${P(x.ci[0])}~${P(x.ci[1])}) · 모델 ${P(x.mu)}</span></span>
+    <span class="rate"><i style="width:${(x.rate || 0) * 100}%"></i>${avg != null ? `<b style="left:${avg * 100}%"></b>` : ''}</span>
+    <span class="m">${x.n}문항 · 지금 레벨 1에서 ${x.from_cur['1'] || 0} · 레벨 2에서 ${x.from_cur['2'] || 0}</span></div>`).join('');
+  $('#lvJourney').innerHTML = L.journey.map(j => `<div class="jr"><span><b>${esc(j.stage)}</b></span><span class="bar">${Object.entries(j.mix).map(([l, w]) => `<i style="width:${w}%;background:var(--lv${l});color:var(--lvt${l})" title="레벨 ${l} ${w}%">L${l} ${w}%</i>`).join('')}</span><span class="e">${P(j.expect)}</span></div>`).join('')
+    + `<p class="note" style="margin:6px 0 0">오른쪽은 그 시기의 기대 답변율(레벨별 실제 답변율 × 비율)이에요. 깊어질수록 답변율은 내려가지만, 기록이 쌓인 사용자일수록 깊은 질문을 감당할 수 있다는 가정이에요 — 적용 후 시기별 답변율로 비율을 조정해요.</p>`;
+  const cats = Object.values(CAT);
+  $('#lvCat').innerHTML = `<table class="coef"><thead><tr><th>관심사</th>${L.levels.map(x => `<th>L${x.level}</th>`).join('')}</tr></thead><tbody>${cats.map(c => `<tr><td>${c}</td>${L.levels.map(x => `<td>${x.by_cat[c] || 0}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  $('#lvUntag').textContent = `태그가 없는 ${L.untagged}개(페이지에서 만든 질문 등)는 레벨을 따로 정해야 해요.`;
+}
 let BRK = 'form', advOpened = false, GM = 'fill';
 function breakdown(){
   const s = latest(), avg = avgRate(s), all = rows();
@@ -1460,6 +1508,7 @@ function card(r){
     `<span class="chip">${esc(r.change)}</span>`,
     `<span class="chip">${esc(r.cat)}${r.catChange ? ` · ${esc(r.catChange)}` : ''}</span>`,
     r.level === 1 ? `<span class="chip mint">레벨 1 · 첫 질문</span>` : `<span class="chip">레벨 2</span>`,
+    INS?.levels?.lv?.[r.key] ? `<span class="chip" title="레벨 구조 제안(분석 탭)">제안 L${INS.levels.lv[r.key]} ${['', '입문', '일상', '성찰', '깊이'][INS.levels.lv[r.key]]}</span>` : '',
     r.form ? `<span class="chip">${esc(r.form)}</span>` : '',
     r.axis ? `<span class="chip mint">${esc(r.axis)}</span>` : '',
     rateChip(r.key),
@@ -1878,7 +1927,7 @@ $('#upHist').addEventListener('click', async e => {
     BASE0 = j.rows.slice().sort((a, b) => Number(a.key) - Number(b.key)); BASE = BASE0; BUILT = j.builtAt; DUPS = j.dups || [];
     $('#built').textContent = `개선본 ${j.builtAt} 기준 · 전체 ${BASE.length.toLocaleString()}행`;
     filters(); render();
-    fetch('data/insights.json').then(r => r.json()).then(j => { INS = j; insUI(); heatUI(); genAll(); flowUI(); eqUI(); dgInit(); dgUI(); render(); }).catch(() => { $('#insMeta').textContent = '분석 결과를 불러오지 못했어요.'; });
+    fetch('data/insights.json').then(r => r.json()).then(j => { INS = j; insUI(); heatUI(); genAll(); flowUI(); eqUI(); lvUI(); dgInit(); dgUI(); render(); }).catch(() => { $('#insMeta').textContent = '분석 결과를 불러오지 못했어요.'; });
   } catch { $('#list').innerHTML = '<div class="empty">질문 데이터를 불러오지 못했어요. 새로고침해 주세요.</div>'; return; }
   cuse('downloads').then(d => { downloads = d; $('#dlAll').disabled = $('#dlDiff').disabled = !d; });
   cuse('sample').then(s => { sample = s; if ($('#dgAI')) { $('#dgAI').hidden = !s; $('#dgGuide').hidden = !s; } if (s) document.querySelectorAll('[data-guide]').forEach(b => b.hidden = false); document.querySelectorAll('details.q[open]').forEach(el => refreshOpts(el.dataset.key)); });
