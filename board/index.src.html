@@ -167,6 +167,19 @@ summary.note{cursor:pointer;font-weight:700}
 .heat th{font-size:.74rem;color:var(--ink-2);font-weight:800;padding:4px 6px;text-align:center}
 .heat th:first-child{text-align:left}
 .heat td{text-align:center;font-weight:800;border-radius:8px;padding:8px 4px}
+.heat td.hc{cursor:pointer;transition:transform .1s}
+.heat td.hc:hover{transform:scale(1.08)}
+.heat td.hc:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.heat td.sel{outline:3px solid var(--ink);outline-offset:1px}
+.gen{background:var(--soft);border-radius:20px;padding:16px;display:grid;gap:10px}
+.gen h3{margin:0;font-size:1rem}
+.gen .ex{font-size:.8rem;color:var(--ink-2);display:grid;gap:2px}
+.gen .cands{display:grid;gap:8px}
+.gcard{background:var(--surface);border-radius:16px;padding:12px 14px;display:grid;gap:6px}
+.gcard.done{opacity:.55}
+.gcard textarea{width:100%;min-height:2.6em;font:inherit;font-weight:800;border:1.5px solid var(--line);border-radius:10px;padding:6px 8px;background:var(--surface);color:var(--ink);resize:vertical}
+.gcard .g{font-size:.8rem;color:var(--ink-2)}
+.gcard .w{font-size:.78rem;color:var(--mod);font-weight:700}
 .heat td.zero{background:transparent!important;color:var(--gone);box-shadow:inset 0 0 0 1.5px var(--gone)}
 .dist .bar{display:flex;gap:2px;height:22px;border-radius:8px;overflow:hidden;background:var(--surface)}
 .dist .bar i{display:block;height:100%;min-width:2px}
@@ -321,8 +334,9 @@ a{color:var(--blue)}
   </section>
   <section class="panel" aria-labelledby="hmh">
     <h2 id="hmh">축 × 관심사 — 어디가 비어 있나</h2>
-    <p class="note" style="margin:0">개선 후 활성 질문 수예요. 페이지에서 고친 관심사·비활성화까지 반영해요. 0인 칸은 그 관심사에서 그 축을 묻는 질문이 없다는 뜻이에요.</p>
+    <p class="note" style="margin:0">개선 후 활성 질문 수예요. 페이지에서 고친 관심사·비활성화까지 반영해요. 0인 칸은 그 관심사에서 그 축을 묻는 질문이 없다는 뜻이에요. <b>칸을 누르면 그 축×관심사로 새 질문을 만들 수 있어요.</b></p>
     <div class="chartbox" style="overflow-x:auto"><div id="heat"></div></div>
+    <div id="gen"></div>
   </section>
   <section class="panel" aria-labelledby="lenh">
     <h2 id="lenh">문구 길이별 답변율</h2>
@@ -466,6 +480,18 @@ function hash(r){
   return (h >>> 0).toString(36);
 }
 // 비교 기준: 다운로드 기록 하나, 또는 'orig'(처음 받은 원본 DB 2026-08-14)
+const AXES = {
+  '에너지 방향': ['Big Five 외향성, 사회 불안', '사람에게서 충전하는지, 혼자서 충전하는지'],
+  '계획·실행': ['Big Five 성실성, 미루기, 충동성', '일을 다루는 방식과 자기조절'],
+  '새로움 추구': ['Big Five 개방성, 독특성 욕구', '익숙함과 새로움 중 어디서 편안한지'],
+  '관계 온도': ['친화성, 자기주장, 경계 설정', '맞춰주는 쪽인지, 내 의견을 내는 쪽인지'],
+  '감정 민감도': ['신경성, 반추, 거절 민감성, 부정성 편향', '감정이 얼마나 쉽게, 오래 흔들리는지'],
+  '스트레스 대처': ['대처 전략, 회복탄력성', '힘들 때 쓰는 방법과 회복 자원'],
+  '친밀감 방식': ['애착 이론', '가까워지는 방식과 표현 방식'],
+  '가치·동기': ['가치 이론, 자기결정성, 성취 목표', '무엇이 나를 움직이는지'],
+  '결정 방식': ['분석/직관, 최대화/만족화, 후회', '선택하는 방식'],
+  '자기 인식': ['자기 자비, 조건부 자기가치', '나를 대하는 태도'],
+};
 const ORIG_LABEL = '원본 DB(daily_questions_202608141346.csv)';
 const ORIG_BASE = { id: 'orig', orig: true, at: null, by: null };
 const baseline = () => baseId === 'orig' ? ORIG_BASE : (DLS.find(d => d.id === baseId) || null);
@@ -487,10 +513,21 @@ const rows = () => BASE.map(eff);
 // ---- 올린 CSV(최신본) ----
 let BASE0 = [], UPMETA = null, UPROWS = null, UPLOG = [], upPending = null;
 const UPCOLS = ['id','interest_id','question_text','question_level','empathy_guide','hint_guide','leading_question_guide','created_at','updated_at','deleted_at'];
+// 페이지에서 만든 신규 질문(added 컬렉션)을 개선본 행 모양으로 바꾼다
+let ADDED = new Map();
+function addedRows(){
+  const have = new Set(BASE0.map(r => r.key));
+  return [...ADDED.values()].filter(a => !have.has(String(a.id))).map(a => ({ key: String(a.id), id: String(a.id), newId: 'P' + a.id, statsId: null,
+    interest_id: a.interest_id, cat: CAT[a.interest_id], level: a.level, text: a.text, oldText: '', g: [a.g0, a.g1, a.g2], deleted: false, deletedAt: '',
+    created_at: dbTime(a.at), updated_at: dbTime(a.at), change: '신규', catChange: '', set: '페이지에서 생성', form: a.form || '', axis: a.axis || '', axisNote: AXES[a.axis]?.[1] || '',
+    purpose: [a.level === 1 ? '첫 질문용이에요.' : '', `자아분석 '${a.axis}' 축의 신호를 모아요.`].filter(Boolean).join(' '), why: a.why || '', source: '분석 탭 축×관심사에서 AI로 생성', srcUrl: '',
+    pred: null, exp: null, ans: null, rep: null, alts: [], decided: '', orig: null, made: a }));
+}
 function mergeUpload(){
-  if (!UPMETA?.id || !UPROWS){ BASE = BASE0; return; }
+  const base = BASE0.concat(addedRows());
+  if (!UPMETA?.id || !UPROWS){ BASE = base.sort((a, b) => Number(a.key) - Number(b.key)); return; }
   const seen = new Set();
-  BASE = BASE0.map(r => { const u = UPROWS.get(r.key); if (!u) return r; seen.add(r.key);
+  BASE = base.map(r => { const u = UPROWS.get(r.key); if (!u) return r; seen.add(r.key);
     return { ...r, interest_id: u[1], cat: CAT[u[1]], text: u[2], level: u[3], g: [u[4], u[5], u[6]], created_at: u[7] || r.created_at, updated_at: u[8] || r.updated_at,
       deleted: !!u[9], deletedAt: u[9], uploaded: true }; });
   UPROWS.forEach((u, k) => { if (seen.has(k)) return;
@@ -858,7 +895,8 @@ function heatUI(){
   $('#heat').innerHTML = `<table class="heat"><thead><tr><th>축 / 관심사</th>${cats.map(c => `<th>${c}</th>`).join('')}<th>합계</th></tr></thead><tbody>` +
     axes.map(a => { const vals = cats.map(c => n(a, c));
       return `<tr><th>${esc(a)}</th>${vals.map((v, i) => { const t = v / max, bg = `color-mix(in srgb, var(--chart) ${Math.round(12 + t * 80)}%, var(--surface))`;
-        return v ? `<td style="background:${bg};color:${t > 0.5 ? '#fff' : 'var(--ink)'}" title="${esc(a)} × ${cats[i]}: ${v}문항">${v}</td>` : `<td class="zero" title="${esc(a)} × ${cats[i]}: 없음">0</td>`; }).join('')}<td>${vals.reduce((x, y) => x + y, 0)}</td></tr>`; }).join('') + '</tbody></table>';
+        const on = GEN && GEN.axis === a && GEN.cat === cats[i] ? ' sel' : '';
+        return v ? `<td class="hc${on}" data-ax="${esc(a)}" data-cat="${cats[i]}" style="background:${bg};color:${t > 0.5 ? '#fff' : 'var(--ink)'}" title="${esc(a)} × ${cats[i]}: ${v}문항 · 눌러서 새 질문 만들기" tabindex="0" role="button">${v}</td>` : `<td class="hc zero${on}" data-ax="${esc(a)}" data-cat="${cats[i]}" title="${esc(a)} × ${cats[i]}: 없음 · 눌러서 새 질문 만들기" tabindex="0" role="button">0</td>`; }).join('')}<td>${vals.reduce((x, y) => x + y, 0)}</td></tr>`; }).join('') + '</tbody></table>';
 }
 function lenUI(){
   const b = INS.length, W = 640, H = 220, L = 40, Bm = 40, T = 14, bw = (W - L) / b.length;
@@ -873,6 +911,87 @@ function lenUI(){
       <text x="${cx}" y="${H - 22}" font-size="11" text-anchor="middle" fill="var(--ink-2)">${d.name}</text><text x="${cx}" y="${H - 8}" font-size="10" text-anchor="middle" fill="var(--muted)">문항 ${d.nq}${d.res < 50 ? ' · 표본 적음' : ''}</text></g>`; }).join('');
   const avg = `<line x1="${L}" x2="${W}" y1="${y(INS.model.base)}" y2="${y(INS.model.base)}" stroke="var(--ink)" stroke-dasharray="4 4" opacity=".6"/><text x="${W}" y="${y(INS.model.base) - 5}" font-size="10" text-anchor="end" fill="var(--ink-2)">평균 ${P(INS.model.base)}</text>`;
   $('#lenChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="문구 길이별 답변율">${grid}${bars}${avg}</svg><p class="note" style="margin:6px 0 0">세로 선은 95% 신뢰구간이에요. 흐린 막대는 결론 50회 미만이라 참고만 해요.</p>`;
+}
+// ---- 축×관심사로 새 질문 만들기 ----
+let GEN = null;   // {axis, cat, cands:[...], busy, err}
+const FORMN = { p: '선호(최애)', c: '양자택일', t: '성향·습관', h: '상상·가정', r: '일화 회상', d: '개념·가치', n: '특정 인물', o: '기타' };
+function genOpen(axis, cat){ GEN = { axis, cat, cands: [], busy: false, err: '' }; heatUI(); genUI(); $('#gen').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+function genUI(){
+  const el = $('#gen'); if (!GEN){ el.innerHTML = ''; return; }
+  const all = rows().filter(r => !r.deleted), cell = all.filter(r => r.axis === GEN.axis && r.cat === GEN.cat), ax = AXES[GEN.axis] || ['', ''];
+  const ok = !!sample;
+  el.innerHTML = `<div class="gen">
+    <div class="row" style="justify-content:space-between"><h3>${esc(GEN.axis)} × ${esc(GEN.cat)} 새 질문 만들기</h3><button class="btn" type="button" data-gclose>닫기</button></div>
+    <div class="ex"><span><b>이 축이 보는 것</b> ${esc(ax[1])} · 근거 ${esc(ax[0])}</span>
+      <span><b>지금 이 칸 질문 ${cell.length}개</b>${cell.length ? ' — ' + cell.slice(0, 6).map(r => esc(r.text)).join(' / ') + (cell.length > 6 ? ' …' : '') : ' — 아직 없어요.'}</span></div>
+    <div class="row">
+      <select id="gN" aria-label="몇 개"><option value="3">3개</option><option value="5" selected>5개</option><option value="8">8개</option></select>
+      <select id="gLv" aria-label="레벨"><option value="auto">레벨 자동</option><option value="1">레벨 1 · 첫 질문용</option><option value="2">레벨 2</option></select>
+      <input type="search" id="gReq" placeholder="바라는 점 (예: 10대도 답하기 쉽게, 양자택일로)" aria-label="AI 요청" style="flex:1;min-width:180px">
+      <button class="btn primary" type="button" data-ggo ${ok && !GEN.busy ? '' : 'disabled'}>${GEN.busy ? 'AI가 쓰는 중…' : 'AI로 질문 만들기'}</button>
+    </div>
+    ${ok ? '' : '<span class="note">이 화면에서는 AI를 쓸 수 없어요.</span>'}
+    ${GEN.err ? `<span class="note" style="color:var(--gone)">${esc(GEN.err)}</span>` : ''}
+    <div class="cands">${GEN.cands.map((c, i) => { const sim = c.done ? null : similarTo('', c.text), w = lint(c.text);
+      return `<div class="gcard${c.done ? ' done' : ''}" data-gi="${i}">
+        <textarea data-gt="${i}" aria-label="질문 문구" ${c.done ? 'disabled' : ''}>${esc(c.text)}</textarea>
+        <span class="g">레벨 ${c.level} · ${esc(FORMN[c.form] || c.form || '')}${c.why ? ' · ' + esc(c.why) : ''}</span>
+        <span class="g">가이드 · ${esc([c.empathy, c.hint, c.leading].join(' / '))}</span>
+        ${sim ? `<span class="w">비슷한 질문이 있어요: Q.${sim.r.key} "${esc(sim.r.text)}" (${Math.round(sim.v * 100)}%)</span>` : ''}${w.length ? `<span class="w">${esc(w.join(' '))}</span>` : ''}
+        <div class="row">${c.done ? `<span class="chip mint">Q.${esc(c.done)}로 추가했어요</span>` : `<button class="btn primary" type="button" data-gadd="${i}" ${db && canWrite ? '' : 'disabled'}>신규 질문으로 추가</button>`}</div></div>`; }).join('')}</div>
+  </div>`;
+}
+async function genRun(){
+  if (!sample || !GEN || GEN.busy) return;
+  const n = Number($('#gN').value), lv = $('#gLv').value, req = ($('#gReq').value || '').trim();
+  const all = rows().filter(r => !r.deleted), cell = all.filter(r => r.axis === GEN.axis && r.cat === GEN.cat), near = all.filter(r => r.axis === GEN.axis).slice(0, 30), ax = AXES[GEN.axis] || ['', ''];
+  const keyF = INS ? INS.model.terms.filter(t => t.p < 0.05).map(t => `${t.name} ${t.pp > 0 ? '+' : ''}${Math.round(t.pp * 100)}%p`).join(', ') : '';
+  GEN.busy = true; GEN.err = ''; genUI();
+  const prompt = `당신은 셀프 저널링 앱 '나답'의 데일리 질문 편집자입니다. 아래 칸에 들어갈 새 질문 ${n}개를 각각 가이드 3종과 함께 만드세요.
+
+칸: 자아분석 축 '${GEN.axis}' × 관심사 '${GEN.cat}'
+- 이 축이 보는 것: ${ax[1]} (근거 개념: ${ax[0]} — 개념만 참고하고 심리검사 문항을 베끼지 마세요)
+- 관심사 '${GEN.cat}'의 소재로, 답만 보고 이 축의 신호(어느 쪽 성향인지)를 읽을 수 있어야 해요.
+
+나답 질문 규칙
+- '~인가요?', '~나요?'로 끝내고 '나/내'를 쓴다. '당신', '~시나요'는 쓰지 않는다. 40자 안팎, 질문은 하나.
+- 데이터상 답변율을 확실히 바꾼 요인: ${keyF || '즉답 가능 +, 경험 전제 −, 예/아니오형 −'}.
+  → 바로 답할 수 있게, '~한 적 있다면' 같은 경험 전제·'오늘' 같은 시점·은유를 피하고, 예/아니오 질문은 쓰지 않는다.
+- 양자택일('A인가요, B인가요?')이나 성향형('나는 ~하는 편인가요')이면 답만으로 축 신호가 읽혀서 좋다. 형식을 섞어라.
+- 레벨: ${lv === 'auto' ? '가볍고 즉답 가능한 선호·양자택일·상상형이면 1, 아니면 2' : lv}.
+
+가이드 규칙(기존 DB 말투, 각 30자 안팎, '~해요/~봐요/~뭘까요?')
+- empathy: 공감·정상화 한 문장 / hint: 떠올릴 예시·선택지 / leading: 한 걸음 더 들어가는 질문
+
+겹치면 안 되는 기존 질문(이 칸): ${cell.map(r => r.text).join(' / ') || '없음'}
+같은 축 다른 질문(참고): ${near.map(r => r.text).join(' / ')}
+${req ? '편집자 요청: ' + req : ''}
+
+JSON만 출력: {"questions":[{"text":"","empathy":"","hint":"","leading":"","level":1,"form":"c|t|p|h|d","why":"이 질문이 축 신호를 어떻게 주는지 20자 이내"}]}`;
+  try {
+    const out = await sample.json(prompt, { modelTier: 'default', cache: false });
+    const got = (out?.questions || []).filter(q => q && typeof q.text === 'string' && q.text.trim()).slice(0, n).map(q => ({
+      text: q.text.trim(), empathy: String(q.empathy || '').trim(), hint: String(q.hint || '').trim(), leading: String(q.leading || '').trim(),
+      level: [1, 2].includes(Number(q.level)) ? Number(q.level) : (lv === '1' ? 1 : 2), form: String(q.form || '').slice(0, 1), why: String(q.why || '').slice(0, 40) }));
+    if (!got.length) throw { code: 'empty' };
+    if (lv !== 'auto') got.forEach(q => q.level = Number(lv));
+    GEN.cands = got.concat(GEN.cands.filter(c => c.done));
+  } catch (e) {
+    if (e?.code === 'not_granted'){ sample = null; GEN.err = 'AI를 쓸 수 없는 화면이에요.'; }
+    else GEN.err = e?.code === 'rate_limited' ? '요청이 많아요. 잠시 후 다시 해 주세요.' : '질문을 만들지 못했어요. 다시 눌러 주세요.';
+  } finally { GEN.busy = false; genUI(); }
+}
+async function genAdd(i){
+  const c = GEN?.cands[i]; if (!c || !db) return;
+  const ta = document.querySelector(`[data-gt="${i}"]`); if (ta) c.text = ta.value.trim();
+  if (!c.text) return toast('문구가 비어 있어요.');
+  const ids = BASE.map(r => Number(r.key)).concat([...ADDED.values()].map(a => Number(a.id))).filter(Number.isFinite);
+  const id = Math.max(...ids) + 1;
+  try {
+    await db.doc('added/' + id).set({ id, interest_id: Number(Object.keys(CAT).find(k => CAT[k] === GEN.cat)), axis: GEN.axis, text: c.text, g0: c.empathy, g1: c.hint, g2: c.leading,
+      level: c.level, form: FORMN[c.form] || '', why: c.why, by: me?.id || null, at: new Date().toISOString() });
+    c.done = String(id); genUI(); toast(`Q.${id}로 추가했어요. 다운로드에 신규로 들어가요.`);
+  } catch { toast('추가하지 못했어요.'); }
 }
 let BRK = 'form';
 function breakdown(){
@@ -1254,6 +1373,14 @@ let st; $('#q').addEventListener('input', e => { clearTimeout(st); st = setTimeo
 $('#more').addEventListener('click', () => { limit += 40; render(); });
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (b) go(b.dataset.page); });
 go(PAGE, false);
+$('#heat').addEventListener('click', e => { const td = e.target.closest('td.hc'); if (td) genOpen(td.dataset.ax, td.dataset.cat); });
+$('#heat').addEventListener('keydown', e => { const td = e.target.closest('td.hc'); if (td && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); genOpen(td.dataset.ax, td.dataset.cat); } });
+$('#gen').addEventListener('click', e => {
+  if (e.target.closest('[data-gclose]')){ GEN = null; heatUI(); genUI(); return; }
+  if (e.target.closest('[data-ggo]')) return genRun();
+  const a = e.target.closest('[data-gadd]'); if (a){ a.disabled = true; genAdd(Number(a.dataset.gadd)); }
+});
+$('#gen').addEventListener('input', e => { const t = e.target.closest('[data-gt]'); if (t && GEN) GEN.cands[Number(t.dataset.gt)].text = t.value; });
 $('#forSeg').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b) return; FMODE = b.dataset.m; document.querySelectorAll('#forSeg button').forEach(x => x.setAttribute('aria-pressed', x === b)); forestUI(); });
 $('#forest').addEventListener('mousemove', e => { const g = e.target.closest('.fr'), tip = $('#forest .tip'); if (!tip) return;
   if (!g){ tip.hidden = true; return; } const box = $('#forest').getBoundingClientRect(); tip.hidden = false; tip.textContent = g.dataset.tip;
@@ -1336,6 +1463,7 @@ $('#upHist').addEventListener('click', async e => {
     qs.docChanges().forEach(c => { const el = document.querySelector(`details.q[data-key="${CSS.escape(c.doc.id)}"]`); if (el && !el.contains(document.activeElement)) rerender(c.doc.id); });
   }, () => {});
   db.collection('picks').onSnapshot(qs => { const m = new Map(); qs.docs.map(d => d.data()).sort((a, b) => (a.month || '').localeCompare(b.month || '')).forEach(p => p.key && m.set(String(p.key), p)); PICKS = m; render(); }, () => {});
+  db.collection('added').onSnapshot(qs => { ADDED = new Map(qs.docs.map(d => [d.id, d.data()])); mergeUpload(); filters(); render(); if (GEN && !GEN.busy) genUI(); }, () => {});
   db.collection('dupok').onSnapshot(qs => { DUPOK = new Map(qs.docs.map(d => [d.id, d.data()])); dupUI(); badges(); }, () => {});
   db.collection('keeps').onSnapshot(qs => { KEEPS = new Map(qs.docs.map(d => [d.id, d.data()])); render(); }, () => {});
   db.collection('ai').onSnapshot(qs => { AIS = new Map(qs.docs.map(d => [d.id, d.data()])); qs.docChanges().forEach(c => refreshOpts(c.doc.id)); }, () => {});

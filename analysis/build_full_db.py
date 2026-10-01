@@ -106,7 +106,10 @@ def main():
     # 4) 신규 — DB id는 기존 최대 id 다음부터 매기고 analysis/new/new_db_ids.csv에 고정한다(다시 만들어도 같은 번호)
     idmap_path = Path(__file__).parent / "new" / "new_db_ids.csv"
     idmap = (pd.read_csv(idmap_path, dtype=str).set_index("신규 ID")["DB id"].to_dict() if idmap_path.exists() else {})
-    next_id = max([int(x) for x in db["id"] if str(x).isdigit()] + [int(v) for v in idmap.values()]) + 1
+    # 개선함 페이지에서 만든 질문(db `added`)이 쓴 id는 건너뛴다 — 루틴이 ArtifactData로 받아 둔 목록
+    page_ids_path = Path(__file__).parent / "new" / "page_added_ids.txt"
+    page_ids = [int(x) for x in page_ids_path.read_text().split() if x.isdigit()] if page_ids_path.exists() else []
+    next_id = max([int(x) for x in db["id"] if str(x).isdigit()] + [int(v) for v in idmap.values()] + page_ids) + 1
     nw = pd.read_csv(EXP / "insert_new.csv")
     keep = []
     for _, r in nw.iterrows():
