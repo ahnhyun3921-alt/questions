@@ -1704,7 +1704,7 @@ function recatUI(){
   if (!INS?.recat){ $('#rcList').innerHTML = '<div class="empty">분석 결과를 불러오는 중이에요.</div>'; return; }
   const its = recatItems(), op = its.filter(x => !recatDone(x)), src = $('#rcSrc').value, showDone = $('#rcDone').checked;
   $('#rcBoth').textContent = op.filter(x => x.src === 'both').length; $('#rcMan').textContent = op.filter(x => x.src === 'manual').length; $('#rcMod').textContent = op.filter(x => x.src === 'model').length;
-  $('#rcNote').textContent = `관심사가 질문 내용과 맞지 않아 보이는 질문이에요. 문구 분류기(글자 n-gram, 처음 보는 문항 정확도 ${P(INS.recat.acc)})와 사람 분류를 함께 봐요. 옮기면 다운로드 CSV의 interest_id가 바뀌어요.`;
+  $('#rcNote').textContent = `관심사가 질문 내용과 맞지 않아 보이는 질문이에요. 문구 분류기(글자 n-gram, 처음 보는 문항 정확도 ${P(INS.recat.acc)})와 사람 분류를 함께 봐요. 사람(친구·가족·동료·남의 시선)이 중심인 질문은 가치관보다 관계, 연애가 중심이면 사랑이 우선이에요. 옮기면 다운로드 CSV의 interest_id가 바뀌어요.`;
   const vis = its.filter(x => (showDone || !recatDone(x)) && (src === 'all' || x.src === src));
   $('#rcList').innerHTML = vis.length ? vis.map(x => { const done = recatDone(x);
     return `<div class="rci" data-rk="${esc(x.key)}"><span class="t">Q.${esc(x.key)} ${esc(x.r.text)}</span>

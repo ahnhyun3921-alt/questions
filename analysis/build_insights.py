@@ -13,6 +13,7 @@
   - findings: 위 결과에서 뽑은 핵심 인사이트 문장
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -239,6 +240,10 @@ def structure(d):
     return dict(pt=pt_rate, cats=cats)
 
 
+PEOPLE_FIRST = ("관계", "사랑")   # 사람(관계·연애)이 중심인 질문은 가치관보다 관계·사랑이 우선 — 이쪽에서 가치관으로는 옮기지 않는다
+PEOPLE = re.compile(r"친구|가족|부모|엄마|아빠|사람|동료|상사|연인|애인|누구|남의|남들|남과|타인|이웃|관계|사랑받|미움받|이해받|인정받|칭찬|배신|의리|대화|팀")
+
+
 def recat_queue():
     """관심사 재배정 후보. 사람이 읽고 남긴 '관심사 제안'(manual)과 문구 분류기(글자 n-gram 로지스틱, 5겹 교차예측)를 합친다.
     분류기만의 후보는 다른 관심사 확률 ≥ 0.7 이고 지금 관심사 확률 ≤ 0.15 인 것만 — 문구로는 가치관이 다른 관심사를 흡수하는 경향이 있어 보수적으로."""
@@ -259,7 +264,7 @@ def recat_queue():
         to, src = "", ""
         if r["recat"]:
             to, src = r["recat"], "both" if top == r["recat"] else "manual"
-        elif top != r["cat"] and pr[top] >= 0.7 and pr[r["cat"]] <= 0.15:
+        elif top != r["cat"] and pr[top] >= 0.7 and pr[r["cat"]] <= 0.15 and not (top == "가치관" and (r["cat"] in PEOPLE_FIRST or PEOPLE.search(r["text"]))):
             to, src = top, "model"
         if to:
             out.append(dict(key=r["key"], cur=r["cat"], to=to, src=src, p_to=round(float(pr[to]), 3), p_cur=round(float(pr[r["cat"]]), 3)))
