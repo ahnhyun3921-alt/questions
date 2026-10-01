@@ -72,6 +72,7 @@ def main(src):
                      "question_level": int(d.get("level", 2)), "문구": text,
                      "empathy_guide": d.get("g0", ""), "hint_guide": d.get("g1", ""), "leading_question_guide": d.get("g2", ""),
                      "형식": d.get("form", ""), "F": f, "분석 축": d.get("axis", ""),
+                     "목적": d.get("pt", ""), "신호": d.get("sig", ""), "소주제": d.get("subN", "") or "", "패밀리": d.get("fam", ""),
                      **{k: int(tags.get(k, 0)) for k in "TPEWSC"}, "태그 출처": src_tag,
                      "예상 답변율": (d.get("pred") or {}).get("p", ""), "근거": d.get("why", ""), "만든 시각": d.get("at", "")})
     out = pd.DataFrame(rows).sort_values("DB id")

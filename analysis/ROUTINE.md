@@ -172,3 +172,25 @@ AI 추천은 db `ai/{id}`에 쌓인다.
 - 이후 단계에서 이 질문들이 들어가는 곳: 전체본(신규 ID `P<id>`), 개선함 데이터, 중복 판정, 레벨 판정, 그리고 통계가 쌓이면 모델 학습까지.
 - 태그를 저장하지 않은 예전 문서는 문구로 자동 추정해 채우고 '태그 출처'에 표시돼요. 월간 루틴에서 이 태그를 직접 검토해 고쳐 두면 좋아요.
 - 루틴은 `added`에 쓰지 않아요.
+
+## 15. 자아분석 축 v2 · 목적 유형 · 재배정 (2026-10 개편)
+
+- 축 정의: `analysis/axes_v2.py`. 질문별 분류(축·목적 유형·소주제·신호 방향·관심사 제안): `analysis/axis_tags_v2_manual.csv`. 설명은 `analysis/SELF_ANALYSIS.md`에 있어요.
+- 8단계 빌드 순서에 `tag_axes_v2.py`를 넣어요:
+```bash
+python analysis/import_page_added.py <out_dir>/added      # 페이지 신규 질문(목적·축·신호·소주제 포함)
+python analysis/import_page_meta.py <out_dir>/meta        # 페이지에서 바꾼 분류 → 수동 분류표에 합침
+python analysis/build_full_db.py
+python analysis/tag_axes_v2.py                            # axis_tags_v2.csv (축이 관심사와 안 맞으면 멈춤)
+python analysis/build_board_data.py && python analysis/build_insights.py && python analysis/build_board_page.py
+```
+- 새 신규 질문이 수동 분류표에 없으면, 페이지에서 만든 질문은 만들 때 고른 분류를 써요. 다른 경로로 들어온 질문은 단서어 → v1 대응표 순서로 임시 배정돼요. 월간 루틴에서 그런 행(배정 방법 ≠ '수동 확정')을 읽고 수동 분류표에 추가해요.
+- 새 사용자 데이터 컬렉션이 생겼어요. **둘 다 루틴이 쓰지 않아요.**
+  - `meta/{key}`: 카드에서 바꾼 분류 {pt, ax, sig, subN}
+  - `recatok/{key}`: 관심사 재배정 후보를 '지금 관심사 그대로'로 둔 기록
+- 관심사를 옮기면 `edits/{key}.interest_id`에 저장돼요. 다운로드 CSV '변경 내용'에 관심사 수정으로 나가요.
+- `insights.json`에 새로 들어간 것:
+  - `axes`: v2 축별 문항·신호형·극 분포·답변율
+  - `structure`: 목적 유형 답변율, 관심사별 구성·소주제
+  - `recat`: 재배정 후보(사람 분류 + 문구 분류기)
+  - `revision`: 수정 효과(Revision 전·후)

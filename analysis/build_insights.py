@@ -7,7 +7,9 @@
   - uni: 요인별 단변량 비교(해당/비해당 답변율 차이와 95% CI)
   - model: 다변량 로지스틱 회귀(문항 단위 군집 표준오차) — 오즈비와 평균 답변율에서의 %p 환산
   - length: 글자 수 구간별 답변율(Wilson 95% CI)
-  - axes: 자아분석 축별 문항 수(지금/개선 후)와 답변율
+  - axes: 자아분석 축 v2(관심사별 고유 축)별 문항 수·신호형 수·첫 선택지 극 분포·답변율
+  - structure: 목적 유형(신호·성찰·기록)별 답변율, 관심사별 목적 유형·소주제 분포
+  - recat: 관심사 재배정 후보(사람 분류 + 문구 분류기)
   - findings: 위 결과에서 뽑은 핵심 인사이트 문장
 """
 import json
@@ -51,7 +53,9 @@ def load():
     st = json.loads(snap.read_text())
     tags = pd.read_csv(Path(__file__).parent / "question_tags.csv").set_index("id")
     db = latest_db().astype({"id": str}).set_index("id")
-    axis = pd.read_csv(Path(__file__).parent / "axis_tags.csv").set_index("질문 ID")
+    v2 = pd.read_csv(Path(__file__).parent / "axis_tags_v2.csv", dtype=str).fillna("").set_index("DB id")
+    ax_of = lambda k: v2.loc[k, "축 키"] if k in v2.index else ""
+    pt_of = lambda k: v2.loc[k, "목적"] if k in v2.index else ""
     rows = []
     for sid, t in tags.iterrows():
         k = str(stats_to_db(int(sid)))
@@ -60,7 +64,7 @@ def load():
             continue
         v = st["q"][k]
         rows.append(dict(key=k, ans=v[1], rep=v[2], exp=v[0], L=len(str(db.loc[k, "question_text"])), level=int(db.loc[k, "question_level"]),
-                         cat=CAT.get(int(db.loc[k, "interest_id"]), ""), axis=axis.loc[sid, "분석 축"] if sid in axis.index else "",
+                         cat=CAT.get(int(db.loc[k, "interest_id"]), ""), axis=ax_of(k), pt=pt_of(k),
                          **{c: t[c] for c in "TPEWSFC"}))
     # 개선함 페이지에서 만든 질문도 통계가 쌓이면 학습에 넣는다(태그는 page_added.csv)
     pa_path = Path(__file__).parent / "new" / "page_added.csv"
@@ -72,7 +76,7 @@ def load():
                 continue
             v = st["q"][k]
             rows.append(dict(key=k, ans=v[1], rep=v[2], exp=v[0], L=len(str(r["문구"])), level=int(r["question_level"]),
-                             cat=CAT.get(int(r["interest_id"]), ""), axis=r["분석 축"] if isinstance(r["분석 축"], str) else "",
+                             cat=CAT.get(int(r["interest_id"]), ""), axis=ax_of(k), pt=pt_of(k),
                              **{c: int(r[c]) for c in "TPEWSC"}, F=r["F"]))
     return snap.stem, pd.DataFrame(rows)
 
@@ -191,17 +195,76 @@ def length_bins(d):
     return out
 
 
+SIG_TARGET = 10   # 축 하나로 사용자를 읽으려면 신호형 질문이 이만큼은 있어야 한다(월 1회 노출 기준 약 1년 치)
+
+
 def axes(d):
+    """자아분석 축 v2(관심사별 고유 축)별 문항 수·신호형 수·답변율. 축 키 순서(관심사 → 축)."""
+    from axes_v2 import AXES_V2
     rows = json.loads((ROOT / "board" / "data" / "questions.json").read_text())["rows"]
-    names = sorted({r["axis"] for r in rows if r["axis"]})
     out = []
-    for ax in names:
-        now = sum(1 for r in rows if r["axis"] == ax and r["orig"] and not r["orig"][6])
-        aft = sum(1 for r in rows if r["axis"] == ax and not r["deleted"])
-        m = d.axis == ax
-        a, rr = int(d[m].ans.sum()), int(d[m].rep.sum())
-        out.append(dict(name=ax, now=now, aft=aft, res=a + rr, rate=round(a / (a + rr), 4) if a + rr else None, ci=wilson(a, a + rr)))
-    return sorted(out, key=lambda x: -x["aft"])
+    for cat, lst in AXES_V2.items():
+        for A in lst:
+            k = A["key"]
+            live = [r for r in rows if r["ax"] == k and not r["deleted"]]
+            m = d.axis == k
+            a, rr = int(d[m].ans.sum()), int(d[m].rep.sum())
+            sig = [r for r in live if r["pt"] == "s"]
+            out.append(dict(key=k, cat=cat, name=A["name"], a=A["a"], b=A["b"], concept=A["concept"], reads=A["reads"],
+                            now=sum(1 for r in live if r["orig"]), aft=len(live), sig=len(sig),
+                            sigA=sum(1 for r in sig if r["sig"] == "A"), sigB=sum(1 for r in sig if r["sig"] == "B"),
+                            need=max(0, SIG_TARGET - len(sig)),
+                            res=a + rr, rate=round(a / (a + rr), 4) if a + rr else None, ci=wilson(a, a + rr)))
+    return out
+
+
+def structure(d):
+    """관심사별 질문 구조: 목적 유형(신호·성찰·기록) 비율과 답변율, 소주제 분포, 관심사 재배정 후보."""
+    from axes_v2 import SUBTOPICS, PURPOSE
+    rows = json.loads((ROOT / "board" / "data" / "questions.json").read_text())["rows"]
+    live = [r for r in rows if not r["deleted"]]
+    pt_rate = []
+    for p, name in PURPOSE.items():
+        m = d.pt == p
+        a, n = int(d[m].ans.sum()), int((d[m].ans + d[m].rep).sum())
+        pt_rate.append(dict(pt=p, name=name, n=sum(1 for r in live if r["pt"] == p), res=n, rate=round(a / n, 4) if n else None, ci=wilson(a, n)))
+    cats = []
+    for c in CAT.values():
+        rs = [r for r in live if r["cat"] == c]
+        own = [r for r in live if (r["recat"] or r["cat"]) == c]   # 소주제는 제안 관심사 기준
+        cats.append(dict(cat=c, n=len(rs), pt={p: sum(1 for r in rs if r["pt"] == p) for p in PURPOSE},
+                         sub=[dict(name=nm, n=sum(1 for r in own if r["subN"] == i + 1),
+                                   s=sum(1 for r in own if r["subN"] == i + 1 and r["pt"] == "s")) for i, nm in enumerate(SUBTOPICS[c])],
+                         out=sum(1 for r in rs if r["recat"])))
+    return dict(pt=pt_rate, cats=cats)
+
+
+def recat_queue():
+    """관심사 재배정 후보. 사람이 읽고 남긴 '관심사 제안'(manual)과 문구 분류기(글자 n-gram 로지스틱, 5겹 교차예측)를 합친다.
+    분류기만의 후보는 다른 관심사 확률 ≥ 0.7 이고 지금 관심사 확률 ≤ 0.15 인 것만 — 문구로는 가치관이 다른 관심사를 흡수하는 경향이 있어 보수적으로."""
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.model_selection import cross_val_predict
+    rows = [r for r in json.loads((ROOT / "board" / "data" / "questions.json").read_text())["rows"] if not r["deleted"]]
+    X = TfidfVectorizer(analyzer="char_wb", ngram_range=(2, 3), min_df=2, sublinear_tf=True).fit_transform([r["text"] for r in rows])
+    y = [r["cat"] for r in rows]
+    clf = LogisticRegression(C=4, max_iter=2000)
+    P = cross_val_predict(clf, X, y, cv=5, method="predict_proba")
+    labels = sorted(set(y))
+    acc = float(np.mean([labels[i] == t for i, t in zip(P.argmax(1), y)]))
+    out = []
+    for r, p in zip(rows, P):
+        pr = dict(zip(labels, p))
+        top = max(pr, key=pr.get)
+        to, src = "", ""
+        if r["recat"]:
+            to, src = r["recat"], "both" if top == r["recat"] else "manual"
+        elif top != r["cat"] and pr[top] >= 0.7 and pr[r["cat"]] <= 0.15:
+            to, src = top, "model"
+        if to:
+            out.append(dict(key=r["key"], cur=r["cat"], to=to, src=src, p_to=round(float(pr[to]), 3), p_cur=round(float(pr[r["cat"]]), 3)))
+    order = {"both": 0, "manual": 1, "model": 2}
+    return dict(acc=round(acc, 3), items=sorted(out, key=lambda x: (order[x["src"]], -x["p_to"])))
 
 
 ACTION = {
@@ -220,7 +283,7 @@ ACTION = {
 }
 
 
-def findings(uni, mdl, ln, ax):
+def findings(uni, mdl, ln, ax, st=None):
     """결과에서 의미 있는 것만 문장으로 만든다. '확실'은 95% 신뢰구간이 0(오즈비 1)을 넘지 않는 경우만."""
     terms = mdl["terms"]
     sig = [x for x in terms if x["p"] < 0.05]
@@ -272,19 +335,58 @@ def findings(uni, mdl, ln, ax):
                              + ("짧은 질문이 확실히 유리해요." if sure else "신뢰구간이 겹쳐서 길이만으로는 차이가 확실하지 않아요.")
                              + (lambda t: f" 다른 특성을 함께 고려해도 문구가 두 배 길어지면 답변율이 {pct(t['pp'])}(95% CI {num(t['pp_lo'])}~{num(t['pp_hi'])}%p) 달라져요." if t else "")(next((x for x in terms if x['name'] == '문구 길이 (2배)'), None)),
                         action="40자라는 경계보다 '짧을수록 낫다'가 맞아요. 군더더기를 덜어 30자 안팎으로 줄여요."))
-    small = sorted(ax, key=lambda a: a["aft"])[:3]
-    out.append(dict(kind="gap", title="자아분석 축 커버리지",
-                    body="개선 후 가장 얇은 축은 " + ", ".join(f"{a['name']}({a['aft']}문항)" for a in small)
-                         + f"이에요. 가장 두꺼운 {ax[0]['name']}({ax[0]['aft']}문항)의 1/3 수준이에요.",
-                    action="다음 신규 질문은 얇은 축부터 채워야 자아분석 결과가 한쪽으로 치우치지 않아요."))
+    thin = sorted([a for a in ax if a["need"] > 0], key=lambda a: -a["need"])
+    if thin:
+        out.append(dict(kind="gap", title="신호가 모자란 축",
+                        body=f"축 하나로 사용자를 읽으려면 신호형(답이 한쪽 극을 가리키는) 질문이 {SIG_TARGET}개는 있어야 해요. 지금 모자란 축은 "
+                             + ", ".join(f"{a['cat']} {a['name']}({a['sig']}개)" for a in thin[:5]) + (f" 외 {len(thin) - 5}개" if len(thin) > 5 else "") + "예요.",
+                        action="'새 질문 만들기'에서 이 축을 골라 신호형으로 채워요. 첫 선택지가 A·B 극에 고르게 오도록 신호 방향도 섞어요."))
+    lop = [a for a in ax if a["sigA"] + a["sigB"] >= 5 and min(a["sigA"], a["sigB"]) <= (a["sigA"] + a["sigB"]) * 0.25]
+    if lop:
+        out.append(dict(kind="neutral", title="첫 선택지가 한쪽으로 쏠린 축",
+                        body=", ".join(f"{a['name']}(첫 선택지 {a['a']} {a['sigA']} · {a['b']} {a['sigB']})" for a in lop)
+                             + "는 첫 선택지가 한쪽 극에 몰려 있어요. 사람은 앞에 나온 선택지를 조금 더 고르는 경향(순서 효과)이 있어서 결과가 한쪽으로 기울 수 있어요.",
+                        action="새로 만들 때 반대 극을 먼저 두거나, 앱에서 선택지 순서를 무작위로 바꿔 보여 줘요."))
     lowax = [a for a in ax if a["rate"] is not None and a["res"] >= 80]
     if lowax:
         lo, hi = min(lowax, key=lambda a: a["rate"]), max(lowax, key=lambda a: a["rate"])
         out.append(dict(kind="neg", title="답이 잘 안 모이는 축",
-                        body=f"{lo['name']} 축 답변율이 {lo['rate']:.0%}(95% CI {lo['ci'][0]:.0%}~{lo['ci'][1]:.0%})로 가장 낮고, "
-                             f"가장 높은 축은 {hi['name']}({hi['rate']:.0%})예요.",
-                        action=f"{lo['name']}처럼 감정을 직접 묻는 축은 '나는 ~하는 편인가요' 같은 성향·양자택일형으로 같은 신호를 받아요."))
+                        body=f"{lo['cat']} {lo['name']} 축 답변율이 {lo['rate']:.0%}(95% CI {lo['ci'][0]:.0%}~{lo['ci'][1]:.0%})로 가장 낮고, "
+                             f"가장 높은 축은 {hi['cat']} {hi['name']}({hi['rate']:.0%})예요.",
+                        action="낮은 축은 '나는 ~하는 편인가요'·양자택일 같은 가벼운 신호형으로 같은 신호를 받아요."))
+    if st:
+        pr = {x["pt"]: x for x in st["pt"] if x["rate"] is not None}
+        if len(pr) == 3:
+            same = max(x["ci"][0] for x in pr.values()) < min(x["ci"][1] for x in pr.values())
+            out.append(dict(kind="pos" if same else "neutral", title="목적 유형과 답변율",
+                            body=" · ".join(f"{x['name']} {x['rate']:.0%}" for x in pr.values())
+                                 + (" — 구간이 겹쳐서 목적 유형만으로는 답변율이 달라지지 않아요." if same else "로 차이가 있어요."),
+                            action="신호형을 늘려도 답변율 손해가 없어요. 자아분석에 쓸 신호형을 기록형보다 우선해서 채워요." if same else ""))
     return out
+
+
+def revision_effect():
+    """수정 효과: 통계의 Revision이 1보다 큰 질문(앱 DB에서 문구가 바뀐 질문)의 수정 전(전체 − 현재 Revision)과 수정 후(현재 Revision) 답변율.
+    pooled = 전·후 각각 결론 20회 이상인 질문들을 합친 차이(정규 근사 95% CI)."""
+    snap = sorted((ROOT / "output" / "board_stats").glob("20*.json"))[-1]
+    q = json.loads(snap.read_text())["q"]
+    items = []
+    for k, v in q.items():
+        if len(v) < 8 or v[4] <= 1:
+            continue
+        a1, r1, a0, r0 = v[1], v[2], v[6] - v[1], v[7] - v[2]
+        if a0 + r0 == 0 or a1 + r1 == 0:
+            continue
+        items.append(dict(key=k, rev=int(v[4]), before=round(a0 / (a0 + r0), 4), after=round(a1 / (a1 + r1), 4), n0=int(a0 + r0), n1=int(a1 + r1)))
+    ok = [x for x in items if x["n0"] >= 20 and x["n1"] >= 20]
+    pooled = None
+    if ok:
+        A0, N0 = sum(x["before"] * x["n0"] for x in ok), sum(x["n0"] for x in ok)
+        A1, N1 = sum(x["after"] * x["n1"] for x in ok), sum(x["n1"] for x in ok)
+        p0, p1 = A0 / N0, A1 / N1
+        se = float(np.sqrt(p0 * (1 - p0) / N0 + p1 * (1 - p1) / N1))
+        pooled = dict(n=len(ok), diff=round(p1 - p0, 4), lo=round(p1 - p0 - Z * se, 4), hi=round(p1 - p0 + Z * se, 4))
+    return dict(n=len(items), items=sorted(items, key=lambda x: -(x["n0"] + x["n1"])), pooled=pooled)
 
 
 LEVELS = [
@@ -347,8 +449,9 @@ def levels(d, mdl):
 
 def main():
     date, d = load()
-    uni, mdl, ln, ax = univariate(d), model(d), length_bins(d), axes(d)
-    out = dict(snapshot=date, uni=uni, model=mdl, length=ln, axes=ax, levels=levels(d, mdl), findings=findings(uni, mdl, ln, ax))
+    uni, mdl, ln, ax, st = univariate(d), model(d), length_bins(d), axes(d), structure(d)
+    out = dict(snapshot=date, uni=uni, model=mdl, length=ln, axes=ax, structure=st, recat=recat_queue(), revision=revision_effect(), levels=levels(d, mdl),
+               findings=findings(uni, mdl, ln, ax, st))
     f = ROOT / "board" / "data" / "insights.json"
     f.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":"), allow_nan=False))
     print(f"{date}: 문항 {mdl['n_q']} · 결론 {mdl['n_res']} · 평균 {mdl['base']:.1%} · 인사이트 {len(out['findings'])}개 → {f}")

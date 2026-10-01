@@ -14,6 +14,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
 from db_questions import GAP_LEN, GAP_START, INTEREST_ID, original_first_ids  # noqa: E402
+from axes_v2 import AXES_V2, SUBTOPICS, by_key  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "output"
@@ -83,6 +84,9 @@ def main():
     tags = pd.read_csv(Path(__file__).parent / "question_tags.csv").set_index("id")
     axis = pd.read_csv(Path(__file__).parent / "axis_tags.csv").set_index("질문 ID")
     block = pd.read_csv(NEW / "level1_block.csv").set_index("DB id")
+    # 자아분석 축 v2(관심사별 고유 축) + 목적 유형·소주제·신호 방향·관심사 제안 — tag_axes_v2.py 결과
+    v2 = pd.read_csv(Path(__file__).parent / "axis_tags_v2.csv", dtype=str).fillna("").set_index("DB id")
+    AX2 = by_key()
     newsets = pd.concat([pd.read_csv(OUT / f) for f in
                          ["new_questions.csv", "new_questions_scraped.csv", "new_questions_love.csv",
                           "new_questions_fun.csv", "new_questions_self.csv"]]).set_index("신규 ID")
@@ -158,6 +162,17 @@ def main():
                 ax, axnote = axis.loc[sid, "분석 축"], axis.loc[sid, "해석 가이드"]
             if sid in fin.index and r["변경 구분"].startswith("문구 수정"):
                 why = " → ".join(x for x in [s(fin.loc[sid, "이유"]), s(fin.loc[sid, "수정 원칙"])] if x)
+        ax1 = ax                                    # v1 공통 축(기록용)
+        t2 = v2.loc[r["id"]] if r["id"] in v2.index else None
+        ak = t2["축 키"] if t2 is not None else ""
+        pt = t2["목적"] if t2 is not None else ""
+        recat = t2["관심사 제안"] if t2 is not None else ""
+        sub_cat = recat or cat
+        subn = int(t2["소주제"]) if t2 is not None and t2["소주제"] else 0
+        sub = SUBTOPICS.get(sub_cat, [""] * 6)[subn - 1] if subn else ""
+        sig = t2["신호"] if t2 is not None else ""
+        ax = AX2[ak]["name"] if ak in AX2 else ""
+        axnote = AX2[ak]["reads"] if ak in AX2 else ""
         fname, fnote = PURPOSE_FORM.get(form, ("", ""))
         purpose = []
         if level == 1:
@@ -165,8 +180,14 @@ def main():
         purpose.append(PURPOSE_CAT.get(cat, ""))
         if fnote:
             purpose.append(fnote)
-        if ax:
-            purpose.append(f"자아분석 '{ax}' 축의 신호를 모아요.")
+        if ak in AX2 and pt == "s":
+            A = AX2[ak]
+            purpose.append(f"신호형이에요. 답으로 '{A['name']}' 축에서 어느 쪽인지 읽어요"
+                           + (f"(첫 선택지 → {A['a'] if sig == 'A' else A['b']})." if sig else "."))
+        elif pt == "r":
+            purpose.append("성찰형이에요. 생각과 이유를 꺼내는 것 자체가 기록이 돼요." + (f" '{ax}' 축의 맥락도 담겨요." if ax else ""))
+        elif pt == "k":
+            purpose.append("기록형이에요. 취향·일상을 모아 '나의 목록'을 쌓아요.")
         rows.append({
             "key": key, "id": r["id"], "newId": r["신규 ID"], "statsId": sid,
             "interest_id": int(float(r["interest_id"])), "cat": cat, "level": level,
@@ -175,7 +196,8 @@ def main():
             "deleted": bool(r["deleted_at"]), "deletedAt": r["deleted_at"],
             "created_at": r["created_at"], "updated_at": r["updated_at"],
             "change": r["변경 구분"], "catChange": r.get("관심사 변경", ""), "set": r["세트"],
-            "form": fname, "axis": ax, "axisNote": axnote, "purpose": " ".join(p for p in purpose if p),
+            "form": fname, "axis": ax, "axisNote": axnote, "ax": ak, "axis1": ax1,
+            "pt": pt, "sub": sub, "subN": subn, "sig": sig, "recat": recat, "purpose": " ".join(p for p in purpose if p),
             "why": why, "source": source, "srcUrl": src_url, "pred": pred,
             "exp": exp, "ans": ans, "rep": rep,
             "alts": alternatives(r, sid, r["question_text"]), "decided": decision(r, sid),
@@ -189,7 +211,9 @@ def main():
     built = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M")
     out = ROOT / "board" / "data" / "questions.json"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps({"builtAt": built, "rows": rows, "dups": dups}, ensure_ascii=False, separators=(",", ":"), allow_nan=False))
+    axes = [{k: v for k, v in A.items() if k != "kw"} | {"cat": c} for c, lst in AXES_V2.items() for A in lst]
+    out.write_text(json.dumps({"builtAt": built, "rows": rows, "dups": dups, "axes": axes, "subtopics": SUBTOPICS},
+                              ensure_ascii=False, separators=(",", ":"), allow_nan=False))
     live = [x for x in rows if not x["deleted"]]
     print(f"중복 후보 {len(dups)}쌍 (같은 질문 {sum(x['v'] == 'dup' for x in dups)} · 비슷 {sum(x['v'] == 'similar' for x in dups)} · 판정 전 {sum(x['v'] == 'new' for x in dups)})")
     print(f"{len(rows)}행 (활성 {len(live)}) · 목적 빈 칸 {sum(not x['purpose'] for x in rows)} · {out.stat().st_size // 1024}KB")
