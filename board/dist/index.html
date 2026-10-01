@@ -173,6 +173,30 @@ summary.note{cursor:pointer;font-weight:700}
 .heat td.hc:hover{transform:scale(1.08)}
 .heat td.hc:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
 .heat td.sel{outline:3px solid var(--ink);outline-offset:1px}
+.steps{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.steps li{font-size:.78rem;font-weight:800;color:var(--muted);background:var(--soft);border-radius:999px;padding:5px 12px}
+.steps li.on{background:var(--blue);color:#fff} .steps li.ok{background:var(--mint-soft);color:var(--mint-ink)}
+.step h2{display:flex;align-items:center;gap:10px}
+.sn{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-size:.9rem;font-weight:800;flex:none}
+.gcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.gbox{background:var(--soft);border-radius:18px;padding:12px 14px;display:grid;gap:6px;align-content:start;font-size:.84rem}
+.gbox h3{margin:0;font-size:.86rem;font-weight:800}
+.gbox ol,.gbox ul{margin:0;padding-left:18px;display:grid;gap:3px}
+.gbox .r{color:var(--ink-2);font-weight:800;font-variant-numeric:tabular-nums}
+.srcg{display:grid;gap:10px}
+.srcg h3{margin:0;font-size:.84rem;color:var(--ink-2)}
+.srcl{display:flex;flex-wrap:wrap;gap:6px}
+.srcl label{display:inline-flex;gap:6px;align-items:center;font-size:.82rem;font-weight:700;background:var(--soft);border-radius:999px;padding:6px 12px;cursor:pointer}
+.srcl label:has(input:checked){background:var(--mint-soft);color:var(--mint-ink);box-shadow:inset 0 0 0 1.5px var(--mint)}
+.srcl input{accent-color:var(--mint)}
+.srcl small{color:var(--muted);font-weight:700}
+.tops{display:flex;flex-wrap:wrap;gap:8px}
+.tops label{display:grid;gap:2px;background:var(--soft);border-radius:14px;padding:8px 12px;cursor:pointer;max-width:320px;font-size:.84rem}
+.tops label:has(input:checked){background:var(--mint-soft);box-shadow:inset 0 0 0 1.5px var(--mint)}
+.tops label b{font-size:.88rem} .tops label small{color:var(--ink-2)}
+.tops input{position:absolute;opacity:0;pointer-events:none}
+.pred{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;font-size:.8rem;font-weight:800}
+.pred .rate{height:8px;grid-column:auto}
 .gen{background:var(--soft);border-radius:20px;padding:16px;display:grid;gap:10px}
 .gen h3{margin:0;font-size:1rem}
 .gen .ex{font-size:.8rem;color:var(--ink-2);display:grid;gap:2px}
@@ -300,6 +324,7 @@ a{color:var(--blue)}
   <button type="button" role="tab" data-page="q" aria-selected="true" aria-controls="pg-q">전체 질문</button>
   <button type="button" role="tab" data-page="dup" aria-selected="false" aria-controls="pg-dup">중복 검토<span class="bdg" id="bdgDup" hidden></span></button>
   <button type="button" role="tab" data-page="ins" aria-selected="false" aria-controls="pg-ins">분석</button>
+  <button type="button" role="tab" data-page="gen" aria-selected="false" aria-controls="pg-gen">질문 생성기</button>
   <button type="button" role="tab" data-page="data" aria-selected="false" aria-controls="pg-data">데이터</button>
   <button type="button" role="tab" data-page="dl" aria-selected="false" aria-controls="pg-dl">다운로드·업로드<span class="bdg" id="bdgDiff" hidden></span></button>
 </div></nav>
@@ -334,12 +359,6 @@ a{color:var(--blue)}
     <div class="chartbox"><div id="axChart"></div></div>
     <div class="legend"><span><i style="background:var(--muted)"></i>지금 DB 문항 수</span><span><i style="background:var(--chart)"></i>개선 후 문항 수</span><span><i style="background:var(--ink);width:2px"></i>전체 평균 답변율</span></div>
   </section>
-  <section class="panel" aria-labelledby="hmh">
-    <h2 id="hmh">축 × 관심사 — 어디가 비어 있나</h2>
-    <p class="note" style="margin:0">개선 후 활성 질문 수예요. 페이지에서 고친 관심사·비활성화까지 반영해요. 0인 칸은 그 관심사에서 그 축을 묻는 질문이 없다는 뜻이에요. <b>칸을 누르면 그 축×관심사로 새 질문을 만들 수 있어요.</b></p>
-    <div class="chartbox" style="overflow-x:auto"><div id="heat"></div></div>
-    <div id="gen"></div>
-  </section>
   <section class="panel" aria-labelledby="lenh">
     <h2 id="lenh">문구 길이별 답변율</h2>
     <div class="chartbox"><div id="lenChart"></div></div>
@@ -348,6 +367,21 @@ a{color:var(--blue)}
     <details><summary class="note"><b>방법과 한계</b></summary>
       <div class="note" style="display:grid;gap:6px;margin-top:8px" id="method"></div></details>
   </section>
+  </div>
+  <div class="pg" id="pg-gen" role="tabpanel" data-page="gen" hidden>
+  <section class="panel">
+    <h2 style="margin:0">질문 생성기</h2>
+    <p class="note" style="margin:0">빈 곳을 고르고 → 그 칸의 실제 데이터를 보고 → 참고 소스와 형식을 정하고 → 소재를 뽑아 → 질문을 만들고 → 예상 답변율과 중복을 확인해 추가해요. AI는 사이트에 직접 접속하지 않고, 우리가 모아 둔 원문 예시와 통계를 근거로 써요.</p>
+    <ol class="steps" id="steps"></ol>
+  </section>
+  <section class="panel step" aria-labelledby="g1h"><h2 id="g1h"><span class="sn">1</span>축 × 관심사 고르기</h2>
+    <p class="note" style="margin:0">개선 후 활성 질문 수예요(페이지에서 고친 것까지 반영). 빨간 0칸은 그 관심사에서 그 축을 묻는 질문이 없는 곳이에요. 칸을 누르세요.</p>
+    <div class="chartbox" style="overflow-x:auto"><div id="heat"></div></div></section>
+  <section class="panel step" aria-labelledby="g2h"><h2 id="g2h"><span class="sn">2</span>데이터 근거</h2><div id="gData"><p class="note">먼저 칸을 골라 주세요.</p></div></section>
+  <section class="panel step" aria-labelledby="g3h"><h2 id="g3h"><span class="sn">3</span>참고 소스 고르기</h2><div id="gSrc"></div></section>
+  <section class="panel step" aria-labelledby="g4h"><h2 id="g4h"><span class="sn">4</span>형식과 조건</h2><div id="gOpt"></div></section>
+  <section class="panel step" aria-labelledby="g5h"><h2 id="g5h"><span class="sn">5</span>소재 뽑기</h2><div id="gTop"></div></section>
+  <section class="panel step" aria-labelledby="g6h"><h2 id="g6h"><span class="sn">6</span>질문 만들기 · 검토 · 추가</h2><div id="gen"></div></section>
   </div>
   <div class="pg" id="pg-data" role="tabpanel" data-page="data" hidden>
   <section class="panel" aria-labelledby="disth">
@@ -766,7 +800,7 @@ function evidence(r){
 let PAGE = 'q';
 try { PAGE = localStorage.getItem('nadab-board-page') || 'q'; } catch {}
 function go(pg, scroll = true){
-  PAGE = ['pick', 'q', 'dup', 'ins', 'data', 'dl'].includes(pg) ? pg : 'q';
+  PAGE = ['pick', 'q', 'dup', 'ins', 'gen', 'data', 'dl'].includes(pg) ? pg : 'q';
   const was = document.body.dataset.page; document.body.dataset.page = PAGE;
   try { localStorage.setItem('nadab-board-page', PAGE); } catch {}
   document.querySelectorAll('#nav [data-page]').forEach(b => b.setAttribute('aria-selected', b.dataset.page === PAGE));
@@ -914,84 +948,168 @@ function lenUI(){
   const avg = `<line x1="${L}" x2="${W}" y1="${y(INS.model.base)}" y2="${y(INS.model.base)}" stroke="var(--ink)" stroke-dasharray="4 4" opacity=".6"/><text x="${W}" y="${y(INS.model.base) - 5}" font-size="10" text-anchor="end" fill="var(--ink-2)">평균 ${P(INS.model.base)}</text>`;
   $('#lenChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="문구 길이별 답변율">${grid}${bars}${avg}</svg><p class="note" style="margin:6px 0 0">세로 선은 95% 신뢰구간이에요. 흐린 막대는 결론 50회 미만이라 참고만 해요.</p>`;
 }
-// ---- 축×관심사로 새 질문 만들기 ----
-let GEN = null;   // {axis, cat, cands:[...], busy, err}
+// ---- 질문 생성기 ----
 const FORMN = { p: '선호(최애)', c: '양자택일', t: '성향·습관', h: '상상·가정', r: '일화 회상', d: '개념·가치', n: '특정 인물', o: '기타' };
-function genOpen(axis, cat){ GEN = { axis, cat, cands: [], busy: false, err: '' }; heatUI(); genUI(); $('#gen').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
-function genUI(){
-  const el = $('#gen'); if (!GEN){ el.innerHTML = ''; return; }
-  const all = rows().filter(r => !r.deleted), cell = all.filter(r => r.axis === GEN.axis && r.cat === GEN.cat), ax = AXES[GEN.axis] || ['', ''];
-  const ok = !!sample;
-  el.innerHTML = `<div class="gen">
-    <div class="row" style="justify-content:space-between"><h3>${esc(GEN.axis)} × ${esc(GEN.cat)} 새 질문 만들기</h3><button class="btn" type="button" data-gclose>닫기</button></div>
-    <div class="ex"><span><b>이 축이 보는 것</b> ${esc(ax[1])} · 근거 ${esc(ax[0])}</span>
-      <span><b>지금 이 칸 질문 ${cell.length}개</b>${cell.length ? ' — ' + cell.slice(0, 6).map(r => esc(r.text)).join(' / ') + (cell.length > 6 ? ' …' : '') : ' — 아직 없어요.'}</span></div>
-    <div class="row">
-      <select id="gN" aria-label="몇 개"><option value="3">3개</option><option value="5" selected>5개</option><option value="8">8개</option></select>
-      <select id="gLv" aria-label="레벨"><option value="auto">레벨 자동</option><option value="1">레벨 1 · 첫 질문용</option><option value="2">레벨 2</option></select>
-      <input type="search" id="gReq" placeholder="바라는 점 (예: 10대도 답하기 쉽게, 양자택일로)" aria-label="AI 요청" style="flex:1;min-width:180px">
-      <button class="btn primary" type="button" data-ggo ${ok && !GEN.busy ? '' : 'disabled'}>${GEN.busy ? 'AI가 쓰는 중…' : 'AI로 질문 만들기'}</button>
-    </div>
-    ${ok ? '' : '<span class="note">이 화면에서는 AI를 쓸 수 없어요.</span>'}
-    ${GEN.err ? `<span class="note" style="color:var(--gone)">${esc(GEN.err)}</span>` : ''}
-    <div class="cands">${GEN.cands.map((c, i) => { const sim = c.done ? null : similarTo('', c.text), w = lint(c.text);
-      return `<div class="gcard${c.done ? ' done' : ''}" data-gi="${i}">
-        <textarea data-gt="${i}" aria-label="질문 문구" ${c.done ? 'disabled' : ''}>${esc(c.text)}</textarea>
-        <span class="g">레벨 ${c.level} · ${esc(FORMN[c.form] || c.form || '')}${c.why ? ' · ' + esc(c.why) : ''}</span>
-        <span class="g">가이드 · ${esc([c.empathy, c.hint, c.leading].join(' / '))}</span>
-        ${sim ? `<span class="w">비슷한 질문이 있어요: Q.${sim.r.key} "${esc(sim.r.text)}" (${Math.round(sim.v * 100)}%)</span>` : ''}${w.length ? `<span class="w">${esc(w.join(' '))}</span>` : ''}
-        <div class="row">${c.done ? `<span class="chip mint">Q.${esc(c.done)}로 추가했어요</span>` : `<button class="btn primary" type="button" data-gadd="${i}" ${db && canWrite ? '' : 'disabled'}>신규 질문으로 추가</button>`}</div></div>`; }).join('')}</div>
-  </div>`;
+let GEN = null;
+function genNew(axis, cat){
+  const keep = GEN || {};
+  GEN = { axis, cat, srcs: keep.srcs || new Set(), forms: keep.forms || new Set(['c', 't', 'p']), level: keep.level || 'auto', n: keep.n || 5, tone: keep.tone || '가볍게', req: keep.req || '',
+    topics: [], sel: new Set(), cands: [], busyT: false, busyQ: false, err: '' };
+  heatUI(); genAll(); document.getElementById('g2h').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-async function genRun(){
-  if (!sample || !GEN || GEN.busy) return;
-  const n = Number($('#gN').value), lv = $('#gLv').value, req = ($('#gReq').value || '').trim();
-  const all = rows().filter(r => !r.deleted), cell = all.filter(r => r.axis === GEN.axis && r.cat === GEN.cat), near = all.filter(r => r.axis === GEN.axis).slice(0, 30), ax = AXES[GEN.axis] || ['', ''];
-  const keyF = INS ? INS.model.terms.filter(t => t.p < 0.05).map(t => `${t.name} ${t.pp > 0 ? '+' : ''}${Math.round(t.pp * 100)}%p`).join(', ') : '';
-  GEN.busy = true; GEN.err = ''; genUI();
-  const prompt = `당신은 셀프 저널링 앱 '나답'의 데일리 질문 편집자입니다. 아래 칸에 들어갈 새 질문 ${n}개를 각각 가이드 3종과 함께 만드세요.
+const catId = c => Number(Object.keys(CAT).find(k => CAT[k] === c));
+// 생성 후보의 예상 답변율 — 분석 탭 다변량 모델 계수로 계산(태그는 AI가 붙인 값)
+function predict(c){
+  const k = INS?.model?.coef; if (!k) return null;
+  const t = c.tags || {}, f = FORMN[c.form] || '';
+  let z = k.const;
+  const add = (n, on) => { if (on && k[n] != null) z += k[n]; };
+  add('시점 고정', t.T > 0); add('경험 전제', t.P > 0); add('즉답 가능', t.E === 1); add('감정 무게', t.W >= 2); add('자기노출', t.S >= 2); add('은유·모호', t.C === 1); add('40자 초과', c.text.length > 40);
+  add('형식: ' + f, true); add('관심사: ' + GEN.cat, true);
+  return 1 / (1 + Math.exp(-z));
+}
+function cellEvidence(){
+  const all = rows().filter(r => !r.deleted), inCat = all.filter(r => r.cat === GEN.cat), cell = inCat.filter(r => r.axis === GEN.axis);
+  const scored = rs => rs.map(r => ({ r, q: qstat(r.key) })).filter(x => x.q && x.q.exp >= MIN_EXP && x.q.res >= 3);   // 노출 5회 이상만 근거로
+  const el = scored(inCat).sort((a, b) => b.q.est - a.q.est), k = Math.min(5, Math.floor(el.length / 2));   // 위·아래가 겹치지 않게 반씩
+  const top = el.slice(0, k), low = el.slice(el.length - k).reverse(), thin = el.length < 10;
+  const axTop = scored(all.filter(r => r.axis === GEN.axis)).sort((a, b) => b.q.est - a.q.est).slice(0, 5);
+  const forms = {}; scored(inCat).forEach(({ r, q }) => { const f = r.form || '기타'; forms[f] = forms[f] || { a: 0, n: 0, q: 0 }; forms[f].a += q.ans; forms[f].n += q.res; forms[f].q++; });
+  return { cell, top, low, thin, nEl: el.length, axTop, forms: Object.entries(forms).filter(([, v]) => v.n >= 10).map(([f, v]) => ({ f, rate: v.a / v.n, n: v.n, q: v.q })).sort((a, b) => b.rate - a.rate) };
+}
+function stepsUI(){
+  const st = !GEN ? 1 : GEN.cands.length ? 6 : GEN.topics.length ? 5 : 2;
+  $('#steps').innerHTML = ['칸 고르기', '데이터 근거', '참고 소스', '형식·조건', '소재 뽑기', '생성·검토·추가'].map((t, i) => `<li class="${i + 1 < st ? 'ok' : i + 1 === st ? 'on' : ''}">${i + 1}. ${t}</li>`).join('');
+}
+function genAll(){ stepsUI(); gDataUI(); gSrcUI(); gOptUI(); gTopUI(); genUI(); }
+function gDataUI(){
+  if (!GEN){ $('#gData').innerHTML = '<p class="note">먼저 1단계에서 칸을 골라 주세요.</p>'; return; }
+  const ev = cellEvidence(), ax = AXES[GEN.axis] || ['', ''], avg = avgRate(latest());
+  const li = x => `<li>${esc(x.r.text)} <span class="r">추정 ${P(x.q.est)} · 답변 ${x.q.ans}/${x.q.res}</span></li>`;
+  const sig = INS ? INS.model.terms.filter(t => t.p < 0.05) : [];
+  $('#gData').innerHTML = `<p class="note" style="margin:0"><b>${esc(GEN.axis)} × ${esc(GEN.cat)}</b> — 이 축은 ${esc(ax[1])}를 봐요 (근거 ${esc(ax[0])}). 지금 이 칸 질문 ${ev.cell.length}개${ev.cell.length ? ': ' + ev.cell.slice(0, 5).map(r => esc(r.text)).join(' / ') : ''}.</p>
+    <div class="gcols">
+      <div class="gbox"><h3>${esc(GEN.cat)}에서 잘 되는 질문 (평균 ${P(avg)})</h3><span class="note" style="margin:0">노출 5회 이상 · 추정 = 표본이 적을수록 평균 쪽으로 당긴 답변율</span><ol>${ev.top.map(li).join('') || '<li>실적이 아직 적어요</li>'}</ol></div>
+      ${ev.thin ? `<div class="gbox" style="grid-column:1/-1"><span class="note" style="margin:0">${esc(GEN.cat)}에서 노출 5회 이상인 질문이 ${ev.nEl}개뿐이라 근거가 얇아요. 매달 통계가 쌓이면 늘어나요.</span></div>` : ''}
+      <div class="gbox"><h3>${esc(GEN.cat)}에서 안 되는 질문 — 피할 패턴</h3><ol>${ev.low.map(li).join('') || '<li>실적이 아직 적어요</li>'}</ol></div>
+      <div class="gbox"><h3>${esc(GEN.axis)} 축에서 잘 되는 질문</h3><ol>${ev.axTop.map(li).join('') || '<li>실적이 아직 적어요</li>'}</ol></div>
+      <div class="gbox"><h3>${esc(GEN.cat)} 형식별 답변율</h3><ul>${ev.forms.map(f => `<li>${esc(f.f)} <span class="r">${P(f.rate)} · 문항 ${f.q}</span></li>`).join('') || '<li>실적이 아직 적어요</li>'}</ul>
+        ${sig.length ? `<h3 style="margin-top:6px">전체 데이터에서 확실한 효과</h3><ul>${sig.map(t => `<li>${esc(t.name)} <span class="r">${pp(t.pp)}</span></li>`).join('')}</ul>` : ''}</div>
+    </div>`;
+}
+function gSrcUI(){
+  const S = INS?.sources || []; if (!S.length){ $('#gSrc').innerHTML = '<p class="note">소스 목록을 불러오는 중이에요.</p>'; return; }
+  const types = [...new Set(S.map(x => x.type))], on = GEN?.srcs || new Set();
+  $('#gSrc').innerHTML = `<p class="note" style="margin:0">신규 질문을 모을 때 참고했던 곳이에요. 고른 소스의 원문과 우리가 나답식으로 바꾼 예시를 AI에게 함께 줘서 그 결로 쓰게 해요. 안 고르면 나답 기존 질문과 데이터만 참고해요.</p>
+    <div class="srcg">${types.map(t => `<div><h3>${esc(t)}</h3><div class="srcl">${S.filter(x => x.type === t).map(x => `<label title="${esc(x.ex.map(e => (e.orig ? e.orig + ' → ' : '') + e.ours).join('\n'))}"><input type="checkbox" data-src="${esc(x.name)}" ${on.has(x.name) ? 'checked' : ''} ${GEN ? '' : 'disabled'}>${esc(x.name)} <small>${x.n}</small>${x.url ? ` <a href="${esc(x.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">↗</a>` : ''}</label>`).join('')}</div></div>`).join('')}</div>
+    ${on.size ? `<div class="gbox"><h3>고른 소스 예시</h3><ul>${S.filter(x => on.has(x.name)).flatMap(x => x.ex.slice(0, 2).map(e => `<li><b>${esc(x.name)}</b> ${e.orig ? esc(e.orig) + ' → ' : ''}${esc(e.ours)}</li>`)).join('')}</ul></div>` : ''}`;
+}
+function gOptUI(){
+  const g = GEN || { forms: new Set(['c', 't', 'p']), level: 'auto', n: 5, tone: '가볍게', req: '' }, dis = GEN ? '' : 'disabled';
+  $('#gOpt').innerHTML = `<div class="srcg">
+    <div><h3>질문 형식 (여러 개 고르면 섞어서 만들어요)</h3><div class="srcl">${Object.entries(FORMN).filter(([k]) => k !== 'o').map(([k, n]) => `<label><input type="checkbox" data-form="${k}" ${g.forms.has(k) ? 'checked' : ''} ${dis}>${n}</label>`).join('')}</div></div>
+    <div class="row"><select id="gLv" ${dis} aria-label="레벨"><option value="auto"${g.level === 'auto' ? ' selected' : ''}>레벨 자동</option><option value="1"${g.level === '1' ? ' selected' : ''}>레벨 1 · 첫 질문용</option><option value="2"${g.level === '2' ? ' selected' : ''}>레벨 2</option></select>
+      <select id="gN" ${dis} aria-label="개수">${[3, 5, 8, 10].map(n => `<option value="${n}"${g.n == n ? ' selected' : ''}>${n}개</option>`).join('')}</select>
+      <select id="gTone" ${dis} aria-label="톤">${['가볍게', '보통', '깊게'].map(t => `<option${g.tone === t ? ' selected' : ''}>${t}</option>`).join('')}</select>
+      <input type="search" id="gReq" ${dis} value="${esc(g.req)}" placeholder="바라는 점 (예: 10대도 답하기 쉽게, 직장인 소재)" style="flex:1;min-width:200px" aria-label="바라는 점"></div></div>`;
+}
+function gTopUI(){
+  if (!GEN){ $('#gTop').innerHTML = '<p class="note">칸을 고르면 소재를 뽑을 수 있어요.</p>'; return; }
+  $('#gTop').innerHTML = `<p class="note" style="margin:0">2단계 데이터(잘 되는 질문·빈 곳)와 3단계 소스를 근거로 이 칸에 맞는 소재를 먼저 뽑아요. 쓸 소재만 골라 6단계로 넘어가요.</p>
+    <div class="row"><button class="btn primary" type="button" data-gtop ${sample && !GEN.busyT ? '' : 'disabled'}>${GEN.busyT ? '소재 뽑는 중…' : GEN.topics.length ? '소재 다시 뽑기' : 'AI로 소재 뽑기'}</button>${sample ? '' : '<span class="note">이 화면에서는 AI를 쓸 수 없어요.</span>'}</div>
+    <div class="tops">${GEN.topics.map((t, i) => `<label><input type="checkbox" data-top="${i}" ${GEN.sel.has(i) ? 'checked' : ''}><b>${esc(t.topic)}</b><small>${esc(t.why)}${t.source ? ' · ' + esc(t.source) : ''}</small></label>`).join('')}</div>`;
+}
+function readOpts(){
+  if (!GEN) return;
+  GEN.level = $('#gLv')?.value || GEN.level; GEN.n = Number($('#gN')?.value || GEN.n); GEN.tone = $('#gTone')?.value || GEN.tone; GEN.req = ($('#gReq')?.value || '').trim();
+}
+function promptContext(){
+  const ev = cellEvidence(), ax = AXES[GEN.axis] || ['', ''], S = (INS?.sources || []).filter(x => GEN.srcs.has(x.name));
+  const sig = INS ? INS.model.terms.filter(t => t.p < 0.05).map(t => `${t.name} ${pp(t.pp)}`).join(', ') : '';
+  return `칸: 자아분석 축 '${GEN.axis}' × 관심사 '${GEN.cat}'
+- 이 축이 보는 것: ${ax[1]} (근거 개념: ${ax[0]} — 개념만 참고하고 심리검사 문항은 베끼지 않는다)
+- 답만 보고 이 축의 신호(어느 쪽 성향인지)를 읽을 수 있어야 한다.
 
-칸: 자아분석 축 '${GEN.axis}' × 관심사 '${GEN.cat}'
-- 이 축이 보는 것: ${ax[1]} (근거 개념: ${ax[0]} — 개념만 참고하고 심리검사 문항을 베끼지 마세요)
-- 관심사 '${GEN.cat}'의 소재로, 답만 보고 이 축의 신호(어느 쪽 성향인지)를 읽을 수 있어야 해요.
+데이터 근거(나답 실제 통계, 답변율 = 답변÷(답변+교체), 평균 ${P(INS?.model?.base)})
+- ${GEN.cat}에서 잘 되는 질문: ${ev.top.map(x => `${x.r.text}(추정 ${P(x.q.est)})`).join(' / ') || '없음'}
+- ${GEN.cat}에서 안 되는 질문(피할 패턴): ${ev.low.map(x => `${x.r.text}(추정 ${P(x.q.est)})`).join(' / ') || '없음'}
+- ${GEN.axis} 축에서 잘 되는 질문: ${ev.axTop.map(x => `${x.r.text}(추정 ${P(x.q.est)})`).join(' / ') || '없음'}
+- 다른 요인을 함께 고려했을 때 확실한 효과: ${sig || '즉답 가능 +, 경험 전제 −, 예/아니오형 −'}
+- 이 칸에 이미 있는 질문(겹치면 안 됨): ${ev.cell.map(r => r.text).join(' / ') || '없음'}
+${S.length ? `참고 소스(이 결과 소재·말투를 참고하되 그대로 옮기지 말 것):\n${S.map(x => `- ${x.name}: ${x.ex.map(e => (e.orig ? e.orig + ' → ' : '') + e.ours).join(' | ')}`).join('\n')}` : '참고 소스: 고르지 않음(나답 기존 질문과 데이터만 참고)'}`;
+}
+async function genTopics(){
+  if (!sample || !GEN || GEN.busyT) return;
+  readOpts(); GEN.busyT = true; GEN.err = ''; gTopUI();
+  const prompt = `당신은 셀프 저널링 앱 '나답'의 데일리 질문 기획자입니다. 아래 칸에 새 질문을 만들기 전에, 쓸 만한 소재 10개를 뽑으세요.
+${promptContext()}
 
-나답 질문 규칙
-- '~인가요?', '~나요?'로 끝내고 '나/내'를 쓴다. '당신', '~시나요'는 쓰지 않는다. 40자 안팎, 질문은 하나.
-- 데이터상 답변율을 확실히 바꾼 요인: ${keyF || '즉답 가능 +, 경험 전제 −, 예/아니오형 −'}.
-  → 바로 답할 수 있게, '~한 적 있다면' 같은 경험 전제·'오늘' 같은 시점·은유를 피하고, 예/아니오 질문은 쓰지 않는다.
-- 양자택일('A인가요, B인가요?')이나 성향형('나는 ~하는 편인가요')이면 답만으로 축 신호가 읽혀서 좋다. 형식을 섞어라.
-- 레벨: ${lv === 'auto' ? '가볍고 즉답 가능한 선호·양자택일·상상형이면 1, 아니면 2' : lv}.
-
-가이드 규칙(기존 DB 말투, 각 30자 안팎, '~해요/~봐요/~뭘까요?')
-- empathy: 공감·정상화 한 문장 / hint: 떠올릴 예시·선택지 / leading: 한 걸음 더 들어가는 질문
-
-겹치면 안 되는 기존 질문(이 칸): ${cell.map(r => r.text).join(' / ') || '없음'}
-같은 축 다른 질문(참고): ${near.map(r => r.text).join(' / ')}
-${req ? '편집자 요청: ' + req : ''}
-
-JSON만 출력: {"questions":[{"text":"","empathy":"","hint":"","leading":"","level":1,"form":"c|t|p|h|d","why":"이 질문이 축 신호를 어떻게 주는지 20자 이내"}]}`;
+소재 조건: ${GEN.cat}의 일상 소재로 구체적일 것(예: '주말 아침', '단톡방', '여행 계획'). 이미 있는 질문의 소재와 겹치지 않게. 잘 되는 질문의 공통점을 살리고, 안 되는 질문의 패턴은 피한다. 톤: ${GEN.tone}. ${GEN.req ? '편집자 요청: ' + GEN.req : ''}
+각 소재마다 왜 고른지(데이터나 소스 근거, 25자 이내)와 근거 소스 이름(없으면 빈 칸)을 붙인다.
+JSON만 출력: {"topics":[{"topic":"","why":"","source":""}]}`;
   try {
     const out = await sample.json(prompt, { modelTier: 'default', cache: false });
-    const got = (out?.questions || []).filter(q => q && typeof q.text === 'string' && q.text.trim()).slice(0, n).map(q => ({
+    GEN.topics = (out?.topics || []).filter(t => t && t.topic).slice(0, 12).map(t => ({ topic: String(t.topic).slice(0, 30), why: String(t.why || '').slice(0, 50), source: String(t.source || '').slice(0, 30) }));
+    GEN.sel = new Set(GEN.topics.map((_, i) => i).slice(0, 5));
+    if (!GEN.topics.length) throw { code: 'empty' };
+  } catch (e) { GEN.err = e?.code === 'not_granted' ? 'AI를 쓸 수 없는 화면이에요.' : e?.code === 'rate_limited' ? '요청이 많아요. 잠시 후 다시 해 주세요.' : '소재를 뽑지 못했어요. 다시 눌러 주세요.'; if (e?.code === 'not_granted') sample = null; }
+  finally { GEN.busyT = false; gTopUI(); genUI(); stepsUI(); }
+}
+async function genRun(){
+  if (!sample || !GEN || GEN.busyQ) return;
+  readOpts(); GEN.busyQ = true; GEN.err = ''; genUI();
+  const tops = [...GEN.sel].map(i => GEN.topics[i]?.topic).filter(Boolean), forms = [...GEN.forms].map(f => `${f}=${FORMN[f]}`).join(', ');
+  const prompt = `당신은 셀프 저널링 앱 '나답'의 데일리 질문 편집자입니다. 아래 칸에 들어갈 새 질문 ${GEN.n}개를 각각 가이드 3종과 함께 만드세요.
+${promptContext()}
+
+쓸 소재: ${tops.join(', ') || '자유'} (소재마다 하나 이상)
+쓸 형식: ${forms || '자유'} — 형식을 섞는다. 양자택일은 'A인가요, B인가요?', 성향은 '나는 ~하는 편인가요?'.
+레벨: ${GEN.level === 'auto' ? '가볍고 즉답 가능한 선호·양자택일·상상형이면 1, 아니면 2' : GEN.level}. 톤: ${GEN.tone}.
+나답 규칙: '~인가요?/~나요?'로 끝내고 '나/내'를 쓴다. '당신', '~시나요' 금지. 40자 안팎, 질문은 하나. 예/아니오 질문 금지. '~한 적 있다면' 같은 경험 전제, '오늘' 같은 시점, 은유를 피한다.
+가이드(기존 DB 말투, 각 30자 안팎): empathy 공감 한 문장 / hint 떠올릴 예시·선택지 / leading 한 걸음 더 들어가는 질문.
+${GEN.req ? '편집자 요청: ' + GEN.req : ''}
+각 질문에 태그를 단다: T 시점 고정(0 없음,1 요즘,2 특정 날), P 경험 전제(0 누구나,1 대부분,2 특정 경험), E 인지 노력(1 즉답,2 잠깐 생각,3 깊은 성찰), W 감정 무게(1~3), S 자기노출(1~3), C 은유(0/1).
+JSON만 출력: {"questions":[{"text":"","empathy":"","hint":"","leading":"","level":1,"form":"c","topic":"","source":"","why":"축 신호를 어떻게 주는지 20자 이내","tags":{"T":0,"P":0,"E":1,"W":1,"S":1,"C":0}}]}`;
+  try {
+    const out = await sample.json(prompt, { modelTier: 'default', cache: false });
+    const num = (v, d) => Number.isFinite(Number(v)) ? Number(v) : d;
+    const got = (out?.questions || []).filter(q => q && typeof q.text === 'string' && q.text.trim()).slice(0, GEN.n).map(q => ({
       text: q.text.trim(), empathy: String(q.empathy || '').trim(), hint: String(q.hint || '').trim(), leading: String(q.leading || '').trim(),
-      level: [1, 2].includes(Number(q.level)) ? Number(q.level) : (lv === '1' ? 1 : 2), form: String(q.form || '').slice(0, 1), why: String(q.why || '').slice(0, 40) }));
+      level: GEN.level !== 'auto' ? Number(GEN.level) : ([1, 2].includes(Number(q.level)) ? Number(q.level) : 2), form: String(q.form || '').slice(0, 1),
+      topic: String(q.topic || ''), source: String(q.source || ''), why: String(q.why || '').slice(0, 40),
+      tags: { T: num(q.tags?.T, 0), P: num(q.tags?.P, 0), E: num(q.tags?.E, 2), W: num(q.tags?.W, 1), S: num(q.tags?.S, 1), C: num(q.tags?.C, 0) } }));
     if (!got.length) throw { code: 'empty' };
-    if (lv !== 'auto') got.forEach(q => q.level = Number(lv));
-    GEN.cands = got.concat(GEN.cands.filter(c => c.done));
-  } catch (e) {
-    if (e?.code === 'not_granted'){ sample = null; GEN.err = 'AI를 쓸 수 없는 화면이에요.'; }
-    else GEN.err = e?.code === 'rate_limited' ? '요청이 많아요. 잠시 후 다시 해 주세요.' : '질문을 만들지 못했어요. 다시 눌러 주세요.';
-  } finally { GEN.busy = false; genUI(); }
+    got.forEach(c => c.pred = predict(c));
+    GEN.cands = got.sort((a, b) => (b.pred ?? 0) - (a.pred ?? 0)).concat(GEN.cands.filter(c => c.done));
+  } catch (e) { GEN.err = e?.code === 'not_granted' ? 'AI를 쓸 수 없는 화면이에요.' : e?.code === 'rate_limited' ? '요청이 많아요. 잠시 후 다시 해 주세요.' : '질문을 만들지 못했어요. 다시 눌러 주세요.'; if (e?.code === 'not_granted') sample = null; }
+  finally { GEN.busyQ = false; genUI(); stepsUI(); }
+}
+function genUI(){
+  const el = $('#gen'); if (!GEN){ el.innerHTML = '<p class="note">칸을 고르면 질문을 만들 수 있어요.</p>'; return; }
+  const avg = INS?.model?.base ?? avgRate(latest()), TG = { T: '시점', P: '경험 전제', E: '인지 노력', W: '감정 무게', S: '자기노출', C: '은유' };
+  el.innerHTML = `<div class="gen">
+    <div class="row"><button class="btn primary" type="button" data-ggo ${sample && !GEN.busyQ ? '' : 'disabled'}>${GEN.busyQ ? 'AI가 쓰는 중…' : `고른 소재 ${GEN.sel.size}개로 질문 ${GEN.n}개 만들기`}</button>
+      <span class="note">예상 답변율은 분석 탭 다변량 모델로 계산한 값이에요(평균 ${P(avg)}). 높은 순으로 보여 줘요.</span></div>
+    ${GEN.err ? `<span class="note" style="color:var(--gone)">${esc(GEN.err)}</span>` : ''}
+    <div class="cands">${GEN.cands.map((c, i) => { const sim = c.done ? null : similarTo('', c.text), w = lint(c.text);
+      return `<div class="gcard${c.done ? ' done' : ''}">
+        <textarea data-gt="${i}" aria-label="질문 문구" ${c.done ? 'disabled' : ''}>${esc(c.text)}</textarea>
+        ${c.pred != null ? `<div class="pred"><span>예상 답변율 ${P(c.pred)}</span><span class="rate"><i style="width:${c.pred * 100}%"></i><b style="left:${avg * 100}%"></b></span></div>` : ''}
+        <span class="g">레벨 ${c.level} · ${esc(FORMN[c.form] || c.form || '')}${c.topic ? ' · 소재 ' + esc(c.topic) : ''}${c.source ? ' · 참고 ' + esc(c.source) : ''}${c.why ? ' · ' + esc(c.why) : ''}</span>
+        <span class="g">태그 · ${Object.entries(c.tags || {}).map(([k, v]) => `${TG[k]} ${v}`).join(' · ')}</span>
+        <span class="g">가이드 · ${esc([c.empathy, c.hint, c.leading].join(' / '))}</span>
+        ${sim ? `<span class="w">비슷한 질문이 있어요: Q.${sim.r.key} "${esc(sim.r.text)}" (${Math.round(sim.v * 100)}%)</span>` : ''}${w.length ? `<span class="w">${esc(w.join(' '))}</span>` : ''}
+        <div class="row">${c.done ? `<span class="chip mint">Q.${esc(c.done)}로 추가했어요</span>` : `<button class="btn primary" type="button" data-gadd="${i}" ${db && canWrite ? '' : 'disabled'}>신규 질문으로 추가</button>`}</div></div>`; }).join('')}</div></div>`;
 }
 async function genAdd(i){
   const c = GEN?.cands[i]; if (!c || !db) return;
-  const ta = document.querySelector(`[data-gt="${i}"]`); if (ta) c.text = ta.value.trim();
-  if (!c.text) return toast('문구가 비어 있어요.');
+  if (!c.text.trim()) return toast('문구가 비어 있어요.');
   const ids = BASE.map(r => Number(r.key)).concat([...ADDED.values()].map(a => Number(a.id))).filter(Number.isFinite);
   const id = Math.max(...ids) + 1;
   try {
-    await db.doc('added/' + id).set({ id, interest_id: Number(Object.keys(CAT).find(k => CAT[k] === GEN.cat)), axis: GEN.axis, text: c.text, g0: c.empathy, g1: c.hint, g2: c.leading,
-      level: c.level, form: FORMN[c.form] || '', why: c.why, by: me?.id || null, at: new Date().toISOString() });
+    await db.doc('added/' + id).set({ id, interest_id: catId(GEN.cat), axis: GEN.axis, text: c.text.trim(), g0: c.empathy, g1: c.hint, g2: c.leading,
+      level: c.level, form: FORMN[c.form] || '', why: [c.why, c.topic && '소재 ' + c.topic, c.source && '참고 ' + c.source, c.pred != null && '예상 답변율 ' + P(c.pred)].filter(Boolean).join(' · '),
+      by: me?.id || null, at: new Date().toISOString() });
     c.done = String(id); genUI(); toast(`Q.${id}로 추가했어요. 다운로드에 신규로 들어가요.`);
   } catch { toast('추가하지 못했어요.'); }
 }
@@ -1375,14 +1493,18 @@ let st; $('#q').addEventListener('input', e => { clearTimeout(st); st = setTimeo
 $('#more').addEventListener('click', () => { limit += 40; render(); });
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (b) go(b.dataset.page); });
 go(PAGE, false);
-$('#heat').addEventListener('click', e => { const td = e.target.closest('td.hc'); if (td) genOpen(td.dataset.ax, td.dataset.cat); });
-$('#heat').addEventListener('keydown', e => { const td = e.target.closest('td.hc'); if (td && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); genOpen(td.dataset.ax, td.dataset.cat); } });
+$('#heat').addEventListener('click', e => { const td = e.target.closest('td.hc'); if (td) genNew(td.dataset.ax, td.dataset.cat); });
+$('#heat').addEventListener('keydown', e => { const td = e.target.closest('td.hc'); if (td && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); genNew(td.dataset.ax, td.dataset.cat); } });
+$('#gSrc').addEventListener('change', e => { const c = e.target.closest('[data-src]'); if (!c || !GEN) return; c.checked ? GEN.srcs.add(c.dataset.src) : GEN.srcs.delete(c.dataset.src); gSrcUI(); });
+$('#gOpt').addEventListener('change', e => { if (!GEN) return; const f = e.target.closest('[data-form]'); if (f){ f.checked ? GEN.forms.add(f.dataset.form) : GEN.forms.delete(f.dataset.form); } readOpts(); genUI(); });
+$('#gTop').addEventListener('click', e => { if (e.target.closest('[data-gtop]')) genTopics(); });
+$('#gTop').addEventListener('change', e => { const t = e.target.closest('[data-top]'); if (!t || !GEN) return; const i = Number(t.dataset.top); t.checked ? GEN.sel.add(i) : GEN.sel.delete(i); genUI(); });
 $('#gen').addEventListener('click', e => {
-  if (e.target.closest('[data-gclose]')){ GEN = null; heatUI(); genUI(); return; }
   if (e.target.closest('[data-ggo]')) return genRun();
   const a = e.target.closest('[data-gadd]'); if (a){ a.disabled = true; genAdd(Number(a.dataset.gadd)); }
 });
-$('#gen').addEventListener('input', e => { const t = e.target.closest('[data-gt]'); if (t && GEN) GEN.cands[Number(t.dataset.gt)].text = t.value; });
+$('#gen').addEventListener('input', e => { const t = e.target.closest('[data-gt]'); if (t && GEN){ const c = GEN.cands[Number(t.dataset.gt)]; c.text = t.value; } });
+$('#gen').addEventListener('change', e => { const t = e.target.closest('[data-gt]'); if (t && GEN){ const c = GEN.cands[Number(t.dataset.gt)]; c.pred = predict(c); genUI(); } });
 $('#forSeg').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b) return; FMODE = b.dataset.m; document.querySelectorAll('#forSeg button').forEach(x => x.setAttribute('aria-pressed', x === b)); forestUI(); });
 $('#forest').addEventListener('mousemove', e => { const g = e.target.closest('.fr'), tip = $('#forest .tip'); if (!tip) return;
   if (!g){ tip.hidden = true; return; } const box = $('#forest').getBoundingClientRect(); tip.hidden = false; tip.textContent = g.dataset.tip;
@@ -1448,7 +1570,7 @@ $('#upHist').addEventListener('click', async e => {
     BASE0 = j.rows.slice().sort((a, b) => Number(a.key) - Number(b.key)); BASE = BASE0; BUILT = j.builtAt; DUPS = j.dups || [];
     $('#built').textContent = `개선본 ${j.builtAt} 기준 · 전체 ${BASE.length.toLocaleString()}행`;
     filters(); render();
-    fetch('data/insights.json').then(r => r.json()).then(j => { INS = j; insUI(); }).catch(() => { $('#insMeta').textContent = '분석 결과를 불러오지 못했어요.'; });
+    fetch('data/insights.json').then(r => r.json()).then(j => { INS = j; insUI(); heatUI(); genAll(); }).catch(() => { $('#insMeta').textContent = '분석 결과를 불러오지 못했어요.'; });
   } catch { $('#list').innerHTML = '<div class="empty">질문 데이터를 불러오지 못했어요. 새로고침해 주세요.</div>'; return; }
   cuse('downloads').then(d => { downloads = d; $('#dlAll').disabled = $('#dlDiff').disabled = !d; });
   cuse('sample').then(s => { sample = s; if (s) document.querySelectorAll('[data-guide]').forEach(b => b.hidden = false); document.querySelectorAll('details.q[open]').forEach(el => refreshOpts(el.dataset.key)); });
@@ -1465,7 +1587,7 @@ $('#upHist').addEventListener('click', async e => {
     qs.docChanges().forEach(c => { const el = document.querySelector(`details.q[data-key="${CSS.escape(c.doc.id)}"]`); if (el && !el.contains(document.activeElement)) rerender(c.doc.id); });
   }, () => {});
   db.collection('picks').onSnapshot(qs => { const m = new Map(); qs.docs.map(d => d.data()).sort((a, b) => (a.month || '').localeCompare(b.month || '')).forEach(p => p.key && m.set(String(p.key), p)); PICKS = m; render(); }, () => {});
-  db.collection('added').onSnapshot(qs => { ADDED = new Map(qs.docs.map(d => [d.id, d.data()])); mergeUpload(); filters(); render(); if (GEN && !GEN.busy) genUI(); }, () => {});
+  db.collection('added').onSnapshot(qs => { ADDED = new Map(qs.docs.map(d => [d.id, d.data()])); mergeUpload(); filters(); render(); if (GEN){ gDataUI(); if (!GEN.busyQ) genUI(); } }, () => {});
   db.collection('dupok').onSnapshot(qs => { DUPOK = new Map(qs.docs.map(d => [d.id, d.data()])); dupUI(); badges(); }, () => {});
   db.collection('keeps').onSnapshot(qs => { KEEPS = new Map(qs.docs.map(d => [d.id, d.data()])); render(); }, () => {});
   db.collection('ai').onSnapshot(qs => { AIS = new Map(qs.docs.map(d => [d.id, d.data()])); qs.docChanges().forEach(c => refreshOpts(c.doc.id)); }, () => {});
