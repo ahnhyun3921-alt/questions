@@ -394,6 +394,11 @@ function tabsUI(){
     return `<button type="button" class="tab" data-view="${v}" aria-pressed="${F.view === v}"><b>${dim ? '–' : n.toLocaleString()}</b><span>${l}</span><small>${dim ? '통계를 불러오는 중' : v === 'fix' && !n ? '지금은 없어요 · 매달 통계로 다시 봐요' : d}</small></button>`;
   }).join('');
 }
+function activeFilters(){
+  if (PAGE === 'pick') return [];
+  return [F.change !== 'all' && `변경 구분 ${F.change}`, F.cat !== 'all' && `관심사 ${F.cat}`, F.form !== 'all' && `형식 ${F.form}`,
+    F.level !== 'all' && `레벨 ${F.level}`, F.axis !== 'all' && `축 ${F.axis}`, F.diff && '지난 다운로드 이후 바뀐 것', F.edit && '이 페이지에서 고친 것', F.q.trim() && `검색 "${F.q.trim()}"`].filter(Boolean);
+}
 function visible(){
   if (!VIEWS.some(v => v[0] === F.view)) F.view = 'all';
   if (PAGE === 'pick'){
@@ -656,8 +661,9 @@ async function render(){
   if (!BASE.length) return;
   summary(); dataUI(); tabsUI(); badges();
   const vis = visible(), shown = vis.slice(0, limit);
-  $('#count').textContent = `${vis.length.toLocaleString()}개`;
-  $('#list').innerHTML = shown.length ? shown.map(card).join('') : '<div class="empty">조건에 맞는 질문이 없어요.</div>';
+  const act = activeFilters();
+  $('#count').textContent = `${vis.length.toLocaleString()}개${act.length ? ` · 필터: ${act.join(', ')}` : ''}`;
+  $('#list').innerHTML = shown.length ? shown.map(card).join('') : `<div class="empty">조건에 맞는 질문이 없어요.${act.length && PAGE !== 'pick' ? `<br>걸려 있는 필터: ${esc(act.join(', '))} <button class="btn" type="button" data-reset>필터 풀기</button>` : ''}</div>`;
   $('#more').hidden = vis.length <= limit;
   $('#more').textContent = `더 보기 (${(vis.length - limit).toLocaleString()}개 남음)`;
   const whoIds = [...document.querySelectorAll('[data-who]')].map(el => el.dataset.who).filter(Boolean);
@@ -867,7 +873,10 @@ $('#brkSeg').addEventListener('click', e => { const b = e.target.closest('[data-
 $('#brk').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; const k = b.dataset.k;
   if (BRK === 'form') F.form = k; else if (BRK === 'cat') F.cat = k; else F.level = k.replace('레벨 ', '');
   F.view = 'all'; limit = 40; saveF(); filters(); render(); go('q'); });
-$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (!b) return; F.view = b.dataset.view; limit = 40; saveF(); render(); });
+// 보기 탭을 누르면 위에 남아 있던 필터를 풀어 탭 숫자와 목록이 같게 한다
+function resetFilters(){ Object.assign(F, { change:'all', cat:'all', form:'all', level:'all', axis:'all', diff:false, edit:false, q:'' }); $('#q').value = ''; filters(); }
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (!b) return; F.view = b.dataset.view; resetFilters(); limit = 40; saveF(); render(); });
+$('#list').addEventListener('click', e => { if (e.target.closest('[data-reset]')){ resetFilters(); limit = 40; saveF(); render(); } });
 $('#baseSel').addEventListener('change', e => { baseId = e.target.value; historyUI(); render(); });
 $('#dlAll').addEventListener('click', () => download('all'));
 $('#top5').addEventListener('click', e => { const b = e.target.closest('[data-jump]'); if (!b) return; const k = b.dataset.jump; F.q = k; F.view = 'all'; $('#q').value = k; go('q', false); open.add(k); limit = 40; render(); setTimeout(() => document.querySelector(`details.q[data-key="${CSS.escape(k)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); });
