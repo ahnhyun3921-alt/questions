@@ -130,6 +130,11 @@ summary.note{cursor:pointer;font-weight:700}
 .top5 .t{font-weight:700;font-size:.9rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .top5 .n{font-size:.8rem;font-weight:800;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .dist{display:grid;gap:10px}
+.dist.mini .bar{height:14px;border-radius:7px;background:var(--soft)}
+.dist .lg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.78rem;font-weight:700;color:var(--ink-2)}
+.dist .lg button{all:unset;cursor:pointer;border-radius:6px;padding:1px 4px}
+.dist .lg button:hover,.dist .lg button[aria-pressed="true"]{background:var(--soft);color:var(--ink)}
+.dist .lg button:focus-visible{outline:2px solid var(--blue)}
 .dist .bar{display:flex;gap:2px;height:22px;border-radius:8px;overflow:hidden;background:var(--surface)}
 .dist .bar i{display:block;height:100%;min-width:2px}
 .dist .bl{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:center;font-size:.8rem;font-weight:800;color:var(--ink-2)}
@@ -264,6 +269,10 @@ a{color:var(--blue)}
   <section class="dups" id="dups"></section>
   </div>
   <div class="pg" id="pg-data" role="tabpanel" data-page="data" hidden>
+  <section class="panel" aria-labelledby="disth">
+    <h2 id="disth">카테고리(관심사) 분포</h2>
+    <div class="dist" id="dist"></div>
+  </section>
   <section class="panel" aria-labelledby="dth">
     <div class="data-head"><h2 id="dth">데이터로 보는 지금</h2><span class="note" id="dataAt">통계를 불러오는 중이에요.</span></div>
     <div class="kpis">
@@ -275,10 +284,6 @@ a{color:var(--blue)}
     <div class="grid2">
       <div class="chartbox"><div class="ttl">전체 답변율 추이</div><div id="trend"></div></div>
       <div class="chartbox"><div class="ttl">교체가 가장 많은 질문</div><div class="top5" id="top5"></div></div>
-    </div>
-    <div class="chartbox">
-      <div class="ttl">카테고리(관심사) 분포 · 활성 질문 기준</div>
-      <div class="dist" id="dist"></div>
     </div>
     <div class="chartbox">
       <div class="brk-head">
@@ -323,6 +328,7 @@ a{color:var(--blue)}
     <input type="search" id="pq" placeholder="문구나 id로 찾기" aria-label="골라 주세요에서 찾기">
   </section>
   <section class="panel q-only" aria-label="찾기">
+    <div class="dist mini" id="distMini"></div>
     <div class="tabs" id="tabs" role="group" aria-label="보기"></div>
     <div class="row">
       <input type="search" id="q" placeholder="문구나 id로 찾기" aria-label="검색">
@@ -605,6 +611,9 @@ function distUI(){
       return `<tr data-cat="${c}"><td><span class="sw" style="background:${col(i)}"></span>${c}</td><td>${n0[i]}<em>${P(n0[i] / t0)}</em></td><td>${n1[i]}<em>${P(n1[i] / t1)}</em></td><td>${d > 0 ? '+' : ''}${d}</td><td class="hide-m">${nw[i]}</td><td class="hide-m">${lv1[i]}</td></tr>`; }).join('') +
     `<tr><td>합계</td><td>${t0}</td><td>${t1}</td><td>${t1 - t0 > 0 ? '+' : ''}${t1 - t0}</td><td class="hide-m">${nw.reduce((a, b) => a + b, 0)}</td><td class="hide-m">${lv1.reduce((a, b) => a + b, 0)}</td></tr></tbody></table>
     <p class="note" style="margin:0">페이지에서 고친 관심사·비활성화·삭제까지 반영해요. 줄을 누르면 그 관심사 질문만 걸러 보여 줘요.</p>`;
+  // 전체 질문 탭 위 작은 분포(개선 후)
+  $('#distMini').innerHTML = `<div class="bl"><span>관심사 분포</span><div class="bar" role="img" aria-label="개선 후 ${cats.map((c, i) => `${c} ${n1[i]}개`).join(', ')}">${cats.map((c, i) => `<i style="width:${n1[i] / t1 * 100}%;background:${col(i)}" title="${c} ${n1[i]}개 (${P(n1[i] / t1)})"></i>`).join('')}</div></div>
+    <div class="lg">${cats.map((c, i) => `<button type="button" data-cat="${c}" aria-pressed="${F.cat === c}"><span class="sw" style="background:${col(i)}"></span>${c} ${n1[i]} · ${P(n1[i] / t1)}</button>`).join('')}</div>`;
 }
 let BRK = 'form';
 function breakdown(){
@@ -987,6 +996,7 @@ $('#more').addEventListener('click', () => { limit += 40; render(); });
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (b) go(b.dataset.page); });
 go(PAGE, false);
 $('#brkSeg').addEventListener('click', e => { const b = e.target.closest('[data-by]'); if (!b) return; BRK = b.dataset.by; document.querySelectorAll('#brkSeg button').forEach(x => x.setAttribute('aria-pressed', x === b)); breakdown(); });
+$('#distMini').addEventListener('click', e => { const t = e.target.closest('[data-cat]'); if (!t) return; F.cat = F.cat === t.dataset.cat ? 'all' : t.dataset.cat; limit = 40; saveF(); filters(); render(); });
 $('#dist').addEventListener('click', e => { const t = e.target.closest('tr[data-cat]'); if (!t) return; resetFilters(); F.view = 'all'; F.cat = t.dataset.cat; limit = 40; saveF(); filters(); render(); go('q'); });
 $('#brk').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; const k = b.dataset.k;
   if (BRK === 'form') F.form = k; else if (BRK === 'cat') F.cat = k; else F.level = k.replace('레벨 ', '');
