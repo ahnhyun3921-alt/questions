@@ -381,7 +381,7 @@ function tabsUI(){
   $('#tabs').innerHTML = VIEWS.map(([v, l, d]) => {
     const n = all.filter(r => (F.del || !r.deleted || v === 'mod' || v === 'off') && inView(r, v)).length;
     const dim = v === 'fix' && !STATS.length;
-    return `<button type="button" class="tab" data-view="${v}" aria-pressed="${F.view === v}"><b>${dim ? '–' : n.toLocaleString()}</b><span>${l}</span><small>${dim ? '통계를 불러오는 중' : v === 'fix' && !n ? '지금은 없어요 · 매일 통계로 다시 봐요' : d}</small></button>`;
+    return `<button type="button" class="tab" data-view="${v}" aria-pressed="${F.view === v}"><b>${dim ? '–' : n.toLocaleString()}</b><span>${l}</span><small>${dim ? '통계를 불러오는 중' : v === 'fix' && !n ? '지금은 없어요 · 매달 통계로 다시 봐요' : d}</small></button>`;
   }).join('');
 }
 function visible(){
@@ -531,7 +531,7 @@ function dataUI(){
   const s = latest(), p = prevSnap();
   if (!s){ $('#dataAt').textContent = '아직 받아온 통계가 없어요.'; return; }
   const avg = avgRate(s), pavg = avgRate(p);
-  $('#dataAt').textContent = `마지막 수집 ${s.date} · 매일 아침 통계 사이트에서 자동으로 받아와요`;
+  $('#dataAt').textContent = `마지막 수집 ${s.date} · 매달 1일 통계 사이트에서 받아와요`;
   $('#kRate').textContent = P(avg);
   $('#kRateD').textContent = p ? `지난 수집 ${p.date} 대비 ${((avg - pavg) * 100 >= 0 ? '+' : '')}${((avg - pavg) * 100).toFixed(1)}%p` : '';
   const rr = pct(s.totals.rep, s.totals.exp), prr = p ? pct(p.totals.rep, p.totals.exp) : null;

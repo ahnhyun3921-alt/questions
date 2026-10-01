@@ -84,10 +84,11 @@ AI 추천은 db `ai/{id}`에 쌓인다.
 페이지에서 고친 내용은 db `edits/{key}`(key = DB id 또는 신규 ID)에, 다운로드 기록은 `downloads`에 쌓인다. 둘 다 사용자 데이터라 루틴이 쓰지 않는다.
 `edits`는 ArtifactData `list`로 읽어 다음 개선본에 반영할지 사용자에게 보고한다.
 
-## 9. 매일 통계 수집 (개선함 페이지의 '데이터 근거')
+## 9. 월간 통계 올리기 (개선함 페이지의 '데이터 근거')
 
-- Routine `나답 질문 통계 매일 수집` (trig_01YAy6jG5KSUtASbs9KWwTJf): 매일 07:52 (Asia/Seoul)에 새 세션으로 실행돼요.
-- 순서: `fetch_data.py` → `nadab_daily_question_stats.csv`는 되돌림(분석 기준은 월간 루틴에서만 바꿈) → `build_board_stats.py` → 개선함 db `stats/<날짜>` 문서 하나만 set → 스냅숏 커밋.
+- 매달 한 번, 2단계에서 통계를 받은 뒤에 해요. 따로 매일 돌리는 루틴은 없어요.
+- `python analysis/build_board_stats.py`를 돌린 다음, ArtifactData로 개선함 db에 이번 달 스냅숏 날짜의 `stats/<날짜>` 문서 하나만 set 해요. 파일은 `output/board_stats/<날짜>.json`이에요.
+- 스냅숏(`data/snapshots`)과 `output/board_stats`는 함께 커밋해요.
 - 페이지는 `stats` 컬렉션 최근 90개를 읽어 KPI, 추이, 교체 많은 질문, 질문별 근거를 그려요.
 - 보기 탭:
   - **고쳐야 할 것**: 문구를 그대로 두는 질문 가운데 노출이 5회 이상이고, 추정 답변율이 평균보다 10%p 넘게 낮은데 아직 수정안이 없는 질문. 매달 10단계에서 '골라 주세요'로 올라가요.
@@ -112,7 +113,7 @@ AI 추천은 db `ai/{id}`에 쌓인다.
    - 가이드는 기존 DB 말투로 써요.
 4. `python analysis/monthly_picks.py batch --month <YYYY-MM>`를 돌린 다음, ArtifactData `batch`로 `output/monthly_picks/<YYYY-MM>_batch.json`을 개선함 db에 써요.
    - 쓰는 곳은 `picks/<YYYY-MM>-<DB id>`예요.
-5. 쓰는 컬렉션은 `picks`뿐이에요. `keeps`는 읽기만 해요. `edits`, `downloads`, `ai`, `stats`(매일 루틴 몫)는 건드리지 않아요.
+5. 쓰는 컬렉션은 `picks`뿐이에요. `keeps`는 읽기만 해요. `edits`, `downloads`, `ai`, `stats`(9단계 몫)는 이 단계에서 건드리지 않아요.
 
 페이지에서는 이렇게 처리돼요.
 - 질문을 저장하거나 '지금 문구 그대로 둘게요'를 누르면 그 달 추천은 끝난 것으로 쳐요.
