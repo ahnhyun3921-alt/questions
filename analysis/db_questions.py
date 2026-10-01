@@ -18,6 +18,14 @@ def latest_db():
     return pd.read_csv(files[-1], encoding="utf-8-sig") if files else None
 
 
+def original_first_ids(db=None) -> set:
+    """원래 DB에서 레벨 1(첫 질문)인 기존 질문 id. 661~684 묶음은 다시 쓰기로 해서 빼고,
+    나머지는 원본 그대로 둔다(문구·가이드·관심사·비활성화 모두 손대지 않음)."""
+    db = latest_db() if db is None else db
+    lv1 = db[pd.to_numeric(db["question_level"], errors="coerce") == 1]["id"].astype(int)
+    return {i for i in lv1 if not GAP_START <= i < GAP_START + GAP_LEN}
+
+
 def stats_to_db(stats_id: int) -> int:
     return stats_id if stats_id < GAP_START else stats_id + GAP_LEN
 

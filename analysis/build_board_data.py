@@ -13,7 +13,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
-from db_questions import GAP_LEN, GAP_START, INTEREST_ID  # noqa: E402
+from db_questions import GAP_LEN, GAP_START, INTEREST_ID, original_first_ids  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "output"
@@ -72,9 +72,13 @@ def main():
     dec = pd.read_csv(dec_path, dtype=str).fillna("").set_index("id") if dec_path.exists() else pd.DataFrame()
     clean = lambda t: re.sub(r"^\([^)]*\)\s*", "", t).strip()
 
+    keep1 = {str(i) for i in original_first_ids()}
+
     def alternatives(r, sid, cur):
         """추천 수정안 목록: [라벨, 문구]. 지금 개선본 문구와 같은 건 표시만 하고 남긴다."""
         alts = []
+        if r["id"] in keep1 and not r["신규 ID"]:   # 원래 첫 질문은 원본 그대로 — 수정안을 띄우지 않는다
+            return []
         def add(label, text):
             text = (text or "").strip()
             if text and not text.startswith("(") and "중복만 제거" not in text and all(text != t for _, t in alts):

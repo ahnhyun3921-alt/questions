@@ -4,6 +4,7 @@
    → output/monthly_picks/<month>.json  ({month, avg, items:[{key, text, form, cat, stats, reason, opts:[]}]})
    기준: 최신 스냅숏의 '현재 Revision'에서 노출 5회 이상, 추정 답변율(평균 쪽으로 당김, K=10)이 평균보다 10%p 넘게 낮음.
    제외: 개선본 문구가 지금 서비스 문구와 달라 이미 수정이 기다리는 질문, 비활성 질문,
+         원래 DB의 레벨 1(첫 질문) 기존 질문(원본 그대로 두기로 함),
          keeps.json(개선함 db `keeps` 컬렉션을 받은 것)에 최근 90일 안에 '그대로 두기'가 있는 질문.
 2) 각 item의 opts에 수정안 2~3개를 채운다(사람 또는 루틴 세션이 직접 작성):
    {text, empathy, hint, leading, why} — ROUTINE.md 4단계 수정 원칙과 lint_questions.py 기준을 따른다.
@@ -15,7 +16,12 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import sys
+
 import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).parent))
+from db_questions import original_first_ids  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SNAP = ROOT / "data" / "snapshots"
@@ -40,11 +46,12 @@ def candidates(month, keeps_path):
             at = data.get("at", "")
             if at and datetime.fromisoformat(at.replace("Z", "+00:00")) >= cut:
                 kept.add(str(d.get("doc_id") or d.get("id") or data.get("key")))
+    keep1 = {str(i) for i in original_first_ids()}   # 원래 첫 질문은 원본 그대로
     items = []
     for k, v in st["q"].items():
         exp, ans, rep = v[0], v[1], v[2]
         r = rows.get(k)
-        if not r or r["deleted"] or k in kept or exp < MIN_EXP:
+        if not r or r["deleted"] or k in kept or k in keep1 or exp < MIN_EXP:
             continue
         if r["text"].strip() != str(live_text.get(k, "")).strip():
             continue  # 이미 수정안이 개선본에 있고 반영을 기다림

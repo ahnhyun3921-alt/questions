@@ -14,7 +14,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
-from db_questions import INTEREST_ID, latest_db  # noqa: E402
+from db_questions import INTEREST_ID, latest_db, original_first_ids  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "output"
@@ -46,10 +46,13 @@ def main():
                 ch.at[i, "가이드 처리"] = "재작성"
     up = ch.rename(columns={"DB id": "id", "최종 권장 문구": "question_text", "기존 문구": "기존 question_text", "질문 ID": "통계 질문 ID"})
     up = up[["id", "통계 질문 ID", "기존 question_text", "question_text", *G, "가이드 처리", "조치", "이유"]]
+    keep1 = original_first_ids(db)   # 원래 첫 질문(레벨 1)은 원본 그대로
+    up = up[~up["id"].astype(int).isin(keep1)]
     up.to_csv(EXP / "update_existing.csv", index=False, encoding="utf-8-sig")
 
     # 2) 비활성화
     de = f[f["최종 권장 문구"] == "(비활성화)"].rename(columns={"DB id": "id", "질문 ID": "통계 질문 ID"})
+    de = de[~de["id"].astype(int).isin(keep1)]
     de[["id", "통계 질문 ID", "기존 문구", "이유"]].to_csv(EXP / "deactivate.csv", index=False, encoding="utf-8-sig")
 
     # 3) 신규

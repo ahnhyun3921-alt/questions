@@ -17,7 +17,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
-from db_questions import INTEREST_ID, latest_db, stats_to_db  # noqa: E402
+from db_questions import INTEREST_ID, latest_db, original_first_ids, stats_to_db  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 EXP = ROOT / "output" / "db_export"
@@ -73,6 +73,8 @@ def main():
             if decided(f"K{int(r['통계 질문 ID'])}")[0] == "skipped":   # 검토 페이지에서 '원래대로'
                 continue
             i = stats_to_db(int(r["통계 질문 ID"]))
+            if i in original_first_ids():   # 원래 첫 질문은 원본 그대로
+                continue
             put(i, interest_id=INTEREST_ID[r["제안 관심사"]], **{"관심사 변경": f"{r['지금 관심사']}→{r['제안 관심사']}"})
 
     # 2) 비활성화(중복 통합)
