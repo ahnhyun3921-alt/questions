@@ -90,7 +90,31 @@ AI 추천은 db `ai/{id}`에 쌓인다.
 - 순서: `fetch_data.py` → `nadab_daily_question_stats.csv`는 되돌림(분석 기준은 월간 루틴에서만 바꿈) → `build_board_stats.py` → 개선함 db `stats/<날짜>` 문서 하나만 set → 스냅숏 커밋.
 - 페이지는 `stats` 컬렉션 최근 90개를 읽어 KPI, 추이, 교체 많은 질문, 질문별 근거를 그려요.
 - 보기 탭:
-  - **골라야 할 것**: 수정안이 2개 이상 있는데 검토에서 아직 고르지 않았고, 이 페이지에서도 고치지 않은 질문.
-  - **고쳐야 할 것**: 문구를 그대로 두는 질문 가운데 노출이 20회 이상이고, 추정 답변율이 평균보다 10%p 넘게 낮은 질문.
-  - **신규 질문**과 **변경된 질문**.
+  - **고쳐야 할 것**: 문구를 그대로 두는 질문 가운데 노출이 5회 이상이고, 추정 답변율이 평균보다 10%p 넘게 낮은데 아직 수정안이 없는 질문. 매달 10단계에서 '골라 주세요'로 올라가요.
+  - **신규 질문**, **변경된 질문**, **비활성화**.
+- 맨 위 '골라 주세요' 탭은 두 가지를 모아 보여 줘요.
+  - 월간 점검 추천(`picks`).
+  - 수정안이 여러 개인데 아직 안 고른 질문.
 - 루틴은 `edits`, `downloads`, `ai`, `decisions`를 쓰지 않아요.
+
+## 10. 월간 '골라 주세요' 올리기 (개선함 페이지)
+
+매달 1~9단계 다음에 해요.
+
+1. ArtifactData `list`로 개선함 db의 `keeps` 컬렉션을 읽어 `output/monthly_picks/keeps.json`에 저장해요. 문서마다 doc_id와 data를 남겨요.
+2. `python analysis/monthly_picks.py candidates --month <YYYY-MM> --keeps output/monthly_picks/keeps.json`
+   - 노출 5회 이상이고, 추정 답변율이 평균보다 10%p 넘게 낮은 질문을 뽑아요.
+   - 개선본에 이미 수정안이 있는 질문은 빼요.
+   - 90일 안에 '그대로 두기'로 한 질문도 빼요.
+3. `output/monthly_picks/<YYYY-MM>.json`의 각 item `opts`에 수정안을 2~3개 직접 써요.
+   - 형식은 `{text, empathy, hint, leading, why}`예요.
+   - 4단계 수정 원칙을 따르고, `lint_questions.py`에서 [높음]이 없어야 해요.
+   - 가이드는 기존 DB 말투로 써요.
+4. `python analysis/monthly_picks.py batch --month <YYYY-MM>`를 돌린 다음, ArtifactData `batch`로 `output/monthly_picks/<YYYY-MM>_batch.json`을 개선함 db에 써요.
+   - 쓰는 곳은 `picks/<YYYY-MM>-<DB id>`예요.
+5. 쓰는 컬렉션은 `picks`뿐이에요. `keeps`는 읽기만 해요. `edits`, `downloads`, `ai`, `stats`(매일 루틴 몫)는 건드리지 않아요.
+
+페이지에서는 이렇게 처리돼요.
+- 질문을 저장하거나 '지금 문구 그대로 둘게요'를 누르면 그 달 추천은 끝난 것으로 쳐요.
+  - 저장은 `edits`에, 그대로 두기는 `keeps`에 기록돼요.
+- 같은 질문의 추천은 가장 최근 달 것만 보여요.

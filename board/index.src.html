@@ -52,6 +52,9 @@ h1{font-size:2rem;font-weight:800;margin:0;letter-spacing:-.02em;line-height:1.2
 .nav button[aria-selected="true"] .bdg{background:rgba(255,255,255,.22);color:#fff}
 .nav .bdg[hidden]{display:none}
 .pg{display:grid;gap:16px}
+body[data-page="pick"] .q-only{display:none} body:not([data-page="pick"]) .pick-only{display:none}
+.why-up{background:var(--low-soft);color:var(--ink);border-radius:16px;padding:10px 14px;font-size:.88rem}
+.why-up b{color:var(--low)}
 .pg[hidden]{display:none}
 @media (max-width:480px){.nav button{font-size:.85rem;padding:9px 4px}.nav .bdg{margin-left:4px;padding:1px 5px}}
 .panel{background:var(--surface);border-radius:28px;padding:22px;display:grid;gap:12px;box-shadow:var(--shadow)}
@@ -100,6 +103,7 @@ summary.note{cursor:pointer;font-weight:700}
 .kpi .d{font-size:.78rem;font-weight:700;color:var(--ink-2)}
 .chartbox{position:relative;background:var(--soft);border-radius:20px;padding:14px 14px 8px}
 .chartbox svg{display:block;width:100%;height:auto;overflow:visible}
+.chartbox svg.sp{width:220px;max-width:100%;height:44px}
 .chartbox .ttl{font-size:.82rem;font-weight:800;margin-bottom:4px}
 .tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:.78rem;font-weight:700;padding:6px 10px;border-radius:10px;white-space:nowrap;transform:translate(-50%,-110%)}
 .top5{display:grid;gap:8px}
@@ -162,7 +166,7 @@ summary.note{cursor:pointer;font-weight:700}
 .chip.d-new{background:var(--new-soft);color:var(--new)} .chip.d-mod{background:var(--mod-soft);color:var(--mod)} .chip.d-gone{background:var(--gone-soft);color:var(--gone)}
 .body{padding:4px 22px 22px;display:grid;gap:18px}
 .sec{display:grid;gap:8px}
-.sec h3{font-size:.95rem;font-weight:800;margin:0}
+.sec h3,.form h3{font-size:.95rem;font-weight:800;margin:0}
 .box{background:var(--soft);border-radius:20px;padding:14px 16px;font-size:.88rem;display:grid;gap:6px}
 .box b{font-weight:800}
 dl{margin:0;display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:6px 10px;font-size:.86rem}
@@ -210,7 +214,8 @@ a{color:var(--blue)}
   </div>
 </header>
 <nav class="nav" aria-label="페이지"><div class="in" role="tablist" id="nav">
-  <button type="button" role="tab" data-page="q" aria-selected="true" aria-controls="pg-q">질문 고르기·고치기<span class="bdg" id="bdgPick" hidden></span></button>
+  <button type="button" role="tab" data-page="pick" aria-selected="false" aria-controls="pg-q">골라 주세요<span class="bdg" id="bdgPick" hidden></span></button>
+  <button type="button" role="tab" data-page="q" aria-selected="true" aria-controls="pg-q">전체 질문</button>
   <button type="button" role="tab" data-page="data" aria-selected="false" aria-controls="pg-data">데이터</button>
   <button type="button" role="tab" data-page="dl" aria-selected="false" aria-controls="pg-dl">다운로드<span class="bdg" id="bdgDiff" hidden></span></button>
 </div></nav>
@@ -223,7 +228,7 @@ a{color:var(--blue)}
       <div class="kpi"><span class="l">답변율 (답변 ÷ 답변+교체)</span><span class="v" id="kRate">–</span><span class="d" id="kRateD"></span></div>
       <div class="kpi"><span class="l">교체율 (교체 ÷ 노출)</span><span class="v" id="kRep">–</span><span class="d" id="kRepD"></span></div>
       <div class="kpi"><span class="l">누적 노출</span><span class="v" id="kExp">–</span><span class="d" id="kExpD"></span></div>
-      <div class="kpi"><span class="l">평균보다 확실히 낮은 질문</span><span class="v" id="kLow">–</span><span class="d">노출 20회 이상 · 추정 답변율이 평균보다 10%p 이상 낮음</span></div>
+      <div class="kpi"><span class="l">평균보다 확실히 낮은 질문</span><span class="v" id="kLow">–</span><span class="d">노출 5회 이상 · 추정 답변율이 평균보다 10%p 이상 낮음</span></div>
     </div>
     <div class="grid2">
       <div class="chartbox"><div class="ttl">전체 답변율 추이</div><div id="trend"></div></div>
@@ -260,8 +265,18 @@ a{color:var(--blue)}
   </section>
 
   </div>
-  <div class="pg" id="pg-q" role="tabpanel" data-page="q">
-  <section class="panel" aria-label="찾기">
+  <div class="pg" id="pg-q" role="tabpanel" data-page="q pick">
+  <section class="panel pick-only" aria-labelledby="pkh">
+    <h2 id="pkh">골라 주세요</h2>
+    <div class="kpis">
+      <div class="kpi"><span class="l">이번 달 점검</span><span class="v" id="pkMonth">–</span><span class="d" id="pkMonthD">매달 1일, 데이터상 문제 있는 질문에 수정안을 붙여 올려요</span></div>
+      <div class="kpi"><span class="l">개선안 고르기</span><span class="v" id="pkReview">–</span><span class="d">수정안이 여러 개인데 아직 안 고른 질문</span></div>
+      <div class="kpi"><span class="l">고른 것 · 그대로 둔 것</span><span class="v" id="pkDone">–</span><span class="d">이 페이지에서 저장했거나 그대로 두기로 한 질문</span></div>
+    </div>
+    <p class="note" style="margin:0">수정안을 눌러 고르고 '고친 내용 저장'을 누르면 목록에서 빠져요. 지금 문구가 낫다면 '지금 문구 그대로 둘게요'를 눌러 주세요.</p>
+    <input type="search" id="pq" placeholder="문구나 id로 찾기" aria-label="골라 주세요에서 찾기">
+  </section>
+  <section class="panel q-only" aria-label="찾기">
     <div class="tabs" id="tabs" role="group" aria-label="보기"></div>
     <div class="row">
       <input type="search" id="q" placeholder="문구나 id로 찾기" aria-label="검색">
@@ -293,10 +308,11 @@ const CAT = {1:'취향',2:'감정',3:'루틴',4:'관계',5:'사랑',6:'가치관
 let toastT; function toast(m){ const t=$('#toast'); t.textContent=m; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2600); }
 const fmt = iso => { try { return new Date(iso).toLocaleString('ko-KR',{dateStyle:'medium',timeStyle:'short'}); } catch { return iso; } };
 
-let STATS = [], BASE = [], BUILT = '', EDITS = new Map(), AIS = new Map(), DLS = [], baseId = null;
+const MIN_EXP = 5;  // analysis/monthly_picks.py와 같은 기준
+let PICKS = new Map(), KEEPS = new Map(), STATS = [], BASE = [], BUILT = '', EDITS = new Map(), AIS = new Map(), DLS = [], baseId = null;
 let db = null, downloads = null, user = null, sample = null, me = null, canWrite = true;
 let F = { q:'', view:'all', form:'all', change:'all', cat:'all', level:'all', axis:'all', diff:false, edit:false, del:false }, limit = 40;
-const open = new Set(), busy = new Set();
+const open = new Set(), closed = new Set(), busy = new Set();
 try { const s = JSON.parse(localStorage.getItem('nadab-board-f2') || 'null'); if (s) F = { ...F, ...s, q:'' }; } catch {}
 const saveF = () => { try { localStorage.setItem('nadab-board-f2', JSON.stringify({ ...F, q:'' })); } catch {} };
 
@@ -346,28 +362,38 @@ function filters(){
 }
 const VIEWS = [
   ['all', '전체', '활성 질문 모두'],
-  ['pick', '골라야 할 것', '수정안 중 하나를 아직 안 고름'],
-  ['fix', '고쳐야 할 것', '데이터상 답변율이 낮은데 수정안이 없음'],
+  ['fix', '고쳐야 할 것', '답변율이 낮은데 수정안이 없음 · 매달 1일 골라 주세요로'],
   ['new', '신규 질문', '새로 추가하는 질문'],
-  ['mod', '변경된 질문', '문구·관심사·비활성화가 바뀜'],
+  ['mod', '변경된 질문', '문구·관심사가 바뀌거나 비활성화됨'],
+  ['off', '비활성화', '이번에 끄는 질문과 이미 삭제된 질문'],
 ];
 const isNewQ = r => r.change === '신규';
 const isMod = r => !isNewQ(r) && (r.edited || !!r.catChange || /^(문구 수정|레벨1|비활성화)/.test(r.change));
-const isPick = r => !r.deleted && !r.edited && r.alts.length >= 2 && !['chosen', 'applied'].includes(r.decided);
-const isFix = r => { if (r.deleted || r.edited || r.change !== '유지') return false; const q = qstat(r.key); return !!q && q.exp >= 20 && q.est < avgRate(latest()) - 0.1; };
-const inView = (r, v) => v === 'all' || (v === 'pick' ? isPick(r) : v === 'fix' ? isFix(r) : v === 'new' ? isNewQ(r) : isMod(r));
+const pickOf = r => PICKS.get(r.key);
+const doneSince = (r, at) => (r.edited && r.edited.at >= at) || (KEEPS.get(r.key)?.at || '') >= at;
+const pickKind = r => { const p = pickOf(r); return p && !doneSince(r, p.at) ? 'month' : 'review'; };
+const isPick = r => { if (r.deleted) return false; const p = pickOf(r); if (p && !doneSince(r, p.at)) return true;
+  return !r.edited && !KEEPS.has(r.key) && r.alts.length >= 2 && !['chosen', 'applied'].includes(r.decided); };
+const isFix = r => { if (r.deleted || r.edited || r.change !== '유지' || isPick(r)) return false; const q = qstat(r.key); return !!q && q.exp >= MIN_EXP && q.est < avgRate(latest()) - 0.1; };
+const inView = (r, v) => v === 'all' || (v === 'off' ? r.deleted : v === 'fix' ? isFix(r) : v === 'new' ? isNewQ(r) : isMod(r));
 function tabsUI(){
   const all = rows();
   $('#tabs').innerHTML = VIEWS.map(([v, l, d]) => {
-    const n = all.filter(r => (F.del || !r.deleted || v === 'mod') && inView(r, v)).length;
+    const n = all.filter(r => (F.del || !r.deleted || v === 'mod' || v === 'off') && inView(r, v)).length;
     const dim = v === 'fix' && !STATS.length;
     return `<button type="button" class="tab" data-view="${v}" aria-pressed="${F.view === v}"><b>${dim ? '–' : n.toLocaleString()}</b><span>${l}</span><small>${dim ? '통계를 불러오는 중' : v === 'fix' && !n ? '지금은 없어요 · 매일 통계로 다시 봐요' : d}</small></button>`;
   }).join('');
 }
 function visible(){
+  if (!VIEWS.some(v => v[0] === F.view)) F.view = 'all';
+  if (PAGE === 'pick'){
+    const pq = ($('#pq').value || '').trim().toLowerCase(), rank = r => pickKind(r) === 'month' ? 0 : 1;
+    return rows().filter(r => isPick(r) && (!pq || r.key === pq || r.text.toLowerCase().includes(pq)))
+      .sort((a, b) => rank(a) - rank(b) || (pickOf(b)?.month || '').localeCompare(pickOf(a)?.month || '') || Number(a.key) - Number(b.key));
+  }
   const q = F.q.trim().toLowerCase();
   return rows().filter(r =>
-    (F.del || !r.deleted || F.view === 'mod') &&
+    (F.del || !r.deleted || F.view === 'mod' || F.view === 'off') &&
     inView(r, F.view) &&
     (F.change === 'all' || r.change === F.change) &&
     (F.cat === 'all' || r.cat === F.cat) &&
@@ -415,7 +441,7 @@ function qstat(k, s = latest()){
 function rateChip(k){
   const q = qstat(k), avg = avgRate(latest());
   if (!q || !q.res) return '';
-  const low = q.exp >= 20 && q.est < avg - 0.1, high = q.exp >= 20 && q.est > avg + 0.1;
+  const low = q.exp >= MIN_EXP && q.est < avg - 0.1, high = q.exp >= MIN_EXP && q.est > avg + 0.1;
   return `<span class="chip ${low ? 'low' : high ? 'high' : ''}">답변율 ${P(q.rate)}${low ? ' · 낮음' : high ? ' · 높음' : ''} · 노출 ${q.exp}</span>`;
 }
 function spark(k){
@@ -424,7 +450,7 @@ function spark(k){
   const W = 220, H = 44, x = i => 6 + i * (W - 12) / (pts.length - 1), y = r => 6 + (1 - r) * (H - 12);
   const path = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.r).toFixed(1)}`).join('');
   const last = pts[pts.length - 1];
-  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="수집일별 답변율 ${pts.map(p => p.d + ' ' + P(p.r)).join(', ')}"><path d="${path}" fill="none" stroke="var(--chart)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${x(pts.length - 1)}" cy="${y(last.r)}" r="4" fill="var(--chart)" stroke="var(--soft)" stroke-width="2"/></svg>`;
+  return `<svg class="sp" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="수집일별 답변율 ${pts.map(p => p.d + ' ' + P(p.r)).join(', ')}"><path d="${path}" fill="none" stroke="var(--chart)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${x(pts.length - 1)}" cy="${y(last.r)}" r="4" fill="var(--chart)" stroke="var(--soft)" stroke-width="2"/></svg>`;
 }
 function evidence(r){
   const s = latest();
@@ -453,15 +479,22 @@ function evidence(r){
 let PAGE = 'q';
 try { PAGE = localStorage.getItem('nadab-board-page') || 'q'; } catch {}
 function go(pg, scroll = true){
-  PAGE = ['q', 'data', 'dl'].includes(pg) ? pg : 'q';
+  PAGE = ['pick', 'q', 'data', 'dl'].includes(pg) ? pg : 'q';
+  const was = document.body.dataset.page; document.body.dataset.page = PAGE;
   try { localStorage.setItem('nadab-board-page', PAGE); } catch {}
   document.querySelectorAll('#nav [data-page]').forEach(b => b.setAttribute('aria-selected', b.dataset.page === PAGE));
-  document.querySelectorAll('.pg').forEach(el => el.hidden = el.dataset.page !== PAGE);
+  document.querySelectorAll('.pg').forEach(el => el.hidden = !el.dataset.page.split(' ').includes(PAGE));
+  if (was && was !== PAGE && (was === 'pick' || PAGE === 'pick')) { limit = PAGE === 'pick' ? 20 : 40; render(); }
   if (scroll) window.scrollTo({ top: document.querySelector('.nav').offsetTop, behavior: 'smooth' });
 }
 function badges(){
   const all = rows(), np = all.filter(isPick).length, b = baseline(), nd = b ? all.filter(r => diffOf(r)).length : 0;
   $('#bdgPick').hidden = !np; $('#bdgPick').textContent = np.toLocaleString();
+  const mp = all.filter(r => isPick(r) && pickKind(r) === 'month'), lastM = [...PICKS.values()].map(p => p.month).sort().pop();
+  $('#pkMonth').textContent = mp.length.toLocaleString();
+  $('#pkMonthD').textContent = lastM ? `최근 점검 ${lastM} · 매달 1일, 데이터상 문제 있는 질문에 수정안을 붙여 올려요` : '첫 점검은 다음 달 1일이에요 · 데이터상 문제 있는 질문에 수정안을 붙여 올려요';
+  $('#pkReview').textContent = (np - mp.length).toLocaleString();
+  $('#pkDone').textContent = all.filter(r => !isPick(r) && (KEEPS.has(r.key) || (r.edited && (PICKS.has(r.key) || r.alts.length >= 2)))).length.toLocaleString();
   $('#bdgDiff').hidden = !nd; $('#bdgDiff').textContent = nd.toLocaleString();
 }
 let BRK = 'form';
@@ -507,7 +540,7 @@ function dataUI(){
   $('#kExp').textContent = s.totals.exp.toLocaleString();
   $('#kExpD').textContent = p ? `지난 수집 이후 +${(s.totals.exp - p.totals.exp).toLocaleString()}` : '';
   const live = rows().filter(r => !r.deleted);
-  $('#kLow').textContent = live.filter(r => { const q = qstat(r.key); return q && q.exp >= 20 && q.est < avg - 0.1; }).length.toLocaleString();
+  $('#kLow').textContent = live.filter(r => { const q = qstat(r.key); return q && q.exp >= MIN_EXP && q.est < avg - 0.1; }).length.toLocaleString();
   // 추이 차트
   const pts = STATS.map(x => ({ d: x.date, r: avgRate(x), e: x.totals.exp }));
   const W = 460, H = 150, L = 36, R = 12, T = 12, B = 26;
@@ -537,7 +570,9 @@ function card(r){
   const chips = [
     d ? `<span class="chip d-${d}">${DIFF_LABEL[d]}</span>` : '',
     r.edited ? `<span class="chip blue">페이지에서 고침</span>` : '',
-    isPick(r) ? `<span class="chip d-mod">골라 주세요</span>` : ['chosen', 'applied'].includes(r.decided) && !r.edited ? `<span class="chip mint">검토에서 고름</span>` : '',
+    r.deleted ? `<span class="chip d-gone">비활성화</span>` : '',
+    isPick(r) ? (pickKind(r) === 'month' ? `<span class="chip low">${esc(pickOf(r).month)} 점검 · 골라 주세요</span>` : `<span class="chip d-mod">골라 주세요</span>`)
+      : KEEPS.has(r.key) ? `<span class="chip mint">그대로 두기로 함</span>` : ['chosen', 'applied'].includes(r.decided) && !r.edited ? `<span class="chip mint">검토에서 고름</span>` : '',
     isFix(r) ? `<span class="chip low">고쳐야 할 것 · AI 제안 받기</span>` : '',
     `<span class="chip">${esc(r.change)}</span>`,
     `<span class="chip">${esc(r.cat)}${r.catChange ? ` · ${esc(r.catChange)}` : ''}</span>`,
@@ -546,15 +581,18 @@ function card(r){
     r.axis ? `<span class="chip mint">${esc(r.axis)}</span>` : '',
     rateChip(r.key),
   ].join('');
-  return `<details class="q" data-key="${esc(r.key)}"${open.has(r.key) ? ' open' : ''}>
+  const op = open.has(r.key) || (PAGE === 'pick' && !closed.has(r.key));
+  return `<details class="q" data-key="${esc(r.key)}"${op ? ' open' : ''}>
     <summary><span class="qno">Q.${esc(r.key)}${r.newId ? `<span class="nid">${esc(r.newId)}</span>` : ''}</span>
       <span class="qt${r.deleted ? ' gone' : ''}">${esc(r.text)}</span><span class="chips">${chips}</span></summary>
-    ${open.has(r.key) ? detail(r) : ''}
+    ${op ? detail(r) : ''}
   </details>`;
 }
 function optionsOf(r){
   const o = (r.alts || []).map(([label, text], i) => ({ key: 'a' + i, label, text }));
   if (!o.some(x => x.text === r.text)) o.unshift({ key: 'cur', label: r.edited ? '페이지에서 고친 문구' : '지금 개선본 문구', text: r.text });
+  const pk = pickOf(r);
+  (pk?.opts || []).forEach((a, i) => { if (!o.some(x => x.text === a.text)) o.push({ key: 'm' + i, label: `${pk.month} 점검 추천`, text: a.text, why: a.why, g: [a.empathy, a.hint, a.leading] }); });
   (AIS.get(r.key)?.opts || []).forEach((a, i) => o.push({ key: 'ai' + i, label: 'AI 추천', text: a.text, why: a.why, g: [a.empathy, a.hint, a.leading] }));
   return o;
 }
@@ -563,6 +601,7 @@ function detail(r){
   const rate = '';
   const e = r.edited, k = esc(r.key), opts = optionsOf(r), b = busy.has(r.key);
   return `<div class="body">
+    ${pickKind(r) === 'month' && isPick(r) ? `<div class="why-up"><b>${esc(pickOf(r).month)} 점검에서 올라왔어요.</b> ${esc(pickOf(r).reason || '')} (${esc(pickOf(r).stats?.date || '')} 기준)</div>` : ''}
     ${d === 'mod' ? `<div class="diff"><b>지난 다운로드 이후 바뀌었어요.</b> 문구·가이드·레벨·관심사·비활성 중 하나 이상이 달라졌어요.</div>` : ''}
     <div class="sec"><h3>데이터 근거</h3>${evidence(r)}</div>
     <div class="sec"><h3>이 질문의 목적</h3>
@@ -575,15 +614,17 @@ function detail(r){
     <div class="sec"><h3>추천 수정안</h3>
       <span class="hint">눌러서 고르면 아래 문구에 채워져요</span>
       <div class="opts" role="radiogroup" aria-label="추천 수정안">
-        ${opts.map(o => `<label class="opt" for="o-${k}-${o.key}"><input type="radio" name="s-${k}" id="o-${k}-${o.key}" value="${o.key}" ${o.text === r.text ? 'checked' : ''}><span class="ck" aria-hidden="true"></span><span><span class="t">${esc(o.text)}</span><span class="s">${esc(o.label)}${o.why ? ' · ' + esc(o.why) : ''}${o.text === r.text ? ' · 지금 문구' : ''}</span>${o.g ? `<span class="g" style="display:block">가이드 · ${esc(o.g.filter(Boolean).join(' / '))}</span>` : ''}</span></label>`).join('')}
+        ${opts.concat([{ key: 'own', label: '아래 칸에 원하는 문구를 직접 써요', text: '✏️ 직접 입력하기' }]).map(o => `<label class="opt" for="o-${k}-${o.key}"><input type="radio" name="s-${k}" id="o-${k}-${o.key}" value="${o.key}" ${o.text === r.text ? 'checked' : ''}><span class="ck" aria-hidden="true"></span><span><span class="t">${esc(o.text)}</span><span class="s">${esc(o.label)}${o.why ? ' · ' + esc(o.why) : ''}${o.text === r.text ? ' · 지금 문구' : ''}</span>${o.g ? `<span class="g" style="display:block">가이드 · ${esc(o.g.filter(Boolean).join(' / '))}</span>` : ''}</span></label>`).join('')}
       </div>
       <div class="row">
         <input type="search" id="h-${k}" placeholder="AI에게 바라는 점 (예: 더 가볍게, 10대도 답하기 쉽게)" aria-label="AI 요청" ${sample ? '' : 'hidden'}>
         <button class="btn mint" type="button" data-ai="${k}" ${sample && !b ? '' : 'disabled'} ${sample ? '' : 'hidden'}>${b ? 'AI가 쓰는 중…' : 'AI 추천 받기'}</button>
+        ${isPick(r) ? `<button class="btn" type="button" data-keep="${k}" ${db && canWrite ? '' : 'disabled'}>지금 문구 그대로 둘게요</button>` : KEEPS.has(r.key) ? `<button class="btn" type="button" data-unkeep="${k}" ${db && canWrite ? '' : 'disabled'}>다시 고르기</button>` : ''}
       </div>
     </div>
     <form class="form" data-form="${k}">
-      <div><div class="lbl">질문 문구</div><textarea id="t-${k}" name="text" rows="2">${esc(r.text)}</textarea><div class="warn" id="w-${k}">${esc(lint(r.text).join(' '))}</div></div>
+      <h3 style="margin:0">직접 고쳐 쓰기</h3>
+      <div><div class="lbl">질문 문구 · 자유롭게 고쳐 쓰고 저장하면 돼요</div><textarea id="t-${k}" name="text" rows="2">${esc(r.text)}</textarea><div class="warn" id="w-${k}">${esc(lint(r.text).join(' '))}</div></div>
       <div><div class="lbl">공감 가이드 · empathy_guide</div><textarea id="g0-${k}" name="g0" rows="2">${esc(r.g[0])}</textarea></div>
       <div><div class="lbl">힌트 가이드 · hint_guide</div><textarea id="g1-${k}" name="g1" rows="2">${esc(r.g[1])}</textarea></div>
       <div><div class="lbl">유도 질문 · leading_question_guide</div><textarea id="g2-${k}" name="g2" rows="2">${esc(r.g[2])}</textarea></div>
@@ -593,6 +634,7 @@ function detail(r){
       </div>
       <div class="row">
         <button class="btn primary" type="submit" ${db && canWrite ? '' : 'disabled'}>고친 내용 저장</button>
+        <button class="btn mint" type="button" data-guide="${k}" ${sample ? '' : 'hidden'}>이 문구로 가이드 채우기</button>
         ${e ? `<button class="btn mint" type="button" data-revert="${k}" ${db && canWrite ? '' : 'disabled'}>개선본으로 되돌리기</button>` : ''}
         <span class="note">${db ? (canWrite ? '저장하면 모두에게 바로 보이고 다음 다운로드에 들어가요.' : '이 화면에서는 저장 권한이 없어요.') : '저장 기능을 쓸 수 없는 화면이에요.'}</span>
       </div>
@@ -673,6 +715,29 @@ JSON만 출력: {"options":[{"text":"질문","empathy":"","hint":"","leading":""
   } finally { busy.delete(k); refreshOpts(k); }
 }
 
+async function fillGuides(k, btn){
+  if (!sample) return;
+  const r = rows().find(x => x.key === k), text = (document.getElementById('t-' + k)?.value || '').trim();
+  if (!r || !text) return toast('문구를 먼저 써 주세요.');
+  btn.disabled = true; btn.textContent = 'AI가 쓰는 중…';
+  const prompt = `셀프 저널링 앱 '나답'의 데일리 질문에 붙일 가이드 3종을 쓰세요. 기존 DB 말투를 따르세요.
+- empathy_guide: 공감·정상화 한 문장 (예: "빗소리에 어울리는 노래는 즐거움을 줘요.")
+- hint_guide: 떠올릴 예시나 선택지 (예: "차분한 발라드나 연주곡을 떠올려 봐요.")
+- leading_question_guide: 한 걸음 더 들어가는 질문 (예: "그 노래가 생각나는 이유는 뭘까요?")
+- 각 30자 안팎, '~해요/~봐요/~뭘까요?' 말투.
+질문: ${text}
+관심사: ${CAT[document.getElementById('ct-' + k)?.value] || r.cat} · 레벨 ${document.getElementById('lv-' + k)?.value || r.level}
+JSON만 출력: {"empathy":"","hint":"","leading":""}`;
+  try {
+    const o = await sample.json(prompt, { modelTier: 'quick', cache: false });
+    [['g0', o?.empathy], ['g1', o?.hint], ['g2', o?.leading]].forEach(([n, v]) => { if (typeof v === 'string' && v.trim()) document.getElementById(n + '-' + k).value = v.trim(); });
+    toast('가이드를 채웠어요. 확인하고 저장해 주세요.');
+  } catch (e) {
+    if (e?.code === 'not_granted') { sample = null; toast('AI를 쓸 수 없는 화면이에요.'); }
+    else toast('가이드를 만들지 못했어요.');
+  } finally { btn.disabled = false; btn.textContent = '이 문구로 가이드 채우기'; }
+}
+
 // ---- 다운로드 ----
 const COLS = ['id','interest_id','question_text','question_level','empathy_guide','hint_guide','leading_question_guide','created_at','updated_at','deleted_at','지난 다운로드 대비','변경 구분','신규 ID','관심사','목적'];
 const cell = v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
@@ -709,14 +774,16 @@ const list = $('#list');
 list.addEventListener('toggle', e => {
   const d = e.target.closest?.('details.q'); if (!d) return;
   const k = d.dataset.key;
-  if (d.open && !open.has(k)){ open.add(k); const r = rows().find(x => x.key === k); d.insertAdjacentHTML('beforeend', detail(r)); }
-  else if (!d.open){ open.delete(k); d.querySelector('.body')?.remove(); }
+  if (d.open){ open.add(k); closed.delete(k); if (!d.querySelector('.body')){ const r = rows().find(x => x.key === k); d.insertAdjacentHTML('beforeend', detail(r)); } }
+  else { open.delete(k); closed.add(k); d.querySelector('.body')?.remove(); }
 }, true);
 list.addEventListener('change', e => {
   const radio = e.target.closest('input[type=radio]'); if (!radio) return;
   const k = e.target.closest('details.q').dataset.key, r = rows().find(x => x.key === k);
+  const ta = document.getElementById('t-' + k);
+  if (radio.value === 'own'){ ta.focus(); ta.select(); toast('문구를 직접 써 주세요. 가이드도 함께 고칠 수 있어요.'); return; }
   const o = optionsOf(r).find(x => x.key === radio.value); if (!o) return;
-  const ta = document.getElementById('t-' + k); ta.value = o.text;
+  ta.value = o.text;
   document.getElementById('w-' + k).textContent = lint(o.text).join(' ');
   if (o.g) ['g0','g1','g2'].forEach((n, i) => { if (o.g[i]) document.getElementById(n + '-' + k).value = o.g[i]; });
   else if (o.text !== r.text) toast('문구를 바꿨어요. 가이드도 새 문구에 맞는지 확인해 주세요.');
@@ -741,10 +808,17 @@ list.addEventListener('submit', async e => {
 });
 list.addEventListener('click', async e => {
   const ai = e.target.closest('[data-ai]'); if (ai) return genAI(ai.dataset.ai);
+  const gd = e.target.closest('[data-guide]'); if (gd) return fillGuides(gd.dataset.guide, gd);
+  const kp = e.target.closest('[data-keep],[data-unkeep]');
+  if (kp && db){ kp.disabled = true; const k = kp.dataset.keep || kp.dataset.unkeep;
+    try { if (kp.dataset.keep){ await db.doc('keeps/' + k).set({ by: me?.id || null, at: new Date().toISOString() }); toast('지금 문구 그대로 두기로 했어요.'); }
+          else { await db.doc('keeps/' + k).delete(); toast('다시 골라 주세요에 올렸어요.'); } }
+    catch { toast('저장하지 못했어요.'); kp.disabled = false; } return; }
   const rv = e.target.closest('[data-revert]'); if (!rv || !db) return;
   rv.disabled = true;
   try { await db.doc('edits/' + rv.dataset.revert).delete(); toast('개선본으로 되돌렸어요.'); } catch { toast('되돌리지 못했어요.'); rv.disabled = false; }
 });
+let pst; $('#pq').addEventListener('input', () => { clearTimeout(pst); pst = setTimeout(() => { limit = 20; render(); }, 150); });
 let st; $('#q').addEventListener('input', e => { clearTimeout(st); st = setTimeout(() => { F.q = e.target.value; limit = 40; render(); }, 150); });
 [['#fChange','change'],['#fForm','form'],['#fCat','cat'],['#fLevel','level'],['#fAxis','axis']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.value; limit = 40; saveF(); render(); }));
 [['#fDiff','diff'],['#fEdit','edit'],['#fDel','del']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.checked; limit = 40; saveF(); render(); }));
@@ -770,7 +844,7 @@ $('#dlDiff').addEventListener('click', () => download('diff'));
     filters(); render();
   } catch { $('#list').innerHTML = '<div class="empty">질문 데이터를 불러오지 못했어요. 새로고침해 주세요.</div>'; return; }
   cuse('downloads').then(d => { downloads = d; $('#dlAll').disabled = $('#dlDiff').disabled = !d; });
-  cuse('sample').then(s => { sample = s; document.querySelectorAll('details.q[open]').forEach(el => refreshOpts(el.dataset.key)); });
+  cuse('sample').then(s => { sample = s; if (s) document.querySelectorAll('[data-guide]').forEach(b => b.hidden = false); document.querySelectorAll('details.q[open]').forEach(el => refreshOpts(el.dataset.key)); });
   cuse('user').then(async u => { user = u; if (u){ me = await u.me(); if (await u.can('data.write') === false) canWrite = false; historyUI(); render(); } });
   db = await cuse('db');
   if (!db){ $('#baseInfo').textContent = '이 화면에서는 다운로드 기록과 수정 저장을 쓸 수 없어요. 파일 받기는 돼요.'; render(); return; }
@@ -783,6 +857,8 @@ $('#dlDiff').addEventListener('click', () => download('diff'));
     summary();
     qs.docChanges().forEach(c => { const el = document.querySelector(`details.q[data-key="${CSS.escape(c.doc.id)}"]`); if (el && !el.contains(document.activeElement)) rerender(c.doc.id); });
   }, () => {});
+  db.collection('picks').onSnapshot(qs => { const m = new Map(); qs.docs.map(d => d.data()).sort((a, b) => (a.month || '').localeCompare(b.month || '')).forEach(p => p.key && m.set(String(p.key), p)); PICKS = m; render(); }, () => {});
+  db.collection('keeps').onSnapshot(qs => { KEEPS = new Map(qs.docs.map(d => [d.id, d.data()])); render(); }, () => {});
   db.collection('ai').onSnapshot(qs => { AIS = new Map(qs.docs.map(d => [d.id, d.data()])); qs.docChanges().forEach(c => refreshOpts(c.doc.id)); }, () => {});
   db.collection('downloads').orderBy('at', 'desc').limit(50).onSnapshot(qs => {
     DLS = qs.docs.map(d => ({ id: d.id, ...d.data() }));
