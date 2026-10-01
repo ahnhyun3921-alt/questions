@@ -1,0 +1,411 @@
+<title>나답 질문 개선함</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* 레이아웃: 파란 히어로(제목·요약·다운로드) 아래로 둥근 흰 카드 목록. 선택 상태는 민트 */
+:root{
+  --bg:#f1f3f8; --surface:#ffffff; --ink:#1d2340; --ink-2:#4b5373; --muted:#8d93ab; --line:#e4e7f1; --line-2:#f3f5fa;
+  --hero:#4659f0; --hero-2:#5a6cf6; --hero-ink:#ffffff; --hero-soft:rgba(255,255,255,.16);
+  --accent:#4659f0; --accent-ink:#ffffff; --accent-soft:#eceffe;
+  --mint:#5fd3c6; --mint-ink:#137d73; --mint-soft:#e1f6f3;
+  --new:#137d73; --new-soft:#dcf5f1; --mod:#c26a00; --mod-soft:#fff1dc; --gone:#d2453e; --gone-soft:#fde6e4;
+  --shadow:0 6px 24px rgba(48,62,140,.08);
+  --sans:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#11142a; --surface:#1b1f3a; --ink:#eef0fb; --ink-2:#c1c6e2; --muted:#8a90b3; --line:#2b3055; --line-2:#222745;
+  --hero:#3343c9; --hero-2:#4152d9; --hero-ink:#ffffff; --hero-soft:rgba(255,255,255,.12);
+  --accent:#8f9cff; --accent-ink:#0f1330; --accent-soft:#272d5c;
+  --mint:#5fd3c6; --mint-ink:#7fe3d7; --mint-soft:#173a3a;
+  --new:#7fe3d7; --new-soft:#173a3a; --mod:#f0b45c; --mod-soft:#3a2c14; --gone:#ff8d86; --gone-soft:#3d1c1d;
+  --shadow:0 6px 24px rgba(0,0,0,.35); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#11142a; --surface:#1b1f3a; --ink:#eef0fb; --ink-2:#c1c6e2; --muted:#8a90b3; --line:#2b3055; --line-2:#222745;
+  --hero:#3343c9; --hero-2:#4152d9; --hero-ink:#ffffff; --hero-soft:rgba(255,255,255,.12);
+  --accent:#8f9cff; --accent-ink:#0f1330; --accent-soft:#272d5c;
+  --mint:#5fd3c6; --mint-ink:#7fe3d7; --mint-soft:#173a3a;
+  --new:#7fe3d7; --new-soft:#173a3a; --mod:#f0b45c; --mod-soft:#3a2c14; --gone:#ff8d86; --gone-soft:#3d1c1d;
+  --shadow:0 6px 24px rgba(0,0,0,.35); color-scheme:dark }
+body{background:var(--bg);color:var(--ink);font:15px/1.65 var(--sans)}
+.hero{background:linear-gradient(160deg,var(--hero-2),var(--hero));color:var(--hero-ink);border-radius:0 0 32px 32px;padding-inline:16px;padding-block:28px 26px}
+.hero .in{max-width:1080px;margin:0 auto;display:grid;gap:18px}
+.brand{display:inline-flex;gap:8px;align-items:center;font-size:.8rem;font-weight:500;background:var(--hero-soft);padding:4px 12px;border-radius:999px;width:max-content}
+h1{font-size:1.9rem;font-weight:800;margin:0;letter-spacing:-.02em;line-height:1.25;text-wrap:balance}
+.sub{color:var(--muted);font-size:.84rem}
+.hero .sub{color:rgba(255,255,255,.82)}
+.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:flex-end;justify-content:space-between}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{background:var(--hero-soft);border-radius:18px;padding:14px 16px;display:grid;gap:2px}
+.tile .v{font-size:1.6rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}
+.tile .l{font-size:.78rem;color:rgba(255,255,255,.85)}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:20px 72px;display:grid;gap:16px}
+.panel{background:var(--surface);border-radius:24px;padding:20px;display:grid;gap:12px;box-shadow:var(--shadow)}
+.panel h2{font-size:1.05rem;margin:0;font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-size:.88rem;font-weight:500;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 16px;cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.06);color:var(--accent-ink)}
+.btn.mint{background:var(--mint-soft);border-color:var(--mint);color:var(--mint-ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+select,input[type=search],input[type=text],textarea{font:inherit;font-size:.88rem;color:var(--ink);background:var(--line-2);border:1.5px solid transparent;border-radius:14px;padding:8px 12px}
+select{border-radius:999px;padding-inline:14px}
+input[type=search]{flex:1 1 220px;min-width:0;border-radius:999px;padding-inline:16px}
+textarea{width:100%;resize:vertical;min-height:2.6em;box-sizing:border-box}
+textarea:focus,input:focus,select:focus{border-color:var(--mint);background:var(--surface)}
+label.chk{display:inline-flex;gap:6px;align-items:center;font-size:.85rem;color:var(--ink-2);cursor:pointer;background:var(--line-2);padding:6px 12px;border-radius:999px}
+label.chk:has(input:checked){background:var(--mint-soft);color:var(--mint-ink);box-shadow:inset 0 0 0 1.5px var(--mint)}
+label.chk input{accent-color:var(--mint-ink)}
+.note{font-size:.84rem;color:var(--ink-2)}
+.hist{font-size:.82rem;color:var(--ink-2);display:grid;gap:6px;margin:8px 0 0;padding:0;list-style:none}
+.hist li{display:flex;gap:10px;flex-wrap:wrap;font-variant-numeric:tabular-nums;background:var(--line-2);border-radius:12px;padding:6px 12px}
+.list{display:grid;gap:10px}
+.q{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);border:1.5px solid transparent}
+.q[open]{border-color:var(--mint)}
+.q > summary{list-style:none;cursor:pointer;padding:14px 18px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:start}
+.q > summary::-webkit-details-marker{display:none}
+.q[open] > summary{border-bottom:1px solid var(--line)}
+.key{font-family:var(--mono);font-size:.76rem;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:2px 9px;margin-top:2px;min-width:3.4em;text-align:center}
+.qt{min-width:0}
+.qt .text{font-weight:700}
+.qt .text.gone{text-decoration:line-through;color:var(--muted);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.chip{font-size:.72rem;font-weight:500;padding:2px 9px;border-radius:999px;background:var(--line-2);color:var(--ink-2);white-space:nowrap}
+.chip.d-new{background:var(--new-soft);color:var(--new)} .chip.d-mod{background:var(--mod-soft);color:var(--mod)} .chip.d-gone{background:var(--gone-soft);color:var(--gone)}
+.chip.edit{background:var(--accent-soft);color:var(--accent)}
+.chip.ax{background:var(--mint-soft);color:var(--mint-ink)}
+.body{padding:18px;display:grid;gap:16px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:720px){.grid2{grid-template-columns:minmax(0,1fr)} h1{font-size:1.6rem}}
+dl{margin:0;display:grid;grid-template-columns:7em minmax(0,1fr);gap:6px 10px;font-size:.86rem;background:var(--line-2);border-radius:16px;padding:14px}
+dt{color:var(--muted)} dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.lbl{font-size:.76rem;font-weight:500;color:var(--muted);margin-bottom:4px}
+.form{display:grid;gap:12px}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.warn{font-size:.8rem;color:var(--mod);margin-top:2px}
+.diff{font-size:.84rem;background:var(--mod-soft);color:var(--ink);border-radius:14px;padding:10px 14px}
+.diff b{font-weight:700;color:var(--mod)}
+.empty{padding:36px;text-align:center;color:var(--muted);background:var(--surface);border-radius:20px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:999px;font-size:.88rem;z-index:5;box-shadow:var(--shadow)}
+a{color:var(--accent)}
+summary.note{cursor:pointer}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="hero">
+  <div class="in">
+    <span class="brand">나답 · 데일리 질문</span>
+    <div class="top">
+      <div>
+        <h1>나답 질문 개선함</h1>
+        <div class="sub" id="built">데이터를 불러오는 중입니다.</div>
+      </div>
+      <div class="sub" id="who"></div>
+    </div>
+    <section class="tiles" aria-label="요약">
+      <div class="tile"><span class="v" id="tLive">–</span><span class="l">활성 질문</span></div>
+      <div class="tile"><span class="v" id="tChange">–</span><span class="l">이번 개선본에서 바뀌는 질문</span></div>
+      <div class="tile"><span class="v" id="tEdits">–</span><span class="l">이 페이지에서 고친 질문</span></div>
+      <div class="tile"><span class="v" id="tDiff">–</span><span class="l" id="tDiffL">지난 다운로드 이후 바뀐 질문</span></div>
+    </section>
+  </div>
+</header>
+<div class="wrap">
+
+  <section class="panel" aria-labelledby="dlh">
+    <h2 id="dlh">다운로드</h2>
+    <div class="note" id="baseInfo">아직 받은 기록이 없습니다. 처음 받으면 이후부터 바뀐 질문이 표시됩니다.</div>
+    <div class="row">
+      <button class="btn primary" id="dlAll" type="button" disabled>전체 CSV 받기</button>
+      <button class="btn mint" id="dlDiff" type="button" disabled>바뀐 것만 CSV 받기</button>
+      <span class="note">비교 기준</span><select id="baseSel" aria-label="비교 기준"></select>
+    </div>
+    <div class="note">CSV는 관리자 DB 열(id, interest_id, question_text, question_level, 가이드 3종, created_at, updated_at, deleted_at) 그대로이고, 뒤에 참고 열(지난 다운로드 대비, 변경 구분, 신규 ID, 관심사, 목적)이 붙습니다. 신규 질문은 id가 비어 있어 DB가 번호를 매기면 됩니다.</div>
+    <details>
+      <summary class="note">다운로드 기록</summary>
+      <ul class="hist" id="hist"></ul>
+    </details>
+  </section>
+
+  <section class="panel" aria-label="필터">
+    <div class="row">
+      <input type="search" id="q" placeholder="문구, id, 신규 ID 검색" aria-label="검색">
+      <select id="fChange" aria-label="변경 구분"></select>
+      <select id="fCat" aria-label="관심사"></select>
+      <select id="fLevel" aria-label="레벨"><option value="all">레벨 전체</option><option value="1">레벨 1 (첫 질문)</option><option value="2">레벨 2</option></select>
+      <select id="fAxis" aria-label="자아분석 축"></select>
+    </div>
+    <div class="row">
+      <label class="chk" for="fDiff"><input type="checkbox" id="fDiff"> 지난 다운로드 이후 바뀐 것만</label>
+      <label class="chk" for="fEdit"><input type="checkbox" id="fEdit"> 이 페이지에서 고친 것만</label>
+      <label class="chk" for="fDel"><input type="checkbox" id="fDel"> 비활성·삭제 포함</label>
+      <span class="sub" id="count"></span>
+    </div>
+  </section>
+
+  <section class="list" id="list" aria-live="polite"><div class="empty">질문 목록을 불러오는 중입니다.</div></section>
+  <div class="row" style="justify-content:center"><button class="btn" id="more" type="button" hidden>더 보기</button></div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const cuse = n => (window.claude && window.claude.use) ? window.claude.use(n) : Promise.resolve(null);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const CAT = {1:'취향',2:'감정',3:'루틴',4:'관계',5:'사랑',6:'가치관'};
+let toastT; function toast(m){ const t=$('#toast'); t.textContent=m; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2600); }
+const fmt = iso => { try { return new Date(iso).toLocaleString('ko-KR',{dateStyle:'medium',timeStyle:'short'}); } catch { return iso; } };
+
+// ---- 상태 ----
+let BASE = [], BUILT = '', EDITS = new Map(), DLS = [], baseId = null, db = null, downloads = null, user = null, me = null, canWrite = true;
+let F = { q:'', change:'all', cat:'all', level:'all', axis:'all', diff:false, edit:false, del:false }, limit = 60;
+const open = new Set();
+try { const s = JSON.parse(localStorage.getItem('nadab-board-f') || 'null'); if (s) F = { ...F, ...s, q:'' }; } catch {}
+const saveF = () => { try { localStorage.setItem('nadab-board-f', JSON.stringify({ ...F, q:'' })); } catch {} };
+
+// 페이지 수정본을 기본 데이터 위에 덮어쓴 '지금 기준' 행
+function eff(r){
+  const e = EDITS.get(r.key);
+  if (!e) return r;
+  return { ...r, text: e.text ?? r.text, g: [e.g0 ?? r.g[0], e.g1 ?? r.g[1], e.g2 ?? r.g[2]],
+    level: e.level ?? r.level, interest_id: e.interest_id ?? r.interest_id, cat: CAT[e.interest_id ?? r.interest_id], edited: e };
+}
+function hash(r){ // FNV-1a 32bit
+  const s = JSON.stringify([r.interest_id, r.text, r.level, r.g[0], r.g[1], r.g[2], r.deleted ? 1 : 0]);
+  let h = 0x811c9dc5; for (let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  return (h >>> 0).toString(36);
+}
+const baseline = () => DLS.find(d => d.id === baseId) || null;
+function diffOf(r){
+  const b = baseline(); if (!b) return '';
+  const old = b.h[r.key];
+  if (old === undefined) return r.deleted ? '' : 'new';
+  if (old === hash(r)) return '';
+  return r.deleted ? 'gone' : 'mod';
+}
+const DIFF_LABEL = { new:'새로 생김', mod:'바뀜', gone:'빠짐(비활성)' };
+const rows = () => BASE.map(eff);
+
+// ---- 렌더 ----
+function lint(t){
+  const w = [];
+  if (!t.trim()) w.push('문구가 비어 있습니다.');
+  if (/오늘|어제|이번 주/.test(t)) w.push("'오늘·어제' 같은 시점은 답할 거리가 없을 때 교체율을 높입니다.");
+  if (/적이? 있|있었나요|있다면/.test(t)) w.push('경험을 전제하면 경험이 없는 사람이 답하기 어렵습니다.');
+  if (t.length > 45) w.push(`${t.length}자입니다. 40자 안팎이 읽기 편합니다.`);
+  return w;
+}
+function filters(){
+  const all = rows();
+  const opt = (id, label, vals, cur) => { $(id).innerHTML = `<option value="all">${label}</option>` + vals.map(([v,l]) => `<option value="${esc(v)}"${cur===String(v)?' selected':''}>${esc(l)}</option>`).join(''); };
+  const ch = [...new Set(all.map(r => r.change))];
+  opt('#fChange', '변경 구분 전체', ch.map(c => [c, `${c} (${all.filter(r => r.change === c).length})`]), F.change);
+  opt('#fCat', '관심사 전체', Object.values(CAT).map(c => [c, c]), F.cat);
+  const ax = [...new Set(all.map(r => r.axis).filter(Boolean))].sort();
+  opt('#fAxis', '자아분석 축 전체', ax.map(a => [a, `${a} (${all.filter(r => r.axis === a && !r.deleted).length})`]), F.axis);
+  $('#fLevel').value = F.level; $('#fDiff').checked = F.diff; $('#fEdit').checked = F.edit; $('#fDel').checked = F.del;
+}
+function visible(){
+  const q = F.q.trim().toLowerCase();
+  return rows().filter(r =>
+    (F.del || !r.deleted) &&
+    (F.change === 'all' || r.change === F.change) &&
+    (F.cat === 'all' || r.cat === F.cat) &&
+    (F.level === 'all' || String(r.level) === F.level) &&
+    (F.axis === 'all' || r.axis === F.axis) &&
+    (!F.diff || diffOf(r)) &&
+    (!F.edit || r.edited) &&
+    (!q || r.key.toLowerCase() === q || r.text.toLowerCase().includes(q) || (r.oldText || '').toLowerCase().includes(q)));
+}
+function summary(){
+  const all = rows(), live = all.filter(r => !r.deleted);
+  $('#tLive').textContent = live.length.toLocaleString();
+  $('#tChange').textContent = all.filter(r => r.change !== '유지' && !r.change.startsWith('이미 삭제')).length.toLocaleString();
+  $('#tEdits').textContent = EDITS.size.toLocaleString();
+  const b = baseline();
+  if (b){
+    const n = all.filter(r => diffOf(r)).length;
+    $('#tDiff').textContent = n.toLocaleString(); $('#tDiffL').textContent = `${fmt(b.at)} 다운로드 이후 바뀐 질문`;
+  } else { $('#tDiff').textContent = '–'; $('#tDiffL').textContent = '지난 다운로드 이후 바뀐 질문'; }
+}
+async function historyUI(){
+  const ids = [...new Set(DLS.map(d => d.by).filter(Boolean))];
+  const ps = user && ids.length ? await user.profiles(ids) : {};
+  const who = id => (ps[id] && ps[id].name) || '누군가';
+  $('#baseSel').innerHTML = DLS.length ? DLS.map(d => `<option value="${esc(d.id)}"${d.id===baseId?' selected':''}>${esc(fmt(d.at))} · ${esc(who(d.by))}</option>`).join('') : '<option value="">기록 없음</option>';
+  $('#baseSel').disabled = !DLS.length;
+  const b = baseline();
+  $('#baseInfo').textContent = b
+    ? `${fmt(b.at)}에 ${who(b.by)}님이 받은 파일과 비교합니다. 그 뒤로 새로 생기거나 바뀐 질문에 표시가 붙습니다.`
+    : '아직 받은 기록이 없습니다. 처음 받으면 이후부터 바뀐 질문이 표시됩니다.';
+  $('#hist').innerHTML = DLS.length ? DLS.map(d => `<li><span>${esc(fmt(d.at))}</span><span>${esc(who(d.by))}</span><span>${esc(d.kind === 'diff' ? '바뀐 것만' : '전체')} ${d.count}행</span><span>기준 대비 새로 ${d.nNew ?? 0} · 바뀜 ${d.nMod ?? 0} · 빠짐 ${d.nGone ?? 0}</span></li>`).join('') : '<li>아직 없습니다.</li>';
+}
+function card(r){
+  const d = diffOf(r);
+  const chips = [
+    d ? `<span class="chip d-${d}">${DIFF_LABEL[d]}</span>` : '',
+    r.edited ? `<span class="chip edit">페이지에서 고침</span>` : '',
+    `<span class="chip">${esc(r.change)}</span>`,
+    `<span class="chip">${esc(r.cat)}${r.catChange ? ` (${esc(r.catChange)})` : ''}</span>`,
+    `<span class="chip">레벨 ${r.level}</span>`,
+    r.form ? `<span class="chip">${esc(r.form)}</span>` : '',
+    r.axis ? `<span class="chip ax">축 · ${esc(r.axis)}</span>` : '',
+  ].join('');
+  return `<details class="q" data-key="${esc(r.key)}"${open.has(r.key) ? ' open' : ''}>
+    <summary><span class="key">${esc(r.id || r.newId)}</span><span class="qt"><span class="text${r.deleted ? ' gone' : ''}">${esc(r.text)}</span><span class="chips">${chips}</span></span></summary>
+    ${open.has(r.key) ? detail(r, d) : ''}
+  </details>`;
+}
+function detail(r, d){
+  const b = baseline(), oldH = b ? b.h[r.key] : undefined;
+  const rate = r.exp ? `노출 ${r.exp} · 답변 ${r.ans} · 교체 ${r.rep} · 답변율 ${r.ans + r.rep ? Math.round(r.ans / (r.ans + r.rep) * 100) : 0}%(답변÷결론)` : '';
+  const e = r.edited;
+  return `<div class="body">
+    ${d === 'mod' ? `<div class="diff"><b>지난 다운로드 이후 바뀜.</b> 문구·가이드·레벨·관심사·비활성 중 하나 이상이 달라졌습니다.</div>` : ''}
+    <div class="grid2">
+      <dl>
+        <dt>목적</dt><dd>${esc(r.purpose)}</dd>
+        ${r.axis ? `<dt>자아분석</dt><dd>${esc(r.axis)} · ${esc(r.axisNote)}</dd>` : ''}
+        ${r.why ? `<dt>바뀐 이유</dt><dd>${esc(r.why)}</dd>` : ''}
+        ${r.source ? `<dt>출처</dt><dd>${esc(r.source)}${/^https?:/.test(r.srcUrl) ? ` · <a href="${esc(r.srcUrl)}" target="_blank" rel="noopener">원문 보기</a>` : ''}</dd>` : ''}
+        ${r.oldText ? `<dt>지금 DB 문구</dt><dd>${esc(r.oldText)}</dd>` : ''}
+      </dl>
+      <dl>
+        <dt>DB id</dt><dd>${esc(r.id || '(신규, DB가 부여)')}</dd>
+        ${r.newId ? `<dt>신규 ID</dt><dd>${esc(r.newId)}${r.set ? ` · ${esc(r.set)} 세트` : ''}</dd>` : ''}
+        ${r.statsId ? `<dt>통계 질문 ID</dt><dd>#${r.statsId}</dd>` : ''}
+        ${rate ? `<dt>성과</dt><dd>${esc(rate)}</dd>` : ''}
+        ${r.pred ? `<dt>예상 답변율</dt><dd>${Math.round(r.pred * 100)}%</dd>` : ''}
+        ${r.deleted ? `<dt>상태</dt><dd>비활성 (deleted_at ${esc(r.deletedAt)})</dd>` : ''}
+        ${e ? `<dt>페이지 수정</dt><dd data-who="${esc(e.by || '')}">${esc(fmt(e.at))}</dd>` : ''}
+      </dl>
+    </div>
+    <form class="form" data-form="${esc(r.key)}">
+      <div><div class="lbl">질문 문구</div><textarea id="t-${esc(r.key)}" name="text" rows="2">${esc(r.text)}</textarea><div class="warn" id="w-${esc(r.key)}">${esc(lint(r.text).join(' '))}</div></div>
+      <div><div class="lbl">공감 가이드 (empathy_guide)</div><textarea id="g0-${esc(r.key)}" name="g0" rows="2">${esc(r.g[0])}</textarea></div>
+      <div><div class="lbl">힌트 가이드 (hint_guide)</div><textarea id="g1-${esc(r.key)}" name="g1" rows="2">${esc(r.g[1])}</textarea></div>
+      <div><div class="lbl">유도 질문 (leading_question_guide)</div><textarea id="g2-${esc(r.key)}" name="g2" rows="2">${esc(r.g[2])}</textarea></div>
+      <div class="two">
+        <div><div class="lbl">레벨</div><select id="lv-${esc(r.key)}" name="level"><option value="1"${r.level==1?' selected':''}>1 · 첫 질문</option><option value="2"${r.level==2?' selected':''}>2</option></select></div>
+        <div><div class="lbl">관심사</div><select id="ct-${esc(r.key)}" name="interest_id">${Object.entries(CAT).map(([k,v]) => `<option value="${k}"${r.interest_id==k?' selected':''}>${k} · ${v}</option>`).join('')}</select></div>
+      </div>
+      <div class="row">
+        <button class="btn primary" type="submit" ${db && canWrite ? '' : 'disabled'}>고친 내용 저장</button>
+        ${e ? `<button class="btn" type="button" data-revert="${esc(r.key)}" ${db && canWrite ? '' : 'disabled'}>개선본으로 되돌리기</button>` : ''}
+        <span class="sub">${db ? (canWrite ? '저장하면 모두에게 바로 보이고, 다음 다운로드에 반영됩니다.' : '이 화면에서는 저장 권한이 없습니다.') : '저장 기능을 쓸 수 없는 화면입니다.'}</span>
+      </div>
+    </form>
+  </div>`;
+}
+let ps = {};
+async function render(){
+  if (!BASE.length) return;
+  summary();
+  const vis = visible(), shown = vis.slice(0, limit);
+  $('#count').textContent = `${vis.length.toLocaleString()}개`;
+  $('#list').innerHTML = shown.length ? shown.map(card).join('') : '<div class="empty">조건에 맞는 질문이 없습니다.</div>';
+  $('#more').hidden = vis.length <= limit;
+  $('#more').textContent = `더 보기 (${(vis.length - limit).toLocaleString()}개 남음)`;
+  const whoIds = [...document.querySelectorAll('[data-who]')].map(el => el.dataset.who).filter(Boolean);
+  if (user && whoIds.length){
+    ps = await user.profiles(whoIds);
+    document.querySelectorAll('[data-who]').forEach(el => { const p = ps[el.dataset.who]; if (p) el.textContent += ` · ${p.name || '누군가'}`; });
+  }
+}
+
+// ---- 다운로드 ----
+const COLS = ['id','interest_id','question_text','question_level','empathy_guide','hint_guide','leading_question_guide','created_at','updated_at','deleted_at','지난 다운로드 대비','변경 구분','신규 ID','관심사','목적'];
+const cell = v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+async function download(kind){
+  if (!downloads) return;
+  const all = rows(), b = baseline();
+  const pick = kind === 'diff' ? all.filter(r => diffOf(r)) : all;
+  if (!pick.length) return toast('비교 기준 이후 바뀐 질문이 없습니다.');
+  const now = new Date();
+  const lines = [COLS.join(',')].concat(pick.map(r => {
+    const upd = r.edited ? r.edited.at : r.updated_at;
+    return [r.id, r.interest_id, r.text, r.level, r.g[0], r.g[1], r.g[2], r.created_at, upd, r.deletedAt,
+      b ? (DIFF_LABEL[diffOf(r)] || '같음') : '첫 다운로드', r.change + (r.edited ? ' + 페이지 수정' : ''), r.newId, r.cat, r.purpose].map(cell).join(',');
+  }));
+  const stamp = now.toISOString().slice(0,16).replace(/[-:T]/g, '');
+  try {
+    await downloads.save({ filename: `nadab_daily_questions_${kind === 'diff' ? 'changes_' : ''}${stamp}.csv`, data: new Blob(['﻿' + lines.join('\n')], { type:'text/csv' }) });
+  } catch (e) {
+    if (e?.code === 'declined') return;
+    if (e?.code === 'rate_limited') return toast('저장 창이 이미 열려 있습니다.');
+    return toast('파일을 저장하지 못했습니다.');
+  }
+  toast('저장했습니다.');
+  if (!db) return;
+  const h = {}; all.forEach(r => h[r.key] = hash(r));
+  const cnt = k => all.filter(r => diffOf(r) === k).length;
+  try {
+    await db.collection('downloads').add({ at: now.toISOString(), by: me?.id || null, kind, count: pick.length, built: BUILT,
+      nNew: b ? cnt('new') : 0, nMod: b ? cnt('mod') : 0, nGone: b ? cnt('gone') : 0, h });
+    baseId = null; // 새 기록이 오면 최신을 기준으로
+  } catch { toast('다운로드 기록을 남기지 못했습니다. 다음 비교는 이전 기록 기준입니다.'); }
+}
+
+// ---- 이벤트 ----
+const list = $('#list');
+list.addEventListener('toggle', e => {
+  const d = e.target.closest('details.q'); if (!d) return;
+  const k = d.dataset.key;
+  if (d.open && !open.has(k)){ open.add(k); const r = rows().find(x => x.key === k); d.insertAdjacentHTML('beforeend', detail(r, diffOf(r))); }
+  else if (!d.open){ open.delete(k); d.querySelector('.body')?.remove(); }
+}, true);
+list.addEventListener('input', e => {
+  if (e.target.name === 'text'){ const k = e.target.closest('form').dataset.form; const w = document.getElementById('w-' + k); if (w) w.textContent = lint(e.target.value).join(' '); }
+});
+list.addEventListener('submit', async e => {
+  e.preventDefault(); if (!db) return;
+  const f = e.target, k = f.dataset.form, r = BASE.find(x => x.key === k);
+  const v = { text: f.text.value.trim(), g0: f.g0.value.trim(), g1: f.g1.value.trim(), g2: f.g2.value.trim(), level: Number(f.level.value), interest_id: Number(f.interest_id.value) };
+  if (!v.text) return toast('문구가 비어 있습니다.');
+  const same = v.text === r.text && v.g0 === r.g[0] && v.g1 === r.g[1] && v.g2 === r.g[2] && v.level === r.level && v.interest_id === r.interest_id;
+  const btn = f.querySelector('[type=submit]'); btn.disabled = true;
+  try {
+    if (same) { await db.doc('edits/' + k).delete(); toast('개선본과 같아서 수정 기록을 지웠습니다.'); }
+    else { await db.doc('edits/' + k).set({ ...v, by: me?.id || null, at: new Date().toISOString() }); toast('저장했습니다.'); }
+  } catch (err) {
+    if (err?.code === 'invalid_argument'){ canWrite = false; toast('이 화면에서는 저장 권한이 없습니다.'); render(); }
+    else toast('저장하지 못했습니다. 잠시 후 다시 시도하세요.');
+  } finally { btn.disabled = false; }
+});
+list.addEventListener('click', async e => {
+  const k = e.target.dataset?.revert; if (!k || !db) return;
+  e.target.disabled = true;
+  try { await db.doc('edits/' + k).delete(); toast('개선본으로 되돌렸습니다.'); } catch { toast('되돌리지 못했습니다.'); e.target.disabled = false; }
+});
+let st; $('#q').addEventListener('input', e => { clearTimeout(st); st = setTimeout(() => { F.q = e.target.value; limit = 60; render(); }, 150); });
+[['#fChange','change'],['#fCat','cat'],['#fLevel','level'],['#fAxis','axis']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.value; limit = 60; saveF(); render(); }));
+[['#fDiff','diff'],['#fEdit','edit'],['#fDel','del']].forEach(([id,k]) => $(id).addEventListener('change', e => { F[k] = e.target.checked; limit = 60; saveF(); render(); }));
+$('#more').addEventListener('click', () => { limit += 60; render(); });
+$('#baseSel').addEventListener('change', e => { baseId = e.target.value; historyUI(); render(); });
+$('#dlAll').addEventListener('click', () => download('all'));
+$('#dlDiff').addEventListener('click', () => download('diff'));
+
+// ---- 시작 ----
+(async () => {
+  try {
+    const res = await fetch('data/questions.json'); const j = await res.json();
+    BASE = j.rows; BUILT = j.builtAt;
+    $('#built').textContent = `개선본 ${j.builtAt} 기준 · 전체 ${BASE.length.toLocaleString()}행`;
+    filters(); render();
+  } catch { $('#list').innerHTML = '<div class="empty">질문 데이터를 불러오지 못했습니다. 새로고침해 주세요.</div>'; return; }
+
+  cuse('downloads').then(d => { downloads = d; $('#dlAll').disabled = $('#dlDiff').disabled = !d; });
+  cuse('user').then(async u => { user = u; if (u){ me = await u.me(); const c = await u.can('data.write'); if (c === false) canWrite = false; $('#who').textContent = me.name ? `${me.name}님으로 보는 중` : ''; historyUI(); render(); } });
+  db = await cuse('db');
+  if (!db){ $('#baseInfo').textContent = '이 화면에서는 다운로드 기록과 수정 저장을 쓸 수 없습니다. 파일 받기는 가능합니다.'; render(); return; }
+  db.collection('edits').onSnapshot(qs => { EDITS = new Map(qs.docs.map(d => [d.id, d.data()])); render(); }, () => {});
+  db.collection('downloads').orderBy('at', 'desc').limit(50).onSnapshot(qs => {
+    DLS = qs.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (!baseId || !DLS.some(d => d.id === baseId)) baseId = DLS[0]?.id || null;
+    historyUI(); render();
+  }, () => {});
+})();
+</script>

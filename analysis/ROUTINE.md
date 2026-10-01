@@ -69,3 +69,12 @@ git add -A && git commit -m "Monthly question review: <날짜>" && git push -u o
 - 선택 완료·반영함·보류 개수, 반영 누락 의심
 - 수정한 질문(Revision 2 이상)의 전후 답변율 중 표본 20회 이상인 것
 - 전체 답변율·교체율 변화, v2 교차검증에서 가장 좋은 모델과 FDR 통과 특성이 바뀌었는지
+
+## 8. 질문 개선함 페이지 (BE 전달용)
+https://claude.ai/artifact/1F4W6W5WHQsnM6YsXUm4ea
+```bash
+python analysis/build_full_db.py && python analysis/build_board_data.py
+```
+`board/index.html`을 `files: {"data/questions.json": "board/data/questions.json"}`와 함께 같은 경로로 다시 게시한다(capabilities는 생략해 유지).
+페이지에서 고친 내용은 db `edits/{key}`(key = DB id 또는 신규 ID)에, 다운로드 기록은 `downloads`에 쌓인다. 둘 다 사용자 데이터라 루틴이 쓰지 않는다.
+`edits`는 ArtifactData `list`로 읽어 다음 개선본에 반영할지 사용자에게 보고한다.
