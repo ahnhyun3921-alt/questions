@@ -844,7 +844,7 @@ async function download(kind){
   const out = r => (r.deleted && r.orig && !r.orig[6]) ? { ...r, interest_id: r.orig[0], text: r.orig[1], level: r.orig[2], g: r.orig.slice(3, 6) } : r;
   const lines = [COLS.join(',')].concat(pick.map(out).map(r => [r.id, r.interest_id, r.text, r.level, r.g[0], r.g[1], r.g[2], r.created_at,
     r.edited ? r.edited.at : r.updated_at, r.deletedAt, modFlags(r)].map(cell).join(',')));
-  const stamp = now.toISOString().slice(0,16).replace(/[-:T]/g, '');
+  const stamp = new Date(now.getTime() + 9 * 3600e3).toISOString().slice(0,16).replace(/[-:T]/g, '');  // 한국 시각(UTC+9)
   try {
     await downloads.save({ filename: `nadab_daily_questions_${kind === 'diff' ? 'changes_' : ''}${stamp}.csv`, data: new Blob(['﻿' + lines.join('\n')], { type:'text/csv' }) });
   } catch (e) {
