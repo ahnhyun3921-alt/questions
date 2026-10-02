@@ -621,7 +621,7 @@ a{color:var(--blue)}
   </section>
   <section class="panel" aria-labelledby="axh" data-ana="str">
     <h2 id="axh">자아분석 축: 관심사별 고유 축</h2>
-    <p class="note" style="margin:0">관심사마다 그 관심사에서 자연스럽게 나오는 성향 차원을 축으로 뒀어요(A ↔ B 두 극). 모든 활성 질문을 사람이 읽고 축·목적 유형·소주제·신호 방향을 정했어요(analysis/axis_tags_v2_manual.csv).</p>
+    <p class="note" style="margin:0">관심사마다 그 관심사에서 자연스럽게 나오는 성향 차원을 축으로 뒀어요(A ↔ B 두 극). 모든 활성 질문마다 축·목적 유형·소주제·신호 방향이 정해져 있어요.</p>
     <div class="chartbox"><div id="axChart"></div></div>
     <div class="legend"><span><i style="background:var(--chart)"></i>신호형 질문 수 (목표 10)</span><span><i style="background:var(--blue)"></i>첫 선택지가 A 극</span><span><i style="background:var(--mint)"></i>첫 선택지가 B 극</span><span><i style="background:var(--ink);width:2px"></i>전체 평균 답변율</span></div>
   </section>
@@ -649,7 +649,7 @@ a{color:var(--blue)}
   </div>
   <div class="pg" id="pg-dl" role="tabpanel" data-page="dl" hidden>
   <section class="panel" aria-labelledby="shh">
-    <h2 id="shh">출고 점검 — BE에 넘기기 전에</h2>
+    <h2 id="shh">출고 점검</h2>
     <div id="ship"></div>
   </section>
   <section class="panel" aria-labelledby="dlh">
@@ -668,7 +668,7 @@ a{color:var(--blue)}
   </section>
   <section class="panel" aria-labelledby="uph">
     <h2 id="uph">CSV 업로드 · 최신본으로 만들기</h2>
-    <p class="note" style="margin:0">BE에서 고친 CSV(관리자 DB 열 형식)를 올리면 그 내용이 페이지의 최신본이 돼요. 화면·다운로드·비교가 모두 이 파일을 기준으로 바뀌고, 올린 뒤에 페이지에서 고친 것만 그 위에 더해져요. 엑셀에서 저장한 CSV도 읽어요.</p>
+    <p class="note" style="margin:0">고친 CSV(관리자 DB 열 형식)를 올리면 그 내용이 페이지의 최신본이 돼요. 화면·다운로드·비교가 모두 이 파일을 기준으로 바뀌고, 올린 뒤에 페이지에서 고친 것만 그 위에 더해져요. 엑셀에서 저장한 CSV도 읽어요.</p>
     <span class="hint" id="upInfo">아직 올린 최신본이 없어요.</span>
     <div class="row">
       <label class="btn primary" for="upFile" id="upLabel">⬆ CSV 업로드</label>
@@ -840,7 +840,7 @@ function mergeUpload(){
   UPROWS.forEach((u, k) => { if (seen.has(k)) return;
     BASE.push({ key: k, id: k, newId: '', statsId: null, interest_id: u[1], cat: CAT[u[1]], level: u[3], text: u[2], oldText: '', g: [u[4], u[5], u[6]],
       deleted: !!u[9], deletedAt: u[9], created_at: u[7], updated_at: u[8], change: '업로드로 추가', catChange: '', set: '', form: '', axis: '', axisNote: '', ax: '', pt: '', sig: '', subN: 0, sub: '', recat: '',
-      purpose: '올린 CSV에만 있는 질문이에요.', why: '', source: 'BE 업로드', srcUrl: '', pred: null, exp: null, ans: null, rep: null, alts: [], decided: '', orig: null, uploaded: true }); });
+      purpose: '올린 CSV에만 있는 질문이에요.', why: '', source: 'CSV 업로드', srcUrl: '', pred: null, exp: null, ans: null, rep: null, alts: [], decided: '', orig: null, uploaded: true }); });
   BASE.sort((a, b) => Number(a.key) - Number(b.key));
 }
 // 따옴표·줄바꿈·BOM을 다루는 CSV 파서
@@ -1836,7 +1836,7 @@ function shipChecks(){
     ['bad', '관심사·레벨 값 오류', live.filter(r => !CAT[r.interest_id] || ![1, 2].includes(Number(r.level))).map(r => r.key), 'interest_id 1~6, question_level 1~2만 허용'],
     ['warn', '60자 넘는 문구(바뀐 것)', touched.filter(r => r.text.length > 60).map(r => r.key), '앱 화면에서 줄바꿈이 많아요'],
     ['warn', '가이드 점검 미통과(바뀐 것)', touched.filter(r => guideLint(...r.g).length).map(r => r.key), '힌트 예시·길이·물음표 — 카드 편집 칸에 이유가 보여요'],
-    ['warn', '남은 결정', [], `처방 ${tc.rx} · 중복 ${tc.dup} · 골라 주세요 ${tc.pick} · 재배정 ${tc.recat} — 넘겨도 되지만 이번 판에 반영되지 않아요`, tc.total],
+    ['warn', '남은 결정', [], `처방 ${tc.rx} · 중복 ${tc.dup} · 골라 주세요 ${tc.pick} · 재배정 ${tc.recat} — 남아 있어도 내려받을 수 있어요. 결정 전 질문은 지금 문구로 나가요`, tc.total],
   ];
   return { C, changed, tc };
 }
@@ -1845,7 +1845,7 @@ function shipUI(){
   const { C, changed } = shipChecks();
   const bad = C.filter(([lv, , ks, , n]) => lv === 'bad' && (n ?? ks.length)).length, warn = C.filter(([lv, , ks, , n]) => lv === 'warn' && (n ?? ks.length)).length;
   const kinds = {}; changed.forEach(r => modFlags(r).split(' · ').forEach(f => kinds[f] = (kinds[f] || 0) + 1));
-  $('#ship').innerHTML = `<div class="ship ${bad ? 'bad' : warn ? 'warn' : 'ok'}">${bad ? `넘기기 전에 고칠 것 ${bad}가지가 있어요` : warn ? `넘겨도 돼요 · 확인할 것 ${warn}가지` : '넘길 준비가 됐어요 ✓'}</div>
+  $('#ship').innerHTML = `<div class="ship ${bad ? 'bad' : warn ? 'warn' : 'ok'}">${bad ? `내려받기 전에 고칠 것 ${bad}가지가 있어요` : warn ? `내려받을 수 있어요 · 확인할 것 ${warn}가지` : '내려받을 준비가 됐어요 ✓'}</div>
     <div class="chk">${C.map(([lv, t, ks, d, n]) => { const c = n ?? ks.length, st = c ? lv : 'ok';
       return `<div class="ci ${st}"><span class="ic" aria-hidden="true">${st === 'ok' ? '✓' : st === 'bad' ? '✕' : '!'}</span><span><b>${esc(t)}</b> ${c ? `${c.toLocaleString()}개` : '없음'}<small>${esc(d)}</small></span>${c && ks.length ? `<button class="btn" type="button" data-shipgo="${esc(t)}">보기</button>` : c && n != null ? '<button class="btn" type="button" data-go2="rev">할 일로</button>' : '<span></span>'}</div>`; }).join('')}</div>
     <p class="note" style="margin:0"><b>원본 DB 대비 바뀌는 행 ${changed.length.toLocaleString()}개</b> — ${Object.entries(kinds).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)} ${v}`).join(' · ') || '없음'}. 다운로드 CSV의 '변경 내용' 열과 같아요.</p>`;
@@ -2236,7 +2236,7 @@ list.addEventListener('click', async e => {
   const base = BASE.find(x => x.key === k); b.disabled = true;
   try {
     if (base && m.pt === base.pt && m.ax === base.ax && m.sig === base.sig && m.subN === base.subN) { if (META.has(k)) await db.doc('meta/' + k).delete(); toast('원래 분류와 같아요.'); }
-    else { await db.doc('meta/' + k).set({ ...m, by: me?.id || null, at: new Date().toISOString() }); toast('분류를 저장했어요. 매달 저장소 분류표로 가져가요.'); }
+    else { await db.doc('meta/' + k).set({ ...m, by: me?.id || null, at: new Date().toISOString() }); toast('분류를 저장했어요.'); }
   } catch { toast('저장하지 못했어요.'); } finally { b.disabled = false; }
 });
 $('#rcSrc').addEventListener('change', recatUI); $('#rcDone').addEventListener('change', recatUI);
