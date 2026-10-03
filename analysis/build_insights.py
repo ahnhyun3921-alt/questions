@@ -327,11 +327,11 @@ def findings(uni, mdl, ln, ax, st=None):
     ex = lambda x: f"'{x['name']}'({pct(x['pp'])}, 95% CI {num(x['pp_lo'])}~{num(x['pp_hi'])}%p)"
     out = []
     if neg:
-        out.append(dict(kind="neg", title="답변율을 확실히 떨어뜨리는 요인",
+        out.append(dict(kind="neg", title="답변율 하락 요인(확실)",
                         body="다른 요인을 함께 고려해도 " + ", ".join(ex(x) for x in neg[:4]) + "은 답변율을 낮춰요.",
                         action=" ".join(ACTION[x["name"]] for x in neg[:3] if x["name"] in ACTION)))
     if pos:
-        out.append(dict(kind="pos", title="답변율을 확실히 올리는 요인",
+        out.append(dict(kind="pos", title="답변율 상승 요인(확실)",
                         body=", ".join(ex(x) for x in pos[:3]) + "가 있는 질문은 답변율이 높아요.",
                         action=" ".join(ACTION[x["name"]] for x in pos[:3] if x["name"] in ACTION) or "이 특성을 신규 질문의 기본값으로 둬요."))
     # 단독으로는 크게 차이 나지만 다른 요인을 넣으면 사라지는 것 = 다른 특성과 겹쳐 있음
@@ -341,20 +341,20 @@ def findings(uni, mdl, ln, ax, st=None):
     child = {"경험 전제": "특정 경험 전제", "시점 고정": "특정 날 시점", "즉답 가능": "깊은 성찰", "감정 무게": "무거운 감정", "자기노출": "높은 자기노출"}
     strength = [(par, ch) for par, ch in child.items() if ch in tk and tk[ch]["p"] < 0.05 and par in tk and tk[par]["p"] >= 0.05]
     for par, ch in strength:
-        out.append(dict(kind="neg", title="전제의 강도가 갈라요",
+        out.append(dict(kind="neg", title="전제 강도에 따른 차이",
                         body=f"'{par}'는 가벼운 수준(대부분이 답할 수 있는 정도)이면 {pct(tk[par]['pp'])}로 거의 차이가 없지만, "
                              f"'{ch}'(특정 경험이 있어야 답함)이면 {pct(tk[par]['pp'] + tk[ch]['pp'])}까지 떨어져요.",
                         action=ACTION.get(ch, "")))
     skip = {par for par, _ in strength}
     conf = [x for x in terms if x["group"] == "문구 특성" and x["p"] >= 0.05 and x["name"] not in skip and x["name"] in u and (u[x["name"]]["lo"] > 0 or u[x["name"]]["hi"] < 0)]
     if conf:
-        out.append(dict(kind="neutral", title="겹쳐 있어서 커 보였던 요인",
+        out.append(dict(kind="neutral", title="다른 특성과 겹친 요인",
                         body=", ".join(f"'{x['name']}'(단독 {pct(u[x['name']]['diff'])} → 함께 보면 {pct(x['pp'])}, 불확실)" for x in conf)
                              + "은 따로 보면 답변율이 확실히 다르지만, 경험 전제·형식 같은 다른 특성과 함께 붙어 다녀서 생긴 차이가 커요.",
                         action="문구를 고칠 때는 이 요인만 지우기보다, 같이 붙어 있는 경험 전제·형식을 함께 바꿔야 효과가 나요."))
     null = [x for x in terms if x["group"] == "문구 특성" and x["p"] >= 0.05 and x not in conf and x["name"] not in skip]
     if null:
-        out.append(dict(kind="neutral", title="영향이 뚜렷하지 않은 요인",
+        out.append(dict(kind="neutral", title="영향 불분명 요인",
                         body=", ".join(f"'{x['name']}'" for x in null) + "는 따로 봐도, 함께 봐도 답변율과 뚜렷한 관계가 없어요.",
                         action="이 특성 자체를 피할 필요는 없어요. 질문의 깊이를 지키는 데 써도 돼요."))
     good = [b for b in ln if b["rate"] is not None and b["res"] >= 50]
@@ -368,20 +368,20 @@ def findings(uni, mdl, ln, ax, st=None):
                         action="40자라는 경계보다 '짧을수록 낫다'가 맞아요. 군더더기를 덜어 30자 안팎으로 줄여요."))
     thin = sorted([a for a in ax if a["need"] > 0], key=lambda a: -a["need"])
     if thin:
-        out.append(dict(kind="gap", title="신호가 모자란 축",
+        out.append(dict(kind="gap", title="신호 부족 축",
                         body=f"축 하나로 사용자를 읽으려면 신호형(답이 한쪽 극을 가리키는) 질문이 {SIG_TARGET}개는 있어야 해요. 지금 모자란 축은 "
                              + ", ".join(f"{a['cat']} {a['name']}({a['sig']}개)" for a in thin[:5]) + (f" 외 {len(thin) - 5}개" if len(thin) > 5 else "") + "예요.",
                         action="'새 질문 만들기'에서 이 축을 골라 신호형으로 채워요. 첫 선택지가 A·B 극에 고르게 오도록 신호 방향도 섞어요."))
     lop = [a for a in ax if a["sigA"] + a["sigB"] >= 5 and min(a["sigA"], a["sigB"]) <= (a["sigA"] + a["sigB"]) * 0.25]
     if lop:
-        out.append(dict(kind="neutral", title="첫 선택지가 한쪽으로 쏠린 축",
+        out.append(dict(kind="neutral", title="첫 선택지 쏠림 축",
                         body=", ".join(f"{a['name']}(첫 선택지 {a['a']} {a['sigA']} · {a['b']} {a['sigB']})" for a in lop)
                              + "는 첫 선택지가 한쪽 극에 몰려 있어요. 사람은 앞에 나온 선택지를 조금 더 고르는 경향(순서 효과)이 있어서 결과가 한쪽으로 기울 수 있어요.",
                         action="새로 만들 때 반대 극을 먼저 두거나, 앱에서 선택지 순서를 무작위로 바꿔 보여 줘요."))
     lowax = [a for a in ax if a["rate"] is not None and a["res"] >= 80]
     if lowax:
         lo, hi = min(lowax, key=lambda a: a["rate"]), max(lowax, key=lambda a: a["rate"])
-        out.append(dict(kind="neg", title="답이 잘 안 모이는 축",
+        out.append(dict(kind="neg", title="답변율 낮은 축",
                         body=f"{lo['cat']} {lo['name']} 축 답변율이 {lo['rate']:.0%}(95% CI {lo['ci'][0]:.0%}~{lo['ci'][1]:.0%})로 가장 낮고, "
                              f"가장 높은 축은 {hi['cat']} {hi['name']}({hi['rate']:.0%})예요.",
                         action="낮은 축은 '나는 ~하는 편인가요'·양자택일 같은 가벼운 신호형으로 같은 신호를 받아요."))
@@ -676,6 +676,8 @@ def main():
     uni, mdl, ln, ax, st = univariate(d), model(d), length_bins(d), axes(d), structure(d)
     out = dict(snapshot=date, uni=uni, model=mdl, length=ln, axes=ax, structure=st, recat=recat_queue(), revision=revision_effect(), evals=evaluate(mdl), holdout=holdout(mdl), levels=levels(d, mdl), experiment=experiment(mdl, None),
                findings=findings(uni, mdl, ln, ax, st))
+    from tone import walk          # 화면 문구는 보고서체로
+    out = walk(out)
     f = ROOT / "board" / "data" / "insights.json"
     f.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":"), allow_nan=False))
     print(f"{date}: 문항 {mdl['n_q']} · 결론 {mdl['n_res']} · 평균 {mdl['base']:.1%} · 인사이트 {len(out['findings'])}개 → {f}")

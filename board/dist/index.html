@@ -458,7 +458,7 @@ a{color:var(--blue)}
   <div class="in hrow">
     <div>
       <h1>나답 질문 개선함</h1>
-      <div class="lead" id="built">데이터를 불러오는 중입니다.</div>
+      <div class="lead" id="built">데이터를 불러오는 중</div>
     </div>
     <section class="tiles" aria-label="요약">
       <div class="tile"><span class="v" id="tLive">–</span><span class="l">활성 질문</span></div>
@@ -479,12 +479,12 @@ a{color:var(--blue)}
 <div class="wrap">
   <div class="pg" id="pg-rev" data-page="pick dup recat rx" hidden>
   <section class="panel" aria-labelledby="tdh">
-    <div class="data-head"><h2 id="tdh">할 일 — 결정이 필요한 것</h2><span class="note" id="tdNote"></span></div>
+    <div class="data-head"><h2 id="tdh">할 일</h2><span class="note" id="tdNote"></span></div>
     <div class="prog" aria-hidden="true"><i id="tdBar" style="width:0%"></i></div>
     <div class="todo" id="revSeg" role="group" aria-label="할 일 종류">
       <button type="button" data-rev="rx" aria-pressed="false"><span class="l">처방</span><span class="v" id="tdRx">–</span><span class="d">실적 낮고 고칠 방법이 있는 질문 · 기대 이득 순</span></button>
       <button type="button" data-rev="dup" aria-pressed="false"><span class="l">중복</span><span class="v" id="tdDup">–</span><span class="d">같거나 비슷한 질문 쌍 · 하나씩 정리</span></button>
-      <button type="button" data-rev="pick" aria-pressed="true"><span class="l">골라 주세요</span><span class="v" id="tdPick">–</span><span class="d">수정안 고르기 · 월간 점검</span></button>
+      <button type="button" data-rev="pick" aria-pressed="true"><span class="l">수정안 선택</span><span class="v" id="tdPick">–</span><span class="d">수정안 고르기 · 월간 점검</span></button>
       <button type="button" data-rev="recat" aria-pressed="false"><span class="l">관심사 재배정</span><span class="v" id="tdRecat">–</span><span class="d">내용과 관심사가 어긋난 질문</span></button>
     </div>
     <span style="display:none" aria-hidden="true"><span class="bdg" id="bdgPick"></span><span class="bdg" id="bdgDup"></span><span class="bdg" id="bdgRecat"></span></span>
@@ -493,10 +493,10 @@ a{color:var(--blue)}
   <div class="pg" id="pg-recat" role="tabpanel" data-page="recat" hidden>
   <section class="panel" aria-labelledby="rch">
     <h2 id="rch">관심사 재배정 후보</h2>
-    <p class="note" style="margin:0" id="rcNote">관심사가 질문 내용과 맞지 않아 보이는 질문이에요. 옮기면 다운로드 CSV의 interest_id가 바뀌어요('변경 내용'에 관심사 수정).</p>
+    <p class="note" style="margin:0" id="rcNote">관심사가 질문 내용과 맞지 않아 보이는 질문임. 옮기면 다운로드 CSV의 interest_id가 바뀜('변경 내용'에 관심사 수정).</p>
     <div class="kpis">
-      <div class="kpi"><span class="l">사람·모델 둘 다</span><span class="v" id="rcBoth">–</span><span class="d">문항을 읽고 고른 제안과 문구 분류기가 같은 관심사를 가리켜요</span></div>
-      <div class="kpi"><span class="l">사람 분류만</span><span class="v" id="rcMan">–</span><span class="d">질문을 읽고 남긴 제안이에요</span></div>
+      <div class="kpi"><span class="l">사람·모델 둘 다</span><span class="v" id="rcBoth">–</span><span class="d">문항을 읽고 고른 제안과 문구 분류기가 같은 관심사를 가리킴</span></div>
+      <div class="kpi"><span class="l">사람 분류만</span><span class="v" id="rcMan">–</span><span class="d">질문을 읽고 남긴 제안임</span></div>
       <div class="kpi"><span class="l">문구 모델만</span><span class="v" id="rcMod">–</span><span class="d">다른 관심사일 확률 70% 이상 · 지금 관심사 15% 이하</span></div>
     </div>
     <div class="row"><select id="rcSrc" aria-label="근거"><option value="all">근거 전체</option><option value="both">둘 다</option><option value="manual">사람 분류</option><option value="model">문구 모델</option></select><label class="note"><input type="checkbox" id="rcDone"> 처리한 것도 보기</label></div>
@@ -506,10 +506,10 @@ a{color:var(--blue)}
   <div class="pg" id="pg-dup" role="tabpanel" data-page="dup" hidden>
   <section class="panel" aria-labelledby="duph">
     <h2 id="duph">중복 검토</h2>
-    <p class="note" style="margin:0">문구가 비슷한 질문 쌍이에요. 같은 질문이면 하나를 비활성화하고, 다르다면 '중복 아니에요'를 눌러 주세요. 매달 새 후보를 다시 찾아요.</p>
+    <p class="note" style="margin:0">문구가 비슷한 질문 쌍임. 같은 질문이면 하나를 비활성화하고, 다르다면 '중복 아님' 선택. 매달 새 후보를 다시 찾음.</p>
     <div class="kpis">
-      <div class="kpi"><span class="l">같은 질문</span><span class="v" id="dpDup">–</span><span class="d">답이 거의 같아서 하나만 남기길 권해요</span></div>
-      <div class="kpi"><span class="l">비슷한 질문</span><span class="v" id="dpSim">–</span><span class="d">답이 겹치기 쉬워요 · 둘 다 둬도 괜찮아요</span></div>
+      <div class="kpi"><span class="l">같은 질문</span><span class="v" id="dpDup">–</span><span class="d">답이 거의 같아서 하나만 남기길 권함</span></div>
+      <div class="kpi"><span class="l">비슷한 질문</span><span class="v" id="dpSim">–</span><span class="d">답이 겹치기 쉬움 · 둘 다 둬도 괜찮음</span></div>
       <div class="kpi"><span class="l">정리한 쌍</span><span class="v" id="dpDone">–</span><span class="d">하나를 비활성화했거나 중복 아님으로 표시</span></div>
     </div>
   </section>
@@ -519,26 +519,26 @@ a{color:var(--blue)}
   <div class="seg2 revseg" id="gmSeg" role="group" aria-label="만드는 방법"><button type="button" data-gm="fill" aria-pressed="true">빈 곳 채우기 · AI 생성기</button><button type="button" data-gm="write" aria-pressed="false">직접 써서 진단</button></div>
   <section class="panel" data-gmode="fill">
     <h2 style="margin:0">질문 생성기</h2>
-    <p class="note" style="margin:0">빈 곳을 고르고 → 그 칸의 실제 데이터를 보고 → 형식을 정하고 → 소재를 뽑아 → 질문을 만들고 → 예상 답변율과 중복을 확인해 추가해요. AI는 나답 실제 통계와 기존 질문을 근거로 써요.</p>
+    <p class="note" style="margin:0">빈 곳을 고르고 → 그 칸의 실제 데이터를 보고 → 형식을 정하고 → 소재를 뽑아 → 질문을 만들고 → 예상 답변율과 중복을 확인해 추가함. AI는 나답 실제 통계와 기존 질문을 근거로 씀.</p>
     <ol class="steps" id="steps"></ol>
   </section>
   <section class="panel step" data-gmode="fill" aria-labelledby="g1h"><h2 id="g1h"><span class="sn">1</span>관심사 × 자기 축 고르기</h2>
-    <p class="note" style="margin:0">관심사마다 그 관심사에서 자연스럽게 묻는 축이 3~4개 있어요. 축 칸 숫자는 <b>신호형 질문 수 / 목표 10</b>이에요(답이 한쪽 극을 가리키는 질문 — 10개는 있어야 사용자를 그 축으로 읽을 수 있어요). <b>빨간 테두리</b>는 목표에 못 미친 축이에요. 성찰형·기록형 칸을 누르면 축 없이 그 목적의 질문을 만들어요.</p>
+    <p class="note" style="margin:0">관심사마다 그 관심사에서 자연스럽게 묻는 축이 3~4개 있음. 축 칸 숫자는 <b>신호형 질문 수 / 목표 10</b>임(답이 한쪽 극을 가리키는 질문: 10개는 있어야 사용자를 그 축으로 읽을 수 있음). <b>빨간 테두리</b>는 목표에 못 미친 축임. 성찰형·기록형 칸을 누르면 축 없이 그 목적의 질문을 만듦.</p>
     <div class="chartbox" style="overflow-x:auto"><div id="heat"></div></div></section>
-  <section class="panel step" data-gmode="fill" aria-labelledby="g2h"><h2 id="g2h"><span class="sn">2</span>데이터 근거</h2><div id="gData"><p class="note">먼저 칸을 골라 주세요.</p></div></section>
+  <section class="panel step" data-gmode="fill" aria-labelledby="g2h"><h2 id="g2h"><span class="sn">2</span>데이터 근거</h2><div id="gData"><p class="note">먼저 칸 선택 필요.</p></div></section>
   <section class="panel step" data-gmode="fill" aria-labelledby="g4h"><h2 id="g4h"><span class="sn">3</span>형식 · 소주제 · 조건</h2><div id="gOpt"></div></section>
   <section class="panel step" data-gmode="fill" aria-labelledby="g5h"><h2 id="g5h"><span class="sn">4</span>소재 뽑기</h2><div id="gTop"></div></section>
   <section class="panel step" data-gmode="fill" aria-labelledby="g6h"><h2 id="g6h"><span class="sn">5</span>질문 만들기 · 검토 · 추가</h2><div id="gen"></div></section>
   <section class="panel" aria-labelledby="dgh" data-gmode="write" hidden>
-    <h2 id="dgh">직접 써서 진단하고 추가하기</h2>
-    <p class="note" style="margin:0">문구를 넣으면 모델로 예상 답변율과 요인별 기여를 계산해요. 태그는 문구에서 자동으로 추정하고, 틀리면 직접 바꾸거나 AI로 붙일 수 있어요.</p>
+    <h2 id="dgh">직접 작성·진단·추가</h2>
+    <p class="note" style="margin:0">문구를 넣으면 모델로 예상 답변율과 요인별 기여를 계산함. 태그는 문구에서 자동으로 추정하고, 틀리면 직접 바꾸거나 AI로 붙일 수 있음.</p>
     <div class="dg">
       <div class="dgin">
         <textarea id="dgText" rows="2" placeholder="예: 주말에는 집에서 쉬는 편인가요, 밖에 나가는 편인가요?" aria-label="진단할 질문"></textarea>
         <div class="row"><select id="dgCat" aria-label="관심사"></select><select id="dgForm" aria-label="형식"></select><button class="btn mint" type="button" id="dgAI" hidden>AI로 태그 붙이기</button></div>
         <div class="dgtags" id="dgTags"></div>
       </div>
-      <div class="dgout" id="dgOut"><p class="note">문구를 넣어 보세요.</p></div>
+      <div class="dgout" id="dgOut"><p class="note">문구 입력 시 진단.</p></div>
     </div>
     <div class="dgadd">
       <div class="two3">
@@ -561,7 +561,7 @@ a{color:var(--blue)}
     <button type="button" data-ana="now" aria-pressed="true">현황 · 인사이트</button><button type="button" data-ana="str" aria-pressed="false">질문 구조 · 축 · 레벨</button><button type="button" data-ana="model" aria-pressed="false">평가 모델 · 방법</button><button type="button" data-ana="exp" aria-pressed="false">실험 · 측정</button>
   </div>
   <section class="panel" aria-labelledby="dth" data-ana="now">
-    <div class="data-head"><h2 id="dth">데이터로 보는 지금</h2><span class="note" id="dataAt">통계를 불러오는 중이에요.</span></div>
+    <div class="data-head"><h2 id="dth">현황</h2><span class="note" id="dataAt">통계를 불러오는 중임.</span></div>
     <div class="kpis">
       <div class="kpi"><span class="l">답변율 (답변 ÷ 답변+교체)</span><span class="v" id="kRate">–</span><span class="d" id="kRateD"></span></div>
       <div class="kpi"><span class="l">교체율 (교체 ÷ 노출)</span><span class="v" id="kRep">–</span><span class="d" id="kRepD"></span></div>
@@ -582,41 +582,41 @@ a{color:var(--blue)}
       </div>
       <div class="brk-cols" aria-hidden="true"><span>유형 · 질문 수</span><span>비중 <span class="legend" style="display:inline-flex;margin-left:6px"><span><i style="background:var(--muted)"></i>지금 DB</span><span><i style="background:var(--chart)"></i>개선 후</span></span></span><span>답변율 (세로선 = 전체 평균)</span></div>
       <div class="brk" id="brk"></div>
-      <p class="note" style="margin:8px 2px 4px">답변율은 지금 DB 문구가 실제로 받은 실적(답변 ÷ 답변+교체)이에요. 신규 질문은 실적이 없어서 비중에만 들어가요. 누르면 아래 목록이 그 유형으로 걸러져요.</p>
+      <p class="note" style="margin:8px 2px 4px">답변율은 지금 DB 문구가 실제로 받은 실적(답변 ÷ 답변+교체)임. 신규 질문은 실적이 없어서 비중에만 들어감. 누르면 아래 목록이 그 유형으로 걸러짐.</p>
     </div>
   </section>
   <section class="panel" aria-labelledby="insh" data-ana="now">
-    <div class="data-head"><h2 id="insh">나답 질문 분석 리포트</h2><span class="note" id="insMeta">분석 결과를 불러오는 중이에요.</span></div>
+    <div class="data-head"><h2 id="insh">핵심 인사이트</h2><span class="note" id="insMeta">분석 결과를 불러오는 중임.</span></div>
     <div class="finds" id="finds"></div>
   </section>
   <section class="panel" aria-labelledby="lvh" data-ana="str">
-    <h2 id="lvh">레벨 구조 제안 — 4단계</h2>
-    <p class="note" style="margin:0">지금은 레벨이 1(첫 질문)과 2(나머지) 두 개뿐이에요. 질문의 깊이(인지 노력·감정 무게·자기노출·경험 전제·형식)로 4단계를 나누면 레벨이 올라갈수록 답변율이 내려가요. 레벨을 '깊이이자 난이도'로 쓰고, 기록이 쌓일수록 깊은 질문을 섞는 구조를 제안해요. 원래 레벨 1은 그대로 입문으로 둬요.</p>
+    <h2 id="lvh">레벨 구조 제안(4단계)</h2>
+    <p class="note" style="margin:0">지금은 레벨이 1(첫 질문)과 2(나머지) 두 개뿐임. 질문의 깊이(인지 노력·감정 무게·자기노출·경험 전제·형식)로 4단계를 나누면 레벨이 올라갈수록 답변율이 내려감. 레벨을 '깊이이자 난이도'로 쓰고, 기록이 쌓일수록 깊은 질문을 섞는 구조를 제안함. 원래 레벨 1은 그대로 입문으로 둠.</p>
     <div class="lvcards" id="lvCards"></div>
-    <h3 class="sh">기록 여정 — 언제 어떤 레벨을 섞나</h3>
+    <h3 class="sh">기록 여정별 레벨 비율</h3>
     <div class="chartbox"><div id="lvJourney"></div></div>
     <div class="gcols">
       <div class="gbox"><h3>내보내는 규칙</h3><ul>
-        <li>처음 3회는 입문만 — 첫 경험에서 바로 답하게</li>
+        <li>처음 3회는 입문만: 첫 경험에서 바로 답하게</li>
         <li>7일 넘게 쉬다 돌아오면 다음 2회는 입문</li>
         <li>연속 2번 교체하면 다음 질문은 한 단계 낮춤</li>
         <li>깊이(레벨 4)는 31회째부터, 주 1회 이하, 연속 금지 · 원하지 않으면 끌 수 있게</li>
         <li>같은 자아분석 축이 연속으로 나오지 않게 섞기</li></ul></div>
       <div class="gbox"><h3>적용 방법</h3><ul>
-        <li>DB <code>question_level</code>을 1~4로 넓혀요(지금 1은 그대로 1).</li>
-        <li>앱의 질문 뽑기에 '기록 횟수 → 레벨 비율' 표를 넣어요.</li>
-        <li>질문 목록 카드의 <b>제안 L1~L4</b> 표시로 개별 질문을 확인·조정할 수 있어요.</li>
-        <li id="lvUntag">태그가 없는 질문(페이지에서 만든 질문 등)은 레벨을 따로 정해야 해요.</li></ul></div>
+        <li>DB <code>question_level</code>을 1~4로 넓힘(지금 1은 그대로 1).</li>
+        <li>앱의 질문 뽑기에 '기록 횟수 → 레벨 비율' 표를 넣음.</li>
+        <li>질문 목록 카드의 <b>제안 L1~L4</b> 표시로 개별 질문을 확인·조정할 수 있음.</li>
+        <li id="lvUntag">태그가 없는 질문(페이지에서 만든 질문 등)은 레벨을 따로 정해야 함.</li></ul></div>
       <div class="gbox"><h3>관심사별 레벨 분포</h3><div id="lvCat"></div></div>
     </div>
   </section>
   <section class="panel" aria-labelledby="mdh" data-ana="model">
     <h2 id="mdh">나답 질문 모델</h2>
-    <p class="note" style="margin:0">질문을 <b>분석</b>하는 흐름과 <b>만드는</b> 흐름이 하나의 모델로 이어져요. 매달 새 통계가 들어오면 모델이 다시 학습되고, 진단기와 생성기의 예측도 같이 바뀌어요.</p>
+    <p class="note" style="margin:0">질문을 <b>분석</b>하는 흐름과 <b>만드는</b> 흐름이 하나의 모델로 이어짐. 매달 새 통계가 들어오면 모델이 다시 학습되고, 진단기와 생성기의 예측도 같이 바뀜.</p>
     <div class="flow" id="flow"></div>
   </section>
   <section class="panel" aria-labelledby="evh" data-ana="model">
-    <h2 id="evh">질문 평가 체계 — 등급 · 진단 · 처방 · 우선순위</h2>
+    <h2 id="evh">질문 평가 체계(등급·진단·처방·우선순위)</h2>
     <div id="evSys"></div>
   </section>
   <section class="panel" aria-labelledby="eqh" data-ana="model">
@@ -624,29 +624,29 @@ a{color:var(--blue)}
     <div id="eq"></div>
   </section>
   <section class="panel" aria-labelledby="forh" data-ana="model">
-    <div class="brk-head"><h2 id="forh" style="margin:0">무엇이 답변율을 움직이나</h2>
+    <div class="brk-head"><h2 id="forh" style="margin:0">답변율 영향 요인</h2>
       <div class="seg2" id="forSeg" role="group" aria-label="분석 방식"><button type="button" data-m="multi" aria-pressed="true">함께 보기(평가 모델)</button><button type="button" data-m="uni" aria-pressed="false">따로 보기(단변량)</button></div></div>
     <p class="note" style="margin:0" id="forNote"></p>
     <div class="chartbox"><div id="forest"></div></div>
     <div class="legend"><span><i style="background:var(--chart)"></i>확실한 효과 (95% CI가 0을 넘지 않음)</span><span><i style="background:transparent;box-shadow:inset 0 0 0 2px var(--muted)"></i>불확실</span></div>
   </section>
   <section class="panel" aria-labelledby="axh" data-ana="str">
-    <h2 id="axh">자아분석 축: 관심사별 고유 축</h2>
-    <p class="note" style="margin:0">관심사마다 그 관심사에서 자연스럽게 나오는 성향 차원을 축으로 뒀어요(A ↔ B 두 극). 모든 활성 질문마다 축·목적 유형·소주제·신호 방향이 정해져 있어요.</p>
+    <h2 id="axh">자아분석 축(관심사별)</h2>
+    <p class="note" style="margin:0">관심사마다 그 관심사에서 자연스럽게 나오는 성향 차원을 축으로 뒀음(A ↔ B 두 극). 모든 활성 질문마다 축·목적 유형·소주제·신호 방향이 정해져 있음.</p>
     <div class="chartbox"><div id="axChart"></div></div>
     <div class="legend"><span><i style="background:var(--chart)"></i>신호형 질문 수 (목표 10)</span><span><i style="background:var(--blue)"></i>첫 선택지가 A 극</span><span><i style="background:var(--mint)"></i>첫 선택지가 B 극</span><span><i style="background:var(--ink);width:2px"></i>전체 평균 답변율</span></div>
   </section>
   <section class="panel" aria-labelledby="strh" data-ana="str">
-    <h2 id="strh">질문 구조: 목적 유형과 소주제</h2>
-    <p class="note" style="margin:0"><b>신호형</b>은 답이 축의 한쪽 극을 가리켜 리포트에서 "○○ 쪽"으로 읽고, <b>성찰형</b>은 생각과 이유를 꺼내고, <b>기록형</b>은 취향·일상을 모아 "나의 목록"이 돼요. 모든 질문은 셋 중 하나의 목적을 가져요.</p>
+    <h2 id="strh">질문 구조(목적 유형·소주제)</h2>
+    <p class="note" style="margin:0"><b>신호형</b>은 답이 축의 한쪽 극을 가리켜 리포트에서 "○○ 쪽"으로 읽고, <b>성찰형</b>은 생각과 이유를 꺼내고, <b>기록형</b>은 취향·일상을 모아 "나의 목록"이 됨. 모든 질문은 셋 중 하나의 목적을 가짐.</p>
     <div id="strOut"></div>
   </section>
   <section class="panel" aria-labelledby="xmh" data-ana="exp">
-    <h2 id="xmh">지표 체계 — 무엇을 올리고, 무엇을 지키나</h2>
+    <h2 id="xmh">지표 체계</h2>
     <div id="xMetric"></div>
   </section>
   <section class="panel" aria-labelledby="xfh" data-ana="exp">
-    <h2 id="xfh">운영 흐름 — 처방에서 측정까지</h2>
+    <h2 id="xfh">운영 흐름(처방 → 측정)</h2>
     <div id="xFlow"></div>
   </section>
   <section class="panel" aria-labelledby="xph" data-ana="exp">
@@ -658,7 +658,7 @@ a{color:var(--blue)}
     <div id="revOut"></div>
   </section>
   <section class="panel" aria-labelledby="xch" data-ana="exp">
-    <h2 id="xch">모델 예측력 — 얼마나 잘하고, 어디까지 가능한가</h2>
+    <h2 id="xch">모델 예측력</h2>
     <div id="xCeil"></div>
   </section>
   <section class="panel" aria-labelledby="xkh" data-ana="exp">
@@ -670,7 +670,7 @@ a{color:var(--blue)}
     <div id="xBandit"></div>
   </section>
   <section class="panel" aria-labelledby="xlh" data-ana="exp">
-    <h2 id="xlh">필요한 데이터 — 이벤트 로그 명세와 측정 계획</h2>
+    <h2 id="xlh">이벤트 로그 명세·측정 계획</h2>
     <div id="xLog"></div>
   </section>
   <section class="panel" aria-labelledby="disth" data-ana="str">
@@ -693,24 +693,24 @@ a{color:var(--blue)}
   </section>
   <section class="panel" aria-labelledby="dlh">
     <h2 id="dlh">다운로드</h2>
-    <span class="hint" id="baseInfo">아직 받은 기록이 없어요. 처음 받으면 이후부터 바뀐 질문이 표시돼요.</span>
+    <span class="hint" id="baseInfo">아직 받은 기록이 없음. 처음 받으면 이후부터 바뀐 질문이 표시됨.</span>
     <div class="row">
       <button class="btn primary" id="dlAll" type="button" disabled>전체 CSV 받기</button>
       <button class="btn mint" id="dlDiff" type="button" disabled>바뀐 것만 CSV 받기</button>
       <select id="baseSel" aria-label="비교 기준 다운로드"></select>
     </div>
-    <div class="note">관리자 DB 열(id, interest_id, question_text, question_level, 가이드 3종, created_at, updated_at, deleted_at) 그대로이고, 맨 오른쪽에 '변경 내용' 열 하나만 붙어요(신규 · 문구 수정 · 가이드 수정 · 관심사 수정 · 비활성화 등, 바뀐 게 없으면 빈 칸). 신규 질문도 id 900번부터 매겨 두었어요.</div>
+    <div class="note">관리자 DB 열(id, interest_id, question_text, question_level, 가이드 3종, created_at, updated_at, deleted_at) 그대로이고, 맨 오른쪽에 '변경 내용' 열 하나만 붙음(신규 · 문구 수정 · 가이드 수정 · 관심사 수정 · 비활성화 등, 바뀐 게 없으면 빈 칸). 신규 질문도 id 900번부터 매겨 두었음.</div>
     <details>
       <summary class="note">다운로드 기록</summary>
       <ul class="hist" id="hist"></ul>
     </details>
   </section>
   <section class="panel" aria-labelledby="uph">
-    <h2 id="uph">CSV 업로드 · 최신본으로 만들기</h2>
-    <p class="note" style="margin:0">고친 CSV(관리자 DB 열 형식)를 올리면 그 내용이 페이지의 최신본이 돼요. 화면·다운로드·비교가 모두 이 파일을 기준으로 바뀌고, 올린 뒤에 페이지에서 고친 것만 그 위에 더해져요. 엑셀에서 저장한 CSV도 읽어요.</p>
-    <span class="hint" id="upInfo">아직 올린 최신본이 없어요.</span>
+    <h2 id="uph">CSV 업로드(최신본 지정)</h2>
+    <p class="note" style="margin:0">고친 CSV(관리자 DB 열 형식)를 올리면 그 내용이 페이지의 최신본이 됨. 화면·다운로드·비교가 모두 이 파일을 기준으로 바뀌고, 올린 뒤에 페이지에서 고친 것만 그 위에 더해짐. 엑셀에서 저장한 CSV도 읽음.</p>
+    <span class="hint" id="upInfo">아직 올린 최신본이 없음.</span>
     <div class="row">
-      <label class="btn primary" for="upFile" id="upLabel">⬆ CSV 업로드</label>
+      <label class="btn primary" for="upFile" id="upLabel">CSV 업로드</label>
       <input type="file" id="upFile" accept=".csv,text/csv" hidden>
       <button class="btn" type="button" id="upClear" hidden>올린 최신본 해제</button>
     </div>
@@ -724,18 +724,18 @@ a{color:var(--blue)}
   </div>
   <div class="pg" id="pg-q" role="tabpanel" data-page="q pick rx">
   <section class="panel rx-only" aria-labelledby="rxh">
-    <h2 id="rxh">처방 — 고치면 오를 질문</h2>
-    <p class="note" style="margin:0">평가 등급 C·D 중 수정안이 없고, 문구 특성을 바꾸면 예상 답변율이 오르는 질문이에요. 기대 이득 × 노출 순서예요. 카드의 '평가' 탭에 처방(+%p)이 있어요. 고쳐 저장하거나 '그대로 둘게요'를 누르면 빠져요.</p>
+    <h2 id="rxh">처방 대상</h2>
+    <p class="note" style="margin:0">평가 등급 C·D 중 수정안이 없고, 문구 특성을 바꾸면 예상 답변율이 오르는 질문임. 기대 이득 × 노출 순서임. 카드의 '평가' 탭에 처방(+%p)이 있음. 고쳐 저장하거나 '그대로 두기'를 누르면 빠짐.</p>
   </section>
   <section class="panel pick-only" aria-labelledby="pkh">
-    <h2 id="pkh">골라 주세요</h2>
+    <h2 id="pkh">수정안 선택</h2>
     <div class="kpis">
-      <div class="kpi"><span class="l">이번 달 점검</span><span class="v" id="pkMonth">–</span><span class="d" id="pkMonthD">매달 1일, 데이터상 문제 있는 질문에 수정안을 붙여 올려요</span></div>
+      <div class="kpi"><span class="l">이번 달 점검</span><span class="v" id="pkMonth">–</span><span class="d" id="pkMonthD">매달 1일, 데이터상 문제 있는 질문에 수정안을 붙여 올림</span></div>
       <div class="kpi"><span class="l">개선안 고르기</span><span class="v" id="pkReview">–</span><span class="d">수정안이 여러 개인데 아직 안 고른 질문</span></div>
       <div class="kpi"><span class="l">고른 것 · 그대로 둔 것</span><span class="v" id="pkDone">–</span><span class="d">이 페이지에서 저장했거나 그대로 두기로 한 질문</span></div>
     </div>
-    <p class="note" style="margin:0">위 문구(개선본)가 괜찮으면 줄의 '이 문구로 확정'을 눌러요. 다른 안을 고르거나 직접 고치려면 펼쳐서 '고치기' 탭에서 저장해요. 처리하면 목록에서 빠져요.</p>
-    <input type="search" id="pq" placeholder="문구나 id로 찾기" aria-label="골라 주세요에서 찾기">
+    <p class="note" style="margin:0">위 문구(개선본)가 괜찮으면 줄의 '이 문구로 확정'을 누름. 다른 안을 고르거나 직접 고치려면 펼쳐서 '고치기' 탭에서 저장함. 처리하면 목록에서 빠짐.</p>
+    <input type="search" id="pq" placeholder="문구나 id로 찾기" aria-label="수정안 선택에서 찾기">
   </section>
   <section class="panel q-only" aria-label="찾기">
     <div class="dist mini" id="distMini"></div>
@@ -762,7 +762,7 @@ a{color:var(--blue)}
     <span class="note" id="count"></span>
   </section>
 
-  <section class="list" id="list" aria-live="polite"><div class="empty">질문 목록을 불러오는 중입니다.</div></section>
+  <section class="list" id="list" aria-live="polite"><div class="empty">질문 목록을 불러오는 중</div></section>
   <div class="row" style="justify-content:center"><button class="btn" id="more" type="button" hidden>더 보기</button></div>
   </div>
 </div>
@@ -826,7 +826,7 @@ function hash(r) {
 }
 let AX2 = {}, SUBS = {}, META = new Map(), RECATOK = new Map();
 const PT = { s: '신호형', r: '성찰형', k: '기록형' };
-const PT_DESC = { s: '답이 축의 한쪽 극을 가리켜요. 리포트에서 "○○ 쪽"으로 읽어요.', r: '생각과 이유를 꺼내게 해요. 서술 자체가 결과물이에요.', k: '취향·일상을 모아요. 리포트의 "나의 목록"이 돼요.' };
+const PT_DESC = { s: '답이 축의 한쪽 극을 가리킴. 리포트에서 "○○ 쪽"으로 읽음.', r: '생각과 이유를 꺼내게 함. 서술 자체가 결과물임.', k: '취향·일상을 모음. 리포트의 "나의 목록"이 됨.' };
 const SIG_TARGET = 10;
 const axOf = c => Object.values(AX2).filter(a => a.cat === c);
 const sigLabel = (k, g) => AX2[k] && g ? `첫 선택지 → ${g === 'A' ? AX2[k].a : AX2[k].b}` : '';
@@ -859,10 +859,10 @@ const rows = () => BASE.map(eff);
 let BASE0 = [], UPMETA = null, UPROWS = null, UPLOG = [], upPending = null;
 const UPCOLS = ['id', 'interest_id', 'question_text', 'question_level', 'empathy_guide', 'hint_guide', 'leading_question_guide', 'created_at', 'updated_at', 'deleted_at'];
 let ADDED = new Map();
-const PURPOSE_CAT = { 취향: '좋아하는 것을 꺼내 나의 취향 지도를 그리게 해요.', 감정: '감정을 알아차리고 다루는 방식을 돌아보게 해요.', 루틴: '생활 습관과 시간을 쓰는 방식을 돌아보게 해요.',
-    관계: '사람들 사이에서의 나를 돌아보게 해요.', 사랑: '연애와 좋아하는 사람 앞의 나를 돌아보게 해요.', 가치관: '삶의 기준과 선택을 정리하게 해요.' };
-const PURPOSE_FORM = { c: '둘 중 고르게 해서 바로 답할 수 있어요.', p: '좋아하는 것 하나를 떠올리게 해서 부담이 적어요.', h: '상상으로 답하게 해서 경험이 없어도 답할 수 있어요.',
-    t: '평소 패턴을 관찰하게 해요.', r: '기억 속 장면을 꺼내게 해요.', d: '생각을 한 문장으로 정리하게 해요.', n: '떠오르는 사람을 통해 관계를 돌아보게 해요.' };
+const PURPOSE_CAT = { 취향: '좋아하는 것을 꺼내 나의 취향 지도를 그리게 함.', 감정: '감정을 알아차리고 다루는 방식을 돌아보게 함.', 루틴: '생활 습관과 시간을 쓰는 방식을 돌아보게 함.',
+    관계: '사람들 사이에서의 나를 돌아보게 함.', 사랑: '연애와 좋아하는 사람 앞의 나를 돌아보게 함.', 가치관: '삶의 기준과 선택을 정리하게 함.' };
+const PURPOSE_FORM = { c: '둘 중 고르게 해서 바로 답할 수 있음.', p: '좋아하는 것 하나를 떠올리게 해서 부담이 적음.', h: '상상으로 답하게 해서 경험이 없어도 답할 수 있음.',
+    t: '평소 패턴을 관찰하게 함.', r: '기억 속 장면을 꺼내게 함.', d: '생각을 한 문장으로 정리하게 함.', n: '떠오르는 사람을 통해 관계를 돌아보게 함.' };
 function levelOf(t, f, cur) {
     if (Number(cur) === 1)
         return 1;
@@ -879,11 +879,11 @@ function levelOf(t, f, cur) {
 function ptSentence(pt, ak, sig) {
     const A = AX2[ak];
     if (pt === 's' && A)
-        return `신호형이에요. 답으로 '${A.name}' 축에서 어느 쪽인지 읽어요${sig ? `(첫 선택지 → ${sig === 'A' ? A.a : A.b})` : ''}.`;
+        return `신호형임. 답으로 '${A.name}' 축에서 어느 쪽인지 읽음${sig ? `(첫 선택지 → ${sig === 'A' ? A.a : A.b})` : ''}.`;
     if (pt === 'r')
-        return '성찰형이에요. 생각과 이유를 꺼내는 것 자체가 기록이 돼요.' + (A ? ` '${A.name}' 축의 맥락도 담겨요.` : '');
+        return '성찰형임. 생각과 이유를 꺼내는 것 자체가 기록이 됨.' + (A ? ` '${A.name}' 축의 맥락도 담김.` : '');
     if (pt === 'k')
-        return "기록형이에요. 취향·일상을 모아 '나의 목록'을 쌓아요.";
+        return "기록형임. 취향·일상을 모아 '나의 목록'을 쌓음.";
     return '';
 }
 function addedRows() {
@@ -893,7 +893,7 @@ function addedRows() {
         created_at: dbTime(a.at), updated_at: dbTime(a.at), change: '신규', catChange: '', set: '페이지에서 생성', form: a.form || '',
         ax: AX2[a.axis] ? a.axis : '', axis: AX2[a.axis]?.name || '', axisNote: AX2[a.axis]?.reads || '', axis1: AX2[a.axis] ? '' : (a.axis || ''),
         pt: a.pt || (AX2[a.axis] ? 's' : 'k'), sig: a.sig || '', subN: a.subN || 0, sub: a.subN ? (SUBS[CAT[a.interest_id]] || [])[a.subN - 1] || '' : '', recat: '', fam: a.fam || '',
-        purpose: [a.level === 1 ? '첫 질문용이에요. 가볍고 바로 답할 수 있어 기록을 시작하게 해요.' : '', PURPOSE_CAT[CAT[a.interest_id]] || '', PURPOSE_FORM[a.formCode || ''] || '', ptSentence(a.pt || (AX2[a.axis] ? 's' : 'k'), a.axis, a.sig)].filter(Boolean).join(' '), why: a.why || '', source: '새 질문 만들기', srcUrl: '',
+        purpose: [a.level === 1 ? '첫 질문용임. 가볍고 바로 답할 수 있어 기록을 시작하게 함.' : '', PURPOSE_CAT[CAT[a.interest_id]] || '', PURPOSE_FORM[a.formCode || ''] || '', ptSentence(a.pt || (AX2[a.axis] ? 's' : 'k'), a.axis, a.sig)].filter(Boolean).join(' '), why: a.why || '', source: '새 질문 만들기', srcUrl: '',
         pred: a.pred?.p ?? null, exp: null, ans: null, rep: null, alts: [], decided: '', orig: null, made: a, tags: a.tags || null, formCode: a.formCode || '' }));
 }
 function mergeUpload() {
@@ -916,7 +916,7 @@ function mergeUpload() {
             return;
         BASE.push({ key: k, id: k, newId: '', statsId: null, interest_id: u[1], cat: CAT[u[1]], level: u[3], text: u[2], oldText: '', g: [u[4], u[5], u[6]],
             deleted: !!u[9], deletedAt: u[9], created_at: u[7], updated_at: u[8], change: '업로드로 추가', catChange: '', set: '', form: '', axis: '', axisNote: '', ax: '', pt: '', sig: '', subN: 0, sub: '', recat: '',
-            purpose: '올린 CSV에만 있는 질문이에요.', why: '', source: 'CSV 업로드', srcUrl: '', pred: null, exp: null, ans: null, rep: null, alts: [], decided: '', orig: null, uploaded: true });
+            purpose: '올린 CSV에만 있는 질문임.', why: '', source: 'CSV 업로드', srcUrl: '', pred: null, exp: null, ans: null, rep: null, alts: [], decided: '', orig: null, uploaded: true });
     });
     BASE.sort((a, b) => Number(a.key) - Number(b.key));
 }
@@ -974,21 +974,21 @@ function checkUpload(table) {
     const head = table[0].map(h => h.trim()), idx = Object.fromEntries(UPCOLS.map(c => [c, head.indexOf(c)]));
     const miss = UPCOLS.filter(c => idx[c] < 0 && !['created_at', 'updated_at'].includes(c));
     if (miss.length)
-        return { errors: [`필요한 열이 없어요: ${miss.join(', ')}`] };
+        return { errors: [`필요한 열이 없음: ${miss.join(', ')}`] };
     const errors = [], map = new Map();
     table.slice(1).forEach((r, n) => {
         const g = c => idx[c] < 0 ? '' : (r[idx[c]] ?? '').trim(), line = n + 2;
         const id = g('id'), it = Number(g('interest_id')), lv = Number(g('question_level'));
         if (!/^\d+$/.test(id))
-            return errors.push(`${line}행: id가 숫자가 아니에요 (${id || '빈 칸'})`);
+            return errors.push(`${line}행: id가 숫자가 아님 (${id || '빈 칸'})`);
         if (map.has(id))
-            return errors.push(`${line}행: id ${id}가 두 번 나와요`);
+            return errors.push(`${line}행: id ${id}가 두 번 나옴`);
         if (!CAT[it])
-            errors.push(`${line}행(id ${id}): interest_id는 1~6이어야 해요`);
+            errors.push(`${line}행(id ${id}): interest_id는 1~6이어야 함`);
         if (![1, 2].includes(lv))
-            errors.push(`${line}행(id ${id}): question_level은 1 또는 2여야 해요`);
+            errors.push(`${line}행(id ${id}): question_level은 1 또는 2여야 함`);
         if (!g('question_text'))
-            errors.push(`${line}행(id ${id}): question_text가 비어 있어요`);
+            errors.push(`${line}행(id ${id}): question_text가 비어 있음`);
         map.set(id, [id, it, g('question_text'), lv, g('empathy_guide'), g('hint_guide'), g('leading_question_guide'), g('created_at'), g('updated_at'), g('deleted_at')]);
     });
     return { errors, map };
@@ -1042,15 +1042,15 @@ function upPreviewUI() {
     }
     const { name, errors, map } = upPending;
     if (errors.length) {
-        el.innerHTML = `<div class="uprev"><b>${esc(name)}를 읽지 못했어요.</b><ul>${errors.slice(0, 6).map(e => `<li class="err">${esc(e)}</li>`).join('')}${errors.length > 6 ? `<li>외 ${errors.length - 6}건</li>` : ''}</ul><div><button class="btn" type="button" data-upcancel>닫기</button></div></div>`;
+        el.innerHTML = `<div class="uprev"><b>${esc(name)}를 읽지 못했음.</b><ul>${errors.slice(0, 6).map(e => `<li class="err">${esc(e)}</li>`).join('')}${errors.length > 6 ? `<li>외 ${errors.length - 6}건</li>` : ''}</ul><div><button class="btn" type="button" data-upcancel>닫기</button></div></div>`;
         return;
     }
     const { c, conflict, missing } = uploadSummary(map);
     el.innerHTML = `<div class="uprev"><b>${esc(name)} · ${map.size.toLocaleString()}행</b>
-    <ul><li>지금 페이지와 같음 ${c.same.toLocaleString()}행</li><li>문구 ${c.text} · 가이드 ${c.guide} · 레벨 ${c.level} · 관심사 ${c.cat}행이 달라요</li>
-    <li>비활성화 ${c.off} · 다시 활성화 ${c.on}</li><li>페이지에 없던 id ${c.added}개 (그대로 추가돼요)</li>
-    ${missing.length ? `<li>파일에 없는 활성 질문 ${missing.length}개 — 지금 내용 그대로 둬요 (예: ${missing.slice(0, 5).map(k => 'Q.' + k).join(', ')})</li>` : ''}
-    ${conflict.length ? `<li class="err">페이지에서 고친 ${conflict.length}건이 파일과 달라요 — 파일 내용이 우선해요 (예: ${conflict.slice(0, 5).map(k => 'Q.' + k).join(', ')})</li>` : ''}</ul>
+    <ul><li>지금 페이지와 같음 ${c.same.toLocaleString()}행</li><li>문구 ${c.text} · 가이드 ${c.guide} · 레벨 ${c.level} · 관심사 ${c.cat}행이 다름</li>
+    <li>비활성화 ${c.off} · 다시 활성화 ${c.on}</li><li>페이지에 없던 id ${c.added}개 (그대로 추가됨)</li>
+    ${missing.length ? `<li>파일에 없는 활성 질문 ${missing.length}개: 지금 내용 그대로 둠 (예: ${missing.slice(0, 5).map(k => 'Q.' + k).join(', ')})</li>` : ''}
+    ${conflict.length ? `<li class="err">페이지에서 고친 ${conflict.length}건이 파일과 다름: 파일 내용이 우선함 (예: ${conflict.slice(0, 5).map(k => 'Q.' + k).join(', ')})</li>` : ''}</ul>
     <div class="row"><button class="btn primary" type="button" data-upapply ${db && canWrite ? '' : 'disabled'}>이 파일을 최신본으로</button><button class="btn" type="button" data-upcancel>취소</button></div></div>`;
 }
 async function applyUpload() {
@@ -1070,10 +1070,10 @@ async function applyUpload() {
         await db.doc('upmeta/current').set(meta);
         upPending = null;
         upPreviewUI();
-        toast('올린 파일을 최신본으로 했어요.');
+        toast('올린 파일을 최신본으로 했음.');
     }
     catch {
-        toast('올리지 못했어요. 잠시 후 다시 해 주세요.');
+        toast('올리지 못했음. 잠시 후 다시 시도.');
         if (btn) {
             btn.disabled = false;
             btn.textContent = '이 파일을 최신본으로';
@@ -1096,20 +1096,20 @@ async function loadUpload(meta) {
 async function upInfoUI() {
     const ids = [...new Set([UPMETA?.by, ...UPLOG.map(d => d.by)].filter(Boolean))];
     const ps = user && ids.length ? await user.profiles(ids) : {}, who = id => (ps[id] && ps[id].name) || '누군가';
-    $('#upInfo').textContent = UPMETA?.id ? `지금 최신본: ${UPMETA.name} · ${UPMETA.count.toLocaleString()}행 · ${fmt(UPMETA.at)} · ${who(UPMETA.by)}` : `아직 올린 최신본이 없어요. 지금은 개선본(${BUILT}) 기준이에요.`;
+    $('#upInfo').textContent = UPMETA?.id ? `지금 최신본: ${UPMETA.name} · ${UPMETA.count.toLocaleString()}행 · ${fmt(UPMETA.at)} · ${who(UPMETA.by)}` : `아직 올린 최신본이 없음. 지금은 개선본(${BUILT}) 기준임.`;
     $('#upClear').hidden = !UPMETA?.id;
-    $('#upHist').innerHTML = UPLOG.length ? UPLOG.map(d => `<li><span>${esc(fmt(d.at))}</span><span>${esc(who(d.by))}</span><span>${esc(d.name)} · ${d.count}행</span>${UPMETA?.id === d.id ? '<span class="chip mint">지금 최신본</span>' : `<button class="btn" type="button" data-uprestore="${esc(d.id)}" ${db && canWrite ? '' : 'disabled'}>이 파일로 되돌리기</button>`}</li>`).join('') : '<li>아직 없어요.</li>';
+    $('#upHist').innerHTML = UPLOG.length ? UPLOG.map(d => `<li><span>${esc(fmt(d.at))}</span><span>${esc(who(d.by))}</span><span>${esc(d.name)} · ${d.count}행</span>${UPMETA?.id === d.id ? '<span class="chip mint">지금 최신본</span>' : `<button class="btn" type="button" data-uprestore="${esc(d.id)}" ${db && canWrite ? '' : 'disabled'}>이 파일로 되돌리기</button>`}</li>`).join('') : '<li>아직 없음.</li>';
 }
 function lint(t) {
     const w = [];
     if (!t.trim())
-        w.push('문구가 비어 있어요.');
+        w.push('문구가 비어 있음.');
     if (/오늘|어제|이번 주/.test(t))
-        w.push("'오늘·어제' 같은 시점은 답할 거리가 없을 때 교체율을 높여요.");
+        w.push("'오늘·어제' 같은 시점은 답할 거리가 없을 때 교체율을 높임.");
     if (/적이? 있|있었나요|있다면/.test(t))
-        w.push('경험을 전제하면 경험이 없는 사람이 답하기 어려워요.');
+        w.push('경험을 전제하면 경험이 없는 사람이 답하기 어려움.');
     if (t.length > 45)
-        w.push(`${t.length}자예요. 40자 안팎이 읽기 편해요.`);
+        w.push(`${t.length}자임. 40자 안팎이 읽기 편함.`);
     return w;
 }
 function filters() {
@@ -1161,7 +1161,7 @@ function tabsUI() {
     $('#tabs').innerHTML = VIEWS.map(([v, l, d]) => {
         const n = all.filter(r => (F.del || !r.deleted || v === 'mod' || v === 'off') && inView(r, v)).length;
         const dim = v === 'fix' && !INS && !STATS.length;
-        return `<button type="button" class="tab" data-view="${v}" aria-pressed="${F.view === v}"><b>${dim ? '–' : n.toLocaleString()}</b><span>${l}</span><small>${dim ? '통계를 불러오는 중' : v === 'fix' && !n ? '지금은 없어요 · 매달 통계로 다시 봐요' : d}</small></button>`;
+        return `<button type="button" class="tab" data-view="${v}" aria-pressed="${F.view === v}"><b>${dim ? '–' : n.toLocaleString()}</b><span>${l}</span><small>${dim ? '통계를 불러오는 중' : v === 'fix' && !n ? '지금은 없음 · 매달 통계로 다시 봄' : d}</small></button>`;
     }).join('');
 }
 function activeFilters() {
@@ -1212,8 +1212,8 @@ async function historyUI() {
     $('#baseSel').innerHTML = DLS.map(d => `<option value="${esc(d.id)}"${d.id === baseId ? ' selected' : ''}>비교 기준 · ${esc(fmt(d.at))} · ${esc(who(d.by))}</option>`).join('')
         + `<option value="orig"${baseId === 'orig' ? ' selected' : ''}>비교 기준 · 최초 ${ORIG_LABEL}</option>`;
     const b = baseline();
-    $('#baseInfo').textContent = !b ? '비교 기준이 없어요.' : b.orig ? `최초 ${ORIG_LABEL}와 비교하고 있어요. 지금까지 바뀐 전부가 '바뀐 것'으로 잡혀요.` : `${fmt(b.at)}에 ${who(b.by)}님이 받은 파일과 비교하고 있어요.`;
-    $('#hist').innerHTML = DLS.length ? DLS.map(d => `<li><span>${esc(fmt(d.at))}</span><span>${esc(who(d.by))}</span><span>${d.kind === 'diff' ? '바뀐 것만' : '전체'} ${d.count}행</span><span>새로 ${d.nNew ?? 0} · 바뀜 ${d.nMod ?? 0} · 빠짐 ${d.nGone ?? 0}</span></li>`).join('') : '<li>아직 없어요.</li>';
+    $('#baseInfo').textContent = !b ? '비교 기준이 없음.' : b.orig ? `최초 ${ORIG_LABEL}와 비교하고 있음. 지금까지 바뀐 전부가 '바뀐 것'으로 잡힘.` : `${fmt(b.at)}에 ${who(b.by)}님이 받은 파일과 비교하고 있음.`;
+    $('#hist').innerHTML = DLS.length ? DLS.map(d => `<li><span>${esc(fmt(d.at))}</span><span>${esc(who(d.by))}</span><span>${d.kind === 'diff' ? '바뀐 것만' : '전체'} ${d.count}행</span><span>새로 ${d.nNew ?? 0} · 바뀜 ${d.nMod ?? 0} · 빠짐 ${d.nGone ?? 0}</span></li>`).join('') : '<li>아직 없음.</li>';
 }
 const pct = (a, b) => b ? a / b : null;
 const P = x => x == null ? '–' : Math.round(x * 100) + '%';
@@ -1252,23 +1252,23 @@ function spark(k) {
 function evidence(r) {
     const s = latest();
     if (!s)
-        return '<div class="box">통계를 불러오는 중이에요.</div>';
+        return '<div class="box">통계를 불러오는 중임.</div>';
     const q = qstat(r.key);
     if (!q)
-        return `<div class="box">${r.newId ? '신규 질문이라 아직 노출 기록이 없어요. 노출이 쌓이면 여기에 근거가 생겨요.' : '통계 사이트에 잡히지 않는 질문이에요(첫 질문 묶음 등).'}</div>`;
+        return `<div class="box">${r.newId ? '신규 질문이라 아직 노출 기록이 없음. 노출이 쌓이면 여기에 근거가 생김.' : '통계 사이트에 잡히지 않는 질문임(첫 질문 묶음 등).'}</div>`;
     const avg = avgRate(s), pq = qstat(r.key, prevSnap());
     const dExp = pq ? q.exp - pq.exp : null, dAns = pq ? q.ans - pq.ans : null;
     let say;
     if (!q.res)
-        say = `아직 답변이나 교체가 없어요.`;
+        say = `아직 답변이나 교체가 없음.`;
     else {
         const gap = Math.round((q.rate - avg) * 100);
-        say = `노출 ${q.exp}회 중 답변 ${q.ans}, 교체 ${q.rep}, 미응답 ${q.nor}이에요. 답변율 ${P(q.rate)}로 전체 평균 ${P(avg)}보다 ${Math.abs(gap)}%p ${gap < 0 ? '낮아요' : gap > 0 ? '높아요' : '같아요'}.`;
+        say = `노출 ${q.exp}회 중 답변 ${q.ans}, 교체 ${q.rep}, 미응답 ${q.nor}임. 답변율 ${P(q.rate)}로 전체 평균 ${P(avg)}보다 ${Math.abs(gap)}%p ${gap < 0 ? '낮음' : gap > 0 ? '높음' : '같음'}.`;
         if (q.exp < 20)
-            say += ' 표본이 아직 적어서 추정 답변율은 평균 쪽으로 당겨서 봐요.';
+            say += ' 표본이 아직 적어서 추정 답변율은 평균 쪽으로 당겨서 봄.';
     }
     if (q.rev > 1)
-        say += ` 지금 문구는 ${q.rev}번째 버전이고, 이전 버전까지 합친 누적은 노출 ${q.aexp} · 답변 ${q.aans} · 교체 ${q.arep}이에요.`;
+        say += ` 지금 문구는 ${q.rev}번째 버전이고, 이전 버전까지 합친 누적은 노출 ${q.aexp} · 답변 ${q.aans} · 교체 ${q.arep}임.`;
     if (dExp != null && dExp > 0)
         say += ` 지난 수집(${prevSnap().date}) 이후 노출 +${dExp}, 답변 +${dAns}.`;
     const w = q.res ? Math.max(2, Math.round(q.rate * 100)) : 0, aw = Math.round(avg * 100);
@@ -1331,7 +1331,7 @@ function badges() {
     $('#bdgPick').textContent = np.toLocaleString();
     const mp = all.filter(r => isPick(r) && pickKind(r) === 'month'), lastM = [...PICKS.values()].map(p => p.month).sort().pop();
     $('#pkMonth').textContent = mp.length.toLocaleString();
-    $('#pkMonthD').textContent = lastM ? `최근 점검 ${lastM} · 매달 1일, 데이터상 문제 있는 질문에 수정안을 붙여 올려요` : '첫 점검은 다음 달 1일이에요 · 데이터상 문제 있는 질문에 수정안을 붙여 올려요';
+    $('#pkMonthD').textContent = lastM ? `최근 점검 ${lastM} · 매달 1일, 데이터상 문제 있는 질문에 수정안을 붙여 올림` : '첫 점검은 다음 달 1일임 · 데이터상 문제 있는 질문에 수정안을 붙여 올림';
     $('#pkReview').textContent = (np - mp.length).toLocaleString();
     $('#pkDone').textContent = all.filter(r => !isPick(r) && (KEEPS.has(r.key) || (r.edited && (PICKS.has(r.key) || r.alts.length >= 2)))).length.toLocaleString();
     const nu = DUPS.filter(x => !dupDone(x, all)).length;
@@ -1348,7 +1348,7 @@ function badges() {
     $('#tdRecat').textContent = INS ? tc.recat : '–';
     $('#tdRx').textContent = INS ? tc.rx : '–';
     $('#tdBar').style.width = `${tc.done + tc.total ? Math.round(tc.done / (tc.done + tc.total) * 100) : 0}%`;
-    $('#tdNote').textContent = `남은 결정 ${tc.total.toLocaleString()}개 · 처리 ${tc.done.toLocaleString()}개 · 권장 순서: 처방(영향 큼) → 중복(빠름) → 골라 주세요 → 재배정`;
+    $('#tdNote').textContent = `남은 결정 ${tc.total.toLocaleString()}개 · 처리 ${tc.done.toLocaleString()}개 · 권장 순서: 처방(영향 큼) → 중복(빠름) → 수정안 선택 → 재배정`;
     $('#bdgDiff').hidden = !nd;
     $('#bdgDiff').textContent = nd.toLocaleString();
 }
@@ -1379,9 +1379,9 @@ function dupUI() {
         const fin = dupDone(x, all), ok = DUPOK.has(dupId(x));
         return `<article class="dpair${fin ? ' done' : ''}"><div class="hd"><span class="chip ${V[x.v][0]}">${V[x.v][1]}</span><span class="chip">글자 유사도 ${Math.round(x.score * 100)}%</span>${x.note ? `<span class="note">${esc(x.note)}</span>` : ''}${ok ? '<span class="chip mint">중복 아님으로 표시함</span>' : ''}</div>
       <div class="two">${side(a)}${side(b)}</div>
-      ${fin ? (ok ? `<div><button class="btn" type="button" data-dupundo="${dupId(x)}" ${db && canWrite ? '' : 'disabled'}>다시 검토</button></div>` : '') : `<div><button class="btn mint" type="button" data-dupok="${dupId(x)}" ${db && canWrite ? '' : 'disabled'}>중복 아니에요 · 둘 다 둘게요</button></div>`}</article>`;
+      ${fin ? (ok ? `<div><button class="btn" type="button" data-dupundo="${dupId(x)}" ${db && canWrite ? '' : 'disabled'}>다시 검토</button></div>` : '') : `<div><button class="btn mint" type="button" data-dupok="${dupId(x)}" ${db && canWrite ? '' : 'disabled'}>중복 아님 · 둘 다 유지</button></div>`}</article>`;
     };
-    $('#dups').innerHTML = (open.length ? open.map(pair).join('') : '<div class="empty">검토할 중복 후보가 없어요.</div>')
+    $('#dups').innerHTML = (open.length ? open.map(pair).join('') : '<div class="empty">검토할 중복 후보가 없음.</div>')
         + (done.length ? `<details class="panel"><summary class="note">정리한 쌍 ${done.length}개</summary><div class="dups" style="margin-top:10px">${done.map(pair).join('')}</div></details>` : '');
 }
 const grams = t => { const s = t.replace(/[^가-힣a-zA-Z0-9]/g, ''), g = new Set(); for (let i = 0; i < s.length - 1; i++)
@@ -1415,7 +1415,7 @@ function distUI() {
             return `<tr data-cat="${c}"><td><span class="sw" style="background:${col(i)}"></span>${c}</td><td>${n0[i]}<em>${P(n0[i] / t0)}</em></td><td>${n1[i]}<em>${P(n1[i] / t1)}</em></td><td>${d > 0 ? '+' : ''}${d}</td><td class="hide-m">${nw[i]}</td><td class="hide-m">${lv1[i]}</td></tr>`;
         }).join('') +
         `<tr><td>합계</td><td>${t0}</td><td>${t1}</td><td>${t1 - t0 > 0 ? '+' : ''}${t1 - t0}</td><td class="hide-m">${nw.reduce((a, b) => a + b, 0)}</td><td class="hide-m">${lv1.reduce((a, b) => a + b, 0)}</td></tr></tbody></table>
-    <p class="note" style="margin:0">페이지에서 고친 관심사·비활성화·삭제까지 반영해요. 줄을 누르면 그 관심사 질문만 걸러 보여 줘요.</p>`;
+    <p class="note" style="margin:0">페이지에서 고친 관심사·비활성화·삭제까지 반영함. 줄을 누르면 그 관심사 질문만 걸러 보여 줌.</p>`;
     $('#distMini').innerHTML = `<div class="bl"><span>관심사 분포</span><div class="bar" role="img" aria-label="개선 후 ${cats.map((c, i) => `${c} ${n1[i]}개`).join(', ')}">${cats.map((c, i) => `<i style="width:${n1[i] / t1 * 100}%;background:${col(i)}" title="${c} ${n1[i]}개 (${P(n1[i] / t1)})"></i>`).join('')}</div></div>
     <div class="lg">${cats.map((c, i) => `<button type="button" data-cat="${c}" aria-pressed="${F.cat === c}"><span class="sw" style="background:${col(i)}"></span>${c} ${n1[i]} · ${P(n1[i] / t1)}</button>`).join('')}</div>`;
 }
@@ -1427,7 +1427,7 @@ function insUI() {
     const m = INS.model, s = latest();
     $('#insMeta').textContent = `통계 ${INS.snapshot} 기준 · 문항 ${m.n_q.toLocaleString()}개 · 결론(답변+교체) ${m.n_res.toLocaleString()}회 · 평균 답변율 ${P(m.base)}`;
     const KL = { neg: '낮추는 요인', pos: '올리는 요인', gap: '빈 곳', neutral: '참고' };
-    $('#finds').innerHTML = INS.findings.map(f => `<article class="find ${f.kind}"><span class="k">${KL[f.kind] || '참고'}</span><h3>${esc(f.title)}</h3><p>${esc(f.body)}</p>${f.action ? `<div class="act"><b>그래서</b> ${esc(f.action)}</div>` : ''}</article>`).join('');
+    $('#finds').innerHTML = INS.findings.map(f => `<article class="find ${f.kind}"><span class="k">${KL[f.kind] || '참고'}</span><h3>${esc(f.title)}</h3><p>${esc(f.body)}</p>${f.action ? `<div class="act"><b>조치</b> ${esc(f.action)}</div>` : ''}</article>`).join('');
     forestUI();
     axUI();
     heatUI();
@@ -1439,19 +1439,19 @@ function insUI() {
     xUI();
     filters();
     $('#method').innerHTML = [
-        `<div><b>데이터</b> 통계 사이트의 문항별 '현재 Revision' 실적(${INS.snapshot}). 답변율 = 답변 ÷ (답변 + 교체). 미응답은 결론이 나지 않은 노출이라 뺐어요.</div>`,
+        `<div><b>데이터</b> 통계 사이트의 문항별 '현재 Revision' 실적(${INS.snapshot}). 답변율 = 답변 ÷ (답변 + 교체). 미응답은 결론이 나지 않은 노출이라 뺐음.</div>`,
         `<div><b>문구 특성</b> 기존 질문마다 붙인 태그(시점 고정, 경험 전제, 즉답, 감정 무게, 자기노출, 은유)와 글자 수, 형식, 관심사.</div>`,
         `<div><b>따로 보기(단변량)</b> 그 특성이 있는 질문과 없는 질문의 답변율 차이와 95% 신뢰구간.</div>`,
-        `<div><b>함께 보기(평가 모델)</b> 릿지 규제 베타-이항 회귀로 모든 특성을 동시에 넣어 각 특성의 효과만 떼어 봤어요. ${esc(m.ref)}. 문항마다 진짜 답변율이 다른 정도(φ=${Math.round(m.phi)})를 모델이 직접 추정하고, 구간은 문항 부트스트랩 200회 백분위예요. 규제 때문에 효과가 0 쪽으로 조금 작게 나와요(보수적). 평균 답변율 ${P(m.base)}에서의 %p 차이로 바꿔 보여 줘요.</div>`,
-        `<div><b>검증</b> 문항 단위 5겹 교차검증으로 처음 보는 문항의 답변을 얼마나 맞히는지 쟀어요. 평균만 쓴 모델 대비 로그우도 +${(m.evals || []).find(e => e.name === '지금 모델')?.ll ?? '–'}, 순위 상관 ${m.rho?.new}(이전 모델 ${m.rho?.old}).</div>`,
-        `<div><b>한계</b> 문항당 노출이 아직 적어(대부분 10회 미만) 구간이 넓어요. 관찰 데이터라 인과로 단정할 수 없고, 노출 순서·사용자 구성의 영향은 통제하지 못했어요. 매달 통계가 쌓이면 다시 계산해요.</div>`
+        `<div><b>함께 보기(평가 모델)</b> 릿지 규제 베타-이항 회귀로 모든 특성을 동시에 넣어 각 특성의 효과만 떼어 봤음. ${esc(m.ref)}. 문항마다 진짜 답변율이 다른 정도(φ=${Math.round(m.phi)})를 모델이 직접 추정하고, 구간은 문항 부트스트랩 200회 백분위임. 규제 때문에 효과가 0 쪽으로 조금 작게 나옴(보수적). 평균 답변율 ${P(m.base)}에서의 %p 차이로 바꿔 보여 줌.</div>`,
+        `<div><b>검증</b> 문항 단위 5겹 교차검증으로 처음 보는 문항의 답변을 얼마나 맞히는지 쟀음. 평균만 쓴 모델 대비 로그우도 +${(m.evals || []).find(e => e.name === '지금 모델')?.ll ?? '–'}, 순위 상관 ${m.rho?.new}(이전 모델 ${m.rho?.old}).</div>`,
+        `<div><b>한계</b> 문항당 노출이 아직 적어(대부분 10회 미만) 구간이 넓음. 관찰 데이터라 인과로 단정할 수 없고, 노출 순서·사용자 구성의 영향은 통제하지 못했음. 매달 통계가 쌓이면 다시 계산함.</div>`
     ].join('');
 }
 function forestUI() {
     const multi = FMODE === 'multi';
     const items = multi ? INS.model.terms.filter(t => t.group !== '상호작용').map(t => ({ g: t.group, n: t.name, v: t.pp, lo: t.pp_lo, hi: t.pp_hi, sig: t.p < 0.05, tip: `오즈비 ${t.or_} (95% CI ${t.or_lo}~${t.or_hi}) · p=${t.p}` }))
         : INS.uni.map(u => ({ g: u.group, n: u.name, v: u.diff, lo: u.lo, hi: u.hi, sig: u.lo > 0 || u.hi < 0, tip: `해당 ${P(u.rate)} vs 나머지 ${P(u.rest)} · 문항 ${u.nq} · 결론 ${u.res}` }));
-    $('#forNote').textContent = multi ? `평가 모델(릿지 베타-이항)로 다른 특성을 모두 함께 고려했을 때 각 특성이 평균 답변율(${P(INS.model.base)})을 얼마나 바꾸는지예요. ${INS.model.ref}. 구간은 부트스트랩 95%.` : '그 특성이 있는 질문과 없는 질문의 답변율 차이예요. 다른 특성과 겹친 효과가 섞여 있어요.';
+    $('#forNote').textContent = multi ? `평가 모델(릿지 베타-이항)로 다른 특성을 모두 함께 고려했을 때 각 특성이 평균 답변율(${P(INS.model.base)})을 얼마나 바꾸는지임. ${INS.model.ref}. 구간은 부트스트랩 95%.` : '그 특성이 있는 질문과 없는 질문의 답변율 차이임. 다른 특성과 겹친 효과가 섞여 있음.';
     const groups = [...new Set(items.map(i => i.g))], rowsH = [];
     groups.forEach(g => { rowsH.push({ head: g }); items.filter(i => i.g === g).forEach(i => rowsH.push(i)); });
     const W = 720, L = 150, R = 70, rh = 24, H = rowsH.length * rh + 34;
@@ -1486,7 +1486,7 @@ function axUI() {
         ax.filter(a => a.cat === c).map(a => {
             const sg = live.filter(r => r.ax === a.key && r.pt === 's'), n = sg.length, A = sg.filter(r => r.sig === 'A').length, B = sg.filter(r => r.sig === 'B').length;
             return `<div class="axrow">
-      <span class="nm" title="${esc(a.concept)} — ${esc(a.reads)}">${esc(a.name)}</span>
+      <span class="nm" title="${esc(a.concept)}: ${esc(a.reads)}">${esc(a.name)}</span>
       <span class="cnt"><span><i style="width:${Math.min(100, n / SIG_TARGET * 100)}%;background:var(--chart)"></i>${n}/${SIG_TARGET}${n < SIG_TARGET ? ' <b style="color:var(--low)">부족</b>' : ''}</span>
         <span class="pole" title="첫 선택지 ${esc(a.a)} ${A} · ${esc(a.b)} ${B} · 방향 없음(성향 척도) ${n - A - B}"><i style="flex:${A};background:var(--blue)"></i><i style="flex:${B};background:var(--mint)"></i><i style="flex:${Math.max(0, n - A - B)};background:var(--track)"></i></span></span>
       <span class="rt" title="${esc(a.name)} 답변율 ${P(a.rate)}${a.ci[0] != null ? ` (95% CI ${P(a.ci[0])}~${P(a.ci[1])})` : ''} · 결론 ${a.res}회">${a.rate == null ? '<span class="lb">실적 없음</span>' : `<span class="tr"></span><span class="ci" style="left:${pos(a.ci[0])};width:calc(${pos(a.ci[1])} - ${pos(a.ci[0])})"></span><span class="av" style="left:${pos(avg)}"></span><span class="pt" style="left:${pos(a.rate)}"></span><span class="lb">${P(a.rate)}${a.res < 50 ? ' · 표본 적음' : ''}</span>`}</span></div>`;
@@ -1499,7 +1499,7 @@ function heatUI() {
     const on = (c, a, p) => GEN && GEN.cat === c && (GEN.ax || '') === a && GEN.pt === p ? ' sel' : '';
     const axCell = (c, a) => {
         const rs = live.filter(r => r.cat === c && r.ax === a.key), n = rs.filter(r => r.pt === 's').length, t = Math.min(1, n / SIG_TARGET);
-        return `<td class="hc${on(c, a.key, 's')}${n < SIG_TARGET ? ' need' : ''}" data-cat="${c}" data-ax="${a.key}" data-pt="s" tabindex="0" role="button" style="background:color-mix(in srgb, var(--chart) ${Math.round(8 + t * 72)}%, var(--surface));color:${t > 0.6 ? '#fff' : 'var(--ink)'}" title="${c} · ${esc(a.name)} — ${esc(a.reads)}. 신호형 ${n}개 / 목표 ${SIG_TARGET}${rs.length > n ? ` · 이 축의 성찰·기록형 ${rs.length - n}개` : ''} · 눌러서 신호형 질문 만들기"><b>${esc(a.name)}</b><span>${n}/${SIG_TARGET}</span></td>`;
+        return `<td class="hc${on(c, a.key, 's')}${n < SIG_TARGET ? ' need' : ''}" data-cat="${c}" data-ax="${a.key}" data-pt="s" tabindex="0" role="button" style="background:color-mix(in srgb, var(--chart) ${Math.round(8 + t * 72)}%, var(--surface));color:${t > 0.6 ? '#fff' : 'var(--ink)'}" title="${c} · ${esc(a.name)}: ${esc(a.reads)}. 신호형 ${n}개 / 목표 ${SIG_TARGET}${rs.length > n ? ` · 이 축의 성찰·기록형 ${rs.length - n}개` : ''} · 눌러서 신호형 질문 만들기"><b>${esc(a.name)}</b><span>${n}/${SIG_TARGET}</span></td>`;
     };
     const ptCell = (c, p) => {
         const n = live.filter(r => r.cat === c && r.pt === p).length;
@@ -1526,18 +1526,18 @@ function structUI() {
       <td><div class="subs">${subs}</div></td></tr>`;
     }).join('');
     $('#strOut').innerHTML = `<div class="kpis">${kp}</div>
-    <p class="note" style="margin:0">${(() => { const v = st.pt.filter(x => x.rate != null); const same = v.length === 3 && Math.max(...v.map(x => x.ci[0])) < Math.min(...v.map(x => x.ci[1])); return same ? '세 유형의 답변율 구간이 겹쳐요 — 목적 유형만으로는 답변율이 달라지지 않아요. 자아분석에 쓰는 신호형을 늘려도 손해가 없어요.' : '목적 유형에 따라 답변율이 달라요.'; })()}</p>
+    <p class="note" style="margin:0">${(() => { const v = st.pt.filter(x => x.rate != null); const same = v.length === 3 && Math.max(...v.map(x => x.ci[0])) < Math.min(...v.map(x => x.ci[1])); return same ? '세 유형의 답변율 구간이 겹침: 목적 유형만으로는 답변율이 달라지지 않음. 자아분석에 쓰는 신호형을 늘려도 손해가 없음.' : '목적 유형에 따라 답변율이 다름.'; })()}</p>
     <div class="chartbox" style="overflow-x:auto"><table class="coef"><thead><tr><th>관심사</th><th style="min-width:180px">목적 유형 구성</th><th>소주제 (빨강 = 8문항 미만, 얇음)</th></tr></thead><tbody>${rowsH}</tbody></table></div>
     <div class="legend"><span><i style="background:var(--chart)"></i>신호형</span><span><i style="background:var(--blue)"></i>성찰형</span><span><i style="background:var(--track)"></i>기록형</span></div>`;
 }
 function revUI() {
     const R = INS?.revision, changed = rows().filter(r => r.orig && !r.deleted && r.text !== r.orig[1]).length;
     const items = R?.items || [];
-    $('#revOut').innerHTML = `<p class="note" style="margin:0"><b>방법</b> 앱 DB에서 문구를 바꾸면 통계 사이트의 Revision이 올라가요. 같은 질문의 이전 Revision 누적(전체 − 현재)을 '수정 전', 현재 Revision을 '수정 후'로 나눠 답변율을 비교해요. 같은 기간 전체 답변율의 변화(계절·사용자 구성)를 빼 주려고, 수정하지 않은 질문들의 같은 달 변화와 견줘요(이중차분). 수정 전·후 각각 결론 20회가 쌓이면 판정해요.</p>
+    $('#revOut').innerHTML = `<p class="note" style="margin:0"><b>방법</b> 앱 DB에서 문구를 바꾸면 통계 사이트의 Revision이 올라감. 같은 질문의 이전 Revision 누적(전체 − 현재)을 '수정 전', 현재 Revision을 '수정 후'로 나눠 답변율을 비교함. 같은 기간 전체 답변율의 변화(계절·사용자 구성)를 빼 주려고, 수정하지 않은 질문들의 같은 달 변화와 견줌(이중차분). 수정 전·후 각각 결론 20회가 쌓이면 판정함.</p>
     <div class="kpis">
       <div class="kpi"><span class="l">원본 대비 문구를 고친 활성 질문</span><span class="v">${changed.toLocaleString()}</span><span class="d">이 페이지·개선본 기준 · 앱 DB에 반영되면 측정 대상</span></div>
       <div class="kpi"><span class="l">통계에서 Revision이 바뀐 질문</span><span class="v">${(R?.n ?? 0).toLocaleString()}</span><span class="d">${R ? `${esc(INS.snapshot)} 통계 기준` : '통계를 불러오는 중'}</span></div>
-      <div class="kpi"><span class="l">상태</span><span class="v">${items.length ? (R.pooled ? pp(R.pooled.diff) : '집계 중') : '대기'}</span><span class="d">${items.length ? (R.pooled ? `수정 후 − 수정 전 (95% CI ${pp(R.pooled.lo)}~${pp(R.pooled.hi)}) · 판정 가능 ${R.pooled.n}문항` : '판정할 만큼 쌓이지 않았어요') : '수정이 앱 DB에 반영된 뒤 첫 달 통계부터 자동 계산해요'}</span></div>
+      <div class="kpi"><span class="l">상태</span><span class="v">${items.length ? (R.pooled ? pp(R.pooled.diff) : '집계 중') : '대기'}</span><span class="d">${items.length ? (R.pooled ? `수정 후 − 수정 전 (95% CI ${pp(R.pooled.lo)}~${pp(R.pooled.hi)}) · 판정 가능 ${R.pooled.n}문항` : '판정할 만큼 쌓이지 않았음') : '수정이 앱 DB에 반영된 뒤 첫 달 통계부터 자동 계산함'}</span></div>
     </div>
     ${items.length ? `<div class="chartbox"><table class="coef"><thead><tr><th>질문</th><th>Rev</th><th>수정 전</th><th>수정 후</th><th>차이</th></tr></thead><tbody>${items.slice(0, 30).map(x => `<tr><td>Q.${esc(x.key)} ${esc(rows().find(r => r.key === x.key)?.text || '')}</td><td>${x.rev}</td><td>${P(x.before)} <span class="g">${x.n0}</span></td><td>${P(x.after)} <span class="g">${x.n1}</span></td><td style="font-weight:${x.n0 >= 20 && x.n1 >= 20 ? 800 : 400}">${pp(x.after - x.before)}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
 }
@@ -1556,7 +1556,7 @@ function lenUI() {
       <text x="${cx}" y="${H - 22}" font-size="11" text-anchor="middle" fill="var(--ink-2)">${d.name}</text><text x="${cx}" y="${H - 8}" font-size="10" text-anchor="middle" fill="var(--muted)">문항 ${d.nq}${d.res < 50 ? ' · 표본 적음' : ''}</text></g>`;
     }).join('');
     const avg = `<line x1="${L}" x2="${W}" y1="${y(INS.model.base)}" y2="${y(INS.model.base)}" stroke="var(--ink)" stroke-dasharray="4 4" opacity=".6"/><text x="${W}" y="${y(INS.model.base) - 5}" font-size="10" text-anchor="end" fill="var(--ink-2)">평균 ${P(INS.model.base)}</text>`;
-    $('#lenChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="문구 길이별 답변율">${grid}${bars}${avg}</svg><p class="note" style="margin:6px 0 0">세로 선은 95% 신뢰구간이에요. 흐린 막대는 결론 50회 미만이라 참고만 해요.</p>`;
+    $('#lenChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="문구 길이별 답변율">${grid}${bars}${avg}</svg><p class="note" style="margin:6px 0 0">세로 선은 95% 신뢰구간임. 흐린 막대는 결론 50회 미만이라 참고만 함.</p>`;
 }
 const FORMN = { p: '선호(최애)', c: '양자택일', t: '성향·습관', h: '상상·가정', r: '일화 회상', d: '개념·가치', n: '특정 인물', o: '기타' };
 let GEN = null;
@@ -1604,17 +1604,17 @@ function predict(c) {
 function gate({ text, p, lo, level, tags, sim, g, pt, sig }) {
     const base = INS?.model?.base ?? 0.5, f = [];
     if (p != null && p < base - 0.05)
-        f.push(`예상 답변율 ${P(p)} — 평균−5%p(${P(base - 0.05)}) 미만`);
+        f.push(`예상 답변율 ${P(p)}: 평균−5%p(${P(base - 0.05)}) 미만`);
     if (lo != null && lo < 0.35)
-        f.push(`80% 범위 하한 ${P(lo)} — 35% 미만`);
+        f.push(`80% 범위 하한 ${P(lo)}: 35% 미만`);
     if (sim)
         f.push(`비슷한 질문 Q.${sim.r.key} (${Math.round(sim.v * 100)}%)`);
     if (HYP.test(text))
         f.push('가정형(~한다면) 문장');
     if ((tags?.P ?? 0) === 2 && Number(level) < 3)
-        f.push('특정 경험 전제 — 레벨 3 이상에서만 허용');
+        f.push('특정 경험 전제: 레벨 3 이상에서만 허용');
     if (text.length > 35)
-        f.push(`${text.length}자 — 35자 이하로`);
+        f.push(`${text.length}자: 35자 이하로`);
     if (pt === 's' && !sig)
         f.push('신호형인데 첫 선택지의 극(A/B)이 없음');
     if (g)
@@ -1626,18 +1626,18 @@ function guideLint(e, h, l) {
     [[e, '공감'], [h, '힌트'], [l, '유도']].forEach(([t, n]) => { t = (t || '').trim(); if (!t)
         w.push(`${n} 가이드가 비어 있음`);
     else if (t.length > 40)
-        w.push(`${n} 가이드 ${t.length}자 — 40자 이하로`);
+        w.push(`${n} 가이드 ${t.length}자: 40자 이하로`);
     else if (t.length < 8)
         w.push(`${n} 가이드가 너무 짧음`); });
     if ([e, h, l].some(t => /당신/.test(t || '')))
-        w.push("가이드에 '당신' — '나'로 바꿔요");
+        w.push("가이드에 '당신': '나'로 바꿈");
     if ((h || '').trim() && !/[,·]|나\s|거나|든지|이든|부터|같은|처럼|[와과]\s|아니면|\s중\s|또는|랑\s|하고\s/.test(h))
-        w.push('힌트에 떠올릴 예시·선택지를 2~3개 넣어요');
+        w.push('힌트에 떠올릴 예시·선택지를 2~3개 넣음');
     if ((l || '').trim() && !/\?$/.test(l.trim()))
-        w.push('유도 질문은 물음표로 끝나요');
+        w.push('유도 질문은 물음표로 끝남');
     return w;
 }
-const gateUI = f => f.length ? `<div class="gate ng"><span>출고 기준 미달 ${f.length}개</span><ul>${f.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '<div class="gate ok">출고 기준 통과 ✓</div>';
+const gateUI = f => f.length ? `<div class="gate ng"><span>출고 기준 미달 ${f.length}개</span><ul>${f.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '<div class="gate ok">출고 기준 통과</div>';
 function cellEvidence() {
     const all = rows().filter(r => !r.deleted), inCat = all.filter(r => r.cat === GEN.cat), cell = inCat.filter(r => GEN.ax ? r.ax === GEN.ax : r.pt === GEN.pt);
     const scored = rs => rs.map(r => ({ r, q: qstat(r.key) })).filter(x => x.q && x.q.exp >= MIN_EXP && x.q.res >= 3);
@@ -1655,21 +1655,21 @@ function stepsUI() {
 function genAll() { stepsUI(); gDataUI(); gOptUI(); gTopUI(); genUI(); }
 function gDataUI() {
     if (!GEN) {
-        $('#gData').innerHTML = '<p class="note">먼저 1단계에서 칸을 골라 주세요.</p>';
+        $('#gData').innerHTML = '<p class="note">먼저 1단계에서 칸 선택 필요.</p>';
         return;
     }
     const ev = cellEvidence(), A = AX2[GEN.ax], avg = avgRate(latest());
     const li = x => `<li>${esc(x.r.text)} <span class="r">추정 ${P(x.q.est)} · 답변 ${x.q.ans}/${x.q.res}</span></li>`;
     const sig = INS ? INS.model.terms.filter(t => t.p < 0.05) : [];
     const sg = ev.cell.filter(r => r.pt === 's'), nA = sg.filter(r => r.sig === 'A').length, nB = sg.filter(r => r.sig === 'B').length;
-    $('#gData').innerHTML = `<p class="note" style="margin:0">${A ? `<b>${esc(GEN.cat)} · ${esc(A.name)}</b> — ${esc(A.reads)} (근거 개념: ${esc(A.concept)}). 신호형 ${sg.length}/${SIG_TARGET}개 · 첫 선택지 ${esc(A.a)} ${nA} · ${esc(A.b)} ${nB}${nA !== nB ? ` → 새 질문은 첫 선택지를 <b>${esc(nA < nB ? A.a : A.b)}</b>로 두면 균형이 맞아요` : ''}.`
-        : `<b>${esc(GEN.cat)} · ${PT[GEN.pt]}</b> — ${esc(PT_DESC[GEN.pt])}`} 이 칸 질문 ${ev.cell.length}개${ev.cell.length ? ': ' + ev.cell.slice(0, 5).map(r => esc(r.text)).join(' / ') : ''}.</p>
+    $('#gData').innerHTML = `<p class="note" style="margin:0">${A ? `<b>${esc(GEN.cat)} · ${esc(A.name)}</b>: ${esc(A.reads)} (근거 개념: ${esc(A.concept)}). 신호형 ${sg.length}/${SIG_TARGET}개 · 첫 선택지 ${esc(A.a)} ${nA} · ${esc(A.b)} ${nB}${nA !== nB ? ` → 새 질문은 첫 선택지를 <b>${esc(nA < nB ? A.a : A.b)}</b>로 두면 균형이 맞음` : ''}.`
+        : `<b>${esc(GEN.cat)} · ${PT[GEN.pt]}</b>: ${esc(PT_DESC[GEN.pt])}`} 이 칸 질문 ${ev.cell.length}개${ev.cell.length ? ': ' + ev.cell.slice(0, 5).map(r => esc(r.text)).join(' / ') : ''}.</p>
     <div class="gcols">
-      <div class="gbox"><h3>${esc(GEN.cat)}에서 잘 되는 질문 (평균 ${P(avg)})</h3><span class="note" style="margin:0">노출 5회 이상 · 추정 = 표본이 적을수록 평균 쪽으로 당긴 답변율</span><ol>${ev.top.map(li).join('') || '<li>실적이 아직 적어요</li>'}</ol></div>
-      ${ev.thin ? `<div class="gbox" style="grid-column:1/-1"><span class="note" style="margin:0">${esc(GEN.cat)}에서 노출 5회 이상인 질문이 ${ev.nEl}개뿐이라 근거가 얇아요. 매달 통계가 쌓이면 늘어나요.</span></div>` : ''}
-      <div class="gbox"><h3>${esc(GEN.cat)}에서 안 되는 질문 — 피할 패턴</h3><ol>${ev.low.map(li).join('') || '<li>실적이 아직 적어요</li>'}</ol></div>
-      <div class="gbox"><h3>${A ? `${esc(A.name)} 축` : `${esc(GEN.cat)} ${PT[GEN.pt]}`}에서 잘 되는 질문</h3><ol>${ev.axTop.map(li).join('') || '<li>실적이 아직 적어요</li>'}</ol></div>
-      <div class="gbox"><h3>${esc(GEN.cat)} 형식별 답변율</h3><ul>${ev.forms.map(f => `<li>${esc(f.f)} <span class="r">${P(f.rate)} · 문항 ${f.q}</span></li>`).join('') || '<li>실적이 아직 적어요</li>'}</ul>
+      <div class="gbox"><h3>${esc(GEN.cat)}에서 잘 되는 질문 (평균 ${P(avg)})</h3><span class="note" style="margin:0">노출 5회 이상 · 추정 = 표본이 적을수록 평균 쪽으로 당긴 답변율</span><ol>${ev.top.map(li).join('') || '<li>실적이 아직 적음</li>'}</ol></div>
+      ${ev.thin ? `<div class="gbox" style="grid-column:1/-1"><span class="note" style="margin:0">${esc(GEN.cat)}에서 노출 5회 이상인 질문이 ${ev.nEl}개뿐이라 근거가 얇음. 매달 통계가 쌓이면 늘어남.</span></div>` : ''}
+      <div class="gbox"><h3>${esc(GEN.cat)}에서 안 되는 질문(피할 패턴)</h3><ol>${ev.low.map(li).join('') || '<li>실적이 아직 적음</li>'}</ol></div>
+      <div class="gbox"><h3>${A ? `${esc(A.name)} 축` : `${esc(GEN.cat)} ${PT[GEN.pt]}`}에서 잘 되는 질문</h3><ol>${ev.axTop.map(li).join('') || '<li>실적이 아직 적음</li>'}</ol></div>
+      <div class="gbox"><h3>${esc(GEN.cat)} 형식별 답변율</h3><ul>${ev.forms.map(f => `<li>${esc(f.f)} <span class="r">${P(f.rate)} · 문항 ${f.q}</span></li>`).join('') || '<li>실적이 아직 적음</li>'}</ul>
         ${sig.length ? `<h3 style="margin-top:6px">전체 데이터에서 확실한 효과</h3><ul>${sig.map(t => `<li>${esc(t.name)} <span class="r">${pp(t.pp)}</span></li>`).join('')}</ul>` : ''}</div>
     </div>`;
 }
@@ -1678,11 +1678,11 @@ function gOptUI() {
     const live = rows().filter(r => !r.deleted), A = GEN && AX2[GEN.ax];
     const subs = GEN ? (SUBS[GEN.cat] || []).map((nm, i) => [i + 1, nm, live.filter(r => (r.recat || r.cat) === GEN.cat && r.subN === i + 1).length]) : [];
     $('#gOpt').innerHTML = `<div class="srcg">
-    ${GEN ? `<p class="note" style="margin:0"><b>목적: ${PT[GEN.pt]}</b> — ${esc(PT_DESC[GEN.pt])} 기본 형식을 골라 뒀어요.</p>` : ''}
+    ${GEN ? `<p class="note" style="margin:0"><b>목적: ${PT[GEN.pt]}</b>: ${esc(PT_DESC[GEN.pt])} 기본 형식을 골라 뒀음.</p>` : ''}
     <div class="row"><select id="gSub" ${dis} aria-label="소주제"><option value="0">소주제 자유</option>${subs.map(([i, nm, n]) => `<option value="${i}"${g.sub === i ? ' selected' : ''}>${esc(nm)} (${n}문항${n < 8 ? ' · 얇음' : ''})</option>`).join('')}</select>
       ${A ? `<select id="gPole" aria-label="첫 선택지 극"><option value="auto"${g.pole === 'auto' ? ' selected' : ''}>첫 선택지 극: 균형 맞추기</option><option value="A"${g.pole === 'A' ? ' selected' : ''}>첫 선택지 = ${esc(A.a)}</option><option value="B"${g.pole === 'B' ? ' selected' : ''}>첫 선택지 = ${esc(A.b)}</option></select>` : ''}
-      <label class="note" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="gFam" ${g.fam ? 'checked' : ''} ${dis}>질문 패밀리 — 소재 하나로 레벨 1·2·3 묶음</label></div>
-    <div><h3>질문 형식 (여러 개 고르면 섞어서 만들어요)</h3><div class="srcl">${Object.entries(FORMN).filter(([k]) => k !== 'o').map(([k, n]) => `<label><input type="checkbox" data-form="${k}" ${g.forms.has(k) ? 'checked' : ''} ${dis}>${n}</label>`).join('')}</div></div>
+      <label class="note" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="gFam" ${g.fam ? 'checked' : ''} ${dis}>질문 패밀리: 소재 하나로 레벨 1·2·3 묶음</label></div>
+    <div><h3>질문 형식(복수 선택 시 혼합)</h3><div class="srcl">${Object.entries(FORMN).filter(([k]) => k !== 'o').map(([k, n]) => `<label><input type="checkbox" data-form="${k}" ${g.forms.has(k) ? 'checked' : ''} ${dis}>${n}</label>`).join('')}</div></div>
     <div class="row"><select id="gLv" ${dis} aria-label="레벨"><option value="auto"${g.level === 'auto' ? ' selected' : ''}>레벨 자동</option><option value="1"${g.level === '1' ? ' selected' : ''}>레벨 1 · 첫 질문용</option><option value="2"${g.level === '2' ? ' selected' : ''}>레벨 2</option></select>
       <select id="gN" ${dis} aria-label="개수">${[3, 5, 8, 10].map(n => `<option value="${n}"${g.n == n ? ' selected' : ''}>${n}개</option>`).join('')}</select>
       <select id="gTone" ${dis} aria-label="톤">${['가볍게', '보통', '깊게'].map(t => `<option${g.tone === t ? ' selected' : ''}>${t}</option>`).join('')}</select>
@@ -1704,12 +1704,12 @@ function topicOverlap(topic) {
 const OVL = { new: ['mint', '새 소재'], some: ['d-mod', '일부 겹침'], many: ['low', '이미 많이 다룸'] };
 function gTopUI() {
     if (!GEN) {
-        $('#gTop').innerHTML = '<p class="note">칸을 고르면 소재를 뽑을 수 있어요.</p>';
+        $('#gTop').innerHTML = '<p class="note">칸을 고르면 소재를 뽑을 수 있음.</p>';
         return;
     }
-    $('#gTop').innerHTML = `<p class="note" style="margin:0">2단계 데이터(잘 되는 질문·안 되는 패턴·빈 곳)를 근거로 이 칸에 맞는 소재를 먼저 뽑아요. 쓸 소재만 골라 5단계로 넘어가요.</p>
-    <div class="row"><button class="btn primary" type="button" data-gtop ${sample && !GEN.busyT ? '' : 'disabled'}>${GEN.busyT ? '소재 뽑는 중…' : GEN.topics.length ? '소재 다시 뽑기' : 'AI로 소재 뽑기'}</button>${sample ? '' : '<span class="note">이 화면에서는 AI를 쓸 수 없어요.</span>'}</div>
-    ${GEN.topics.length ? `<p class="note" style="margin:0">겹침 판정: 소재 단어가 모두 들어간 기존 질문이 2개 이상이거나 같은 관심사에 1개라도 있으면 '이미 많이 다룸', 1개면 '일부 겹침'이에요(3단어 이상 소재는 2단어 이상 겹치는 질문이 2개 이상일 때도). 새 소재를 먼저 골라 뒀어요.</p>` : ''}
+    $('#gTop').innerHTML = `<p class="note" style="margin:0">2단계 데이터(잘 되는 질문·안 되는 패턴·빈 곳)를 근거로 이 칸에 맞는 소재를 먼저 뽑음. 쓸 소재만 골라 5단계로 넘어감.</p>
+    <div class="row"><button class="btn primary" type="button" data-gtop ${sample && !GEN.busyT ? '' : 'disabled'}>${GEN.busyT ? '소재 뽑는 중…' : GEN.topics.length ? '소재 다시 뽑기' : 'AI로 소재 뽑기'}</button>${sample ? '' : '<span class="note">이 화면에서는 AI를 쓸 수 없음.</span>'}</div>
+    ${GEN.topics.length ? `<p class="note" style="margin:0">겹침 기준: 소재 단어가 모두 들어간 기존 질문이 2개 이상이거나 같은 관심사에 1개라도 있으면 '이미 많이 다룸', 1개면 '일부 겹침'임(3단어 이상 소재는 2단어 이상 겹치는 질문이 2개 이상일 때도). 새 소재를 먼저 골라 뒀음.</p>` : ''}
     <div class="tops">${GEN.topics.map((t, i) => {
         const o = t.ovl || { level: 'new', all: [], some: [] }, ex = o.level === 'new' ? [] : (o.all.length ? o.all : o.some);
         return `<label><input type="checkbox" data-top="${i}" ${GEN.sel.has(i) ? 'checked' : ''}><b>${esc(t.topic)} <span class="chip ${OVL[o.level][0]}">${OVL[o.level][1]}${ex.length ? ` · ${ex.length}개` : ''}</span></b><small>${esc(t.why)}</small>${ex.length ? `<small>겹치는 기존 질문: ${ex.slice(0, 2).map(r => `Q.${esc(r.key)} ${esc(r.text)}`).join(' / ')}${ex.length > 2 ? ' …' : ''}</small>` : ''}</label>`;
@@ -1774,7 +1774,7 @@ JSON만 출력: {"topics":[{"topic":"","why":""}]}`;
             throw { code: 'empty' };
     }
     catch (e) {
-        GEN.err = e?.code === 'not_granted' ? 'AI를 쓸 수 없는 화면이에요.' : e?.code === 'rate_limited' ? '요청이 많아요. 잠시 후 다시 해 주세요.' : '소재를 뽑지 못했어요. 다시 눌러 주세요.';
+        GEN.err = e?.code === 'not_granted' ? 'AI를 쓸 수 없는 화면임.' : e?.code === 'rate_limited' ? '요청이 많음. 잠시 후 다시 시도.' : '소재를 뽑지 못했음. 다시 시도.';
         if (e?.code === 'not_granted')
             sample = null;
     }
@@ -1826,7 +1826,7 @@ JSON만 출력: {"questions":[{"text":"","empathy":"","hint":"","leading":"","le
         GEN.cands = (GEN.fam ? got.sort((a, b) => a.fam.localeCompare(b.fam) || a.level - b.level) : got.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))).concat(GEN.cands.filter(c => c.done));
     }
     catch (e) {
-        GEN.err = e?.code === 'not_granted' ? 'AI를 쓸 수 없는 화면이에요.' : e?.code === 'rate_limited' ? '요청이 많아요. 잠시 후 다시 해 주세요.' : '질문을 만들지 못했어요. 다시 눌러 주세요.';
+        GEN.err = e?.code === 'not_granted' ? 'AI를 쓸 수 없는 화면임.' : e?.code === 'rate_limited' ? '요청이 많음. 잠시 후 다시 시도.' : '질문을 만들지 못했음. 다시 시도.';
         if (e?.code === 'not_granted')
             sample = null;
     }
@@ -1839,13 +1839,13 @@ JSON만 출력: {"questions":[{"text":"","empathy":"","hint":"","leading":"","le
 function genUI() {
     const el = $('#gen');
     if (!GEN) {
-        el.innerHTML = '<p class="note">칸을 고르면 질문을 만들 수 있어요.</p>';
+        el.innerHTML = '<p class="note">칸을 고르면 질문을 만들 수 있음.</p>';
         return;
     }
     const avg = INS?.model?.base ?? avgRate(latest()), TG = { T: '시점', P: '경험 전제', E: '인지 노력', W: '감정 무게', S: '자기노출', C: '은유' };
     el.innerHTML = `<div class="gen">
     <div class="row"><button class="btn primary" type="button" data-ggo ${sample && !GEN.busyQ ? '' : 'disabled'}>${GEN.busyQ ? 'AI가 쓰는 중…' : GEN.fam ? `고른 소재 ${Math.min(3, Math.max(1, GEN.sel.size))}개로 패밀리 만들기 (레벨 1·2·3)` : `고른 소재 ${GEN.sel.size}개로 질문 ${GEN.n}개 만들기`}</button>
-      <span class="note">예상 답변율은 분석 탭 평가 모델로 계산해요(평균 ${P(avg)}). 제작 점수(예상 답변율 + 신호 부족·얇은 소주제 보너스 − 중복·겹침·가정형 감점) 높은 순이에요${GEN.fam ? ' — 패밀리는 소재·레벨 순' : ''}. 출고 기준에 못 미치면 추가 버튼을 두 번 눌러야 해요.</span></div>
+      <span class="note">예상 답변율은 분석 탭 평가 모델로 계산함(평균 ${P(avg)}). 제작 점수(예상 답변율 + 신호 부족·얇은 소주제 보너스 − 중복·겹침·가정형 감점) 높은 순임${GEN.fam ? ': 패밀리는 소재·레벨 순' : ''}. 출고 기준에 못 미치면 추가 버튼을 두 번 눌러야 함.</span></div>
     ${GEN.err ? `<span class="note" style="color:var(--gone)">${esc(GEN.err)}</span>` : ''}
     <div class="cands">${GEN.cands.map((c, i) => {
         const sim = c.done ? null : similarTo('', c.text), w = lint(c.text);
@@ -1859,10 +1859,10 @@ function genUI() {
         <span class="g">태그 · ${Object.entries(c.tags || {}).map(([k, v]) => `${TG[k]} ${v}`).join(' · ')}</span>
         <span class="g">가이드 · ${esc([c.empathy, c.hint, c.leading].join(' / '))}</span>
         ${c.topic && !c.done ? (o => o.level !== 'new' ? `<span class="w">소재 '${esc(c.topic)}'을 다룬 기존 질문 ${o.all.length || o.some.length}개: ${(o.all.length ? o.all : o.some).slice(0, 2).map(r => 'Q.' + esc(r.key) + ' ' + esc(r.text)).join(' / ')}</span>` : '')(topicOverlap(c.topic)) : ''}
-        ${hyp && !c.done ? '<span class="w">가정형(~한다면) 질문이에요. 지금의 나를 바로 묻는 문장으로 바꾸는 걸 권해요.</span>' : ''}
-        ${sim ? `<span class="w">비슷한 질문이 있어요: Q.${sim.r.key} "${esc(sim.r.text)}" (${Math.round(sim.v * 100)}%)</span>` : ''}${w.length ? `<span class="w">${esc(w.join(' '))}</span>` : ''}
+        ${hyp && !c.done ? '<span class="w">가정형(~한다면) 질문임. 지금의 나를 바로 묻는 문장으로 바꾸는 걸 권함.</span>' : ''}
+        ${sim ? `<span class="w">비슷한 질문이 있음: Q.${sim.r.key} "${esc(sim.r.text)}" (${Math.round(sim.v * 100)}%)</span>` : ''}${w.length ? `<span class="w">${esc(w.join(' '))}</span>` : ''}
         ${c.done ? '' : gateUI(c.gate || [])}
-        <div class="row">${c.done ? `<span class="chip mint">Q.${esc(c.done)}로 추가했어요</span>` : `<button class="btn ${c.armed ? 'danger' : 'primary'}" type="button" data-gadd="${i}" ${db && canWrite ? '' : 'disabled'}>${c.armed ? '기준 미달 — 그래도 추가' : '신규 질문으로 추가'}</button>`}</div></div>`;
+        <div class="row">${c.done ? `<span class="chip mint">Q.${esc(c.done)}로 추가했음</span>` : `<button class="btn ${c.armed ? 'danger' : 'primary'}" type="button" data-gadd="${i}" ${db && canWrite ? '' : 'disabled'}>${c.armed ? '기준 미달: 그래도 추가' : '신규 질문으로 추가'}</button>`}</div></div>`;
     }).join('')}</div></div>`;
 }
 async function genAdd(i) {
@@ -1870,12 +1870,12 @@ async function genAdd(i) {
     if (!c || !db)
         return;
     if (!c.text.trim())
-        return toast('문구가 비어 있어요.');
+        return toast('문구가 비어 있음.');
     c.pred = predict(c);
     if ((c.gate || []).length && !c.armed) {
         c.armed = true;
         genUI();
-        return toast(`출고 기준 미달 ${c.gate.length}개예요. 고치거나, 한 번 더 누르면 그래도 추가해요.`);
+        return toast(`출고 기준 미달 ${c.gate.length}개임. 고치거나, 한 번 더 누르면 그래도 추가함.`);
     }
     const ids = BASE.map(r => Number(r.key)).concat([...ADDED.values()].map(a => Number(a.id))).filter(Number.isFinite);
     const id = Math.max(...ids) + 1;
@@ -1887,10 +1887,10 @@ async function genAdd(i) {
             by: me?.id || null, at: new Date().toISOString() });
         c.done = String(id);
         genUI();
-        toast(`Q.${id}로 추가했어요. 다운로드에 신규로 들어가요.`);
+        toast(`Q.${id}로 추가했음. 다운로드에 신규로 들어감.`);
     }
     catch {
-        toast('추가하지 못했어요.');
+        toast('추가하지 못했음.');
     }
 }
 function cardPred(text, cat, level = 2, made = null) {
@@ -1955,14 +1955,14 @@ function modelPred(tags, form, cat, len, level = 2) {
 function flowUI() {
     const m = INS?.model, st = (n, t, d, i) => `<div class="fstep"><i>${i}</i><b>${t}</b><span>${d}</span></div>`, ar = '<span class="farr" aria-hidden="true">→</span>';
     $('#flow').innerHTML = `
-    <div class="flane"><h3>분석 — 질문이 왜 답을 받는지</h3><div class="fsteps">
+    <div class="flane"><h3>분석 흐름</h3><div class="fsteps">
       ${st(1, '통계 수집', `문항별 노출·답변·교체 (월 1회, 최신 ${esc(INS?.snapshot || '')})`, 'A1')}${ar}
       ${st(2, '특성 태깅', '시점·경험 전제·인지 노력·감정 무게·자기노출·은유 + 형식·관심사·길이, 그리고 목적 유형·관심사별 축·신호 방향·소주제', 'A2')}${ar}
       ${st(3, '사후 추정', `문항 답변율을 특성 예측 쪽으로 φ=${m ? Math.round(m.phi) : '–'}만큼 당겨 표본이 적은 문항의 우연을 줄임`, 'A3')}${ar}
-      ${st(4, '평가 모델', `릿지 베타-이항 회귀 — 문항 ${m ? m.n_q : '–'}개, 결론 ${m ? m.n_res.toLocaleString() : '–'}회, 교차검증으로 검증`, 'A4')}${ar}
-      ${st(5, '판정·우선순위', '사후 확률 ≥80%로 수정 대상·우수 판정 → 고쳐야 할 것·월간 골라 주세요·첫 질문 후보', 'A5')}
+      ${st(4, '평가 모델', `릿지 베타-이항 회귀: 문항 ${m ? m.n_q : '–'}개, 결론 ${m ? m.n_res.toLocaleString() : '–'}회, 교차검증으로 검증`, 'A4')}${ar}
+      ${st(5, '판정·우선순위', '사후 확률 ≥80%로 수정 대상·우수 판정 → 고쳐야 할 것·월간 수정안 선택·첫 질문 후보', 'A5')}
     </div></div>
-    <div class="flane"><h3>제작 — 무엇을 어떻게 새로 만들지</h3><div class="fsteps">
+    <div class="flane"><h3>제작 흐름</h3><div class="fsteps">
       ${st(1, '빈 곳 찾기', '관심사 × 자기 축의 신호형 수(목표 10), 얇은 소주제, 첫 선택지 극 쏠림', 'B1')}${ar}
       ${st(2, '근거 추출', '그 칸·관심사의 잘 되는/안 되는 질문, 형식별 답변율, 확실한 효과', 'B2')}${ar}
       ${st(3, '소재 뽑기', 'AI가 근거로 넓은 일상 소재 제안 → 기존 질문과 겹침 판정', 'B3')}${ar}
@@ -1970,7 +1970,7 @@ function flowUI() {
       ${st(5, '예측·점수·게이트', 'A4 모델로 예상 답변율·80% 범위, 제작 점수, 출고 기준(예측·하한·중복·가정형·길이·가이드)', 'B5')}${ar}
       ${st(6, '검토·배포', '사람이 고르고 고쳐 신규 추가 → CSV → DB', 'B6')}
     </div></div>
-    <div class="floop">↻ 배포한 질문이 노출되면 다음 달 A1 통계로 들어가 모델이 다시 학습돼요. 예측과 실제의 차이가 모델을 고쳐 가요.</div>`;
+    <div class="floop">배포한 질문이 노출되면 다음 달 A1 통계로 들어가 모델이 다시 학습됨. 예측과 실제의 차이가 모델을 고쳐 감.</div>`;
 }
 function eqUI() {
     const m = INS?.model;
@@ -1986,27 +1986,27 @@ function eqUI() {
     ${cal.map(c => `<circle cx="${sx(c.pred)}" cy="${sy(c.obs)}" r="5" fill="var(--chart)" stroke="var(--soft)" stroke-width="2"><title>예측 ${P(c.pred)} → 실제 ${P(c.obs)} (결론 ${c.n}회)</title></circle>`).join('')}</svg>`;
     $('#eq').innerHTML = `
     <div class="gcols">
-      <div class="gbox"><h3>어떤 모델인가</h3><span><b>릿지 규제 베타-이항 회귀</b> (문항 ${m.n_q}개, 결론 ${m.n_res.toLocaleString()}회)</span>
-        <ul><li>문항마다 진짜 답변율이 다르다고 보고(베타 분포), 그 평균을 특성으로 설명해요.</li>
-        <li>특성이 겹쳐도 흔들리지 않게 계수를 규제해요(λ=${m.lam}, 교차검증으로 선택).</li>
-        <li>문항별 추정 = (답변 + φ·예측) ÷ (결론 + φ), φ=${Math.round(m.phi)} — 결론이 ${Math.round(m.phi)}회쯤 쌓여야 실제 값과 예측을 반반 믿어요.</li>
-        <li>새 질문은 예측과 함께 80% 범위를 내요. 범위가 넓은 건 같은 특성이라도 문항마다 차이가 크기 때문이에요.</li></ul></div>
-      <div class="gbox"><h3>검증 — 처음 보는 문항을 얼마나 맞히나</h3>
+      <div class="gbox"><h3>모델 구조</h3><span><b>릿지 규제 베타-이항 회귀</b> (문항 ${m.n_q}개, 결론 ${m.n_res.toLocaleString()}회)</span>
+        <ul><li>문항마다 진짜 답변율이 다르다고 보고(베타 분포), 그 평균을 특성으로 설명함.</li>
+        <li>특성이 겹쳐도 흔들리지 않게 계수를 규제함(λ=${m.lam}, 교차검증으로 선택).</li>
+        <li>문항별 추정 = (답변 + φ·예측) ÷ (결론 + φ), φ=${Math.round(m.phi)}: 결론이 ${Math.round(m.phi)}회쯤 쌓여야 실제 값과 예측을 반반 믿음.</li>
+        <li>새 질문은 예측과 함께 80% 범위를 냄. 범위가 넓은 건 같은 특성이라도 문항마다 차이가 크기 때문임.</li></ul></div>
+      <div class="gbox"><h3>교차검증</h3>
         <span class="note" style="margin:0">문항 단위 5겹 교차검증 로그우도 개선(평균만 쓴 모델 대비, 클수록 좋음)</span>
         ${ev.map(e => `<div class="cb" style="grid-template-columns:110px minmax(0,1fr) 44px"><span>${esc(e.name)}</span><span class="bar2"><i style="left:0;width:${Math.max(0, e.ll) / maxE * 100}%;background:${e.name === '지금 모델' ? 'var(--chart)' : 'var(--muted)'}"></i></span><span class="n">+${e.ll}</span></div>`).join('')}
         <span>순위 상관(결론 6회 이상 ${m.rho?.n}문항): 지금 모델 <b>${m.rho?.new}</b> · 이전 모델 ${m.rho?.old}</span></div>
-      <div class="gbox"><h3>보정 — 예측한 만큼 실제로 나오나</h3>${calSvg}<span class="note" style="margin:0">예측을 5구간으로 나눠 실제 답변율과 비교. 점선에 가까울수록 정확해요.</span></div>
+      <div class="gbox"><h3>보정(예측 대비 실제)</h3>${calSvg}<span class="note" style="margin:0">예측을 5구간으로 나눠 실제 답변율과 비교. 점선에 가까울수록 정확함.</span></div>
       <div class="gbox"><h3>운영 규칙</h3><ul>
-        <li><b>수정 대상</b>: 결론 ${MIN_EXP}회 이상이고, 진짜 답변율이 평균보다 10%p 넘게 낮을 확률 ≥ ${Math.round((pol.fix_p || 0.8) * 100)}% → 고쳐야 할 것 · 월간 골라 주세요</li>
+        <li><b>수정 대상</b>: 결론 ${MIN_EXP}회 이상이고, 진짜 답변율이 평균보다 10%p 넘게 낮을 확률 ≥ ${Math.round((pol.fix_p || 0.8) * 100)}% → 고쳐야 할 것 · 월간 수정안 선택</li>
         <li><b>우수</b>: 평균보다 10%p 넘게 높을 확률 ≥ ${Math.round((pol.good_p || 0.8) * 100)}% → 첫 질문(레벨 1) 후보</li>
         <li><b>탐색</b>: 신규 질문은 결론 ${pol.explore_n || 20}회가 모일 때까지 판정 보류(예측만 참고)</li>
         <li><b>제작 점수</b> = 예상 답변율 + 신호 부족 보너스(신호형 5개 미만 +5, 10개 미만 +3) 또는 얇은 소주제 +3 + 극 균형 +1 − 중복 10 − 소재 겹침 5/2 − 가정형 3 − 신호 방향 없음 2</li>
-        <li><b>출고 기준</b>: 예측 ≥ 평균−5%p, 80% 하한 ≥ 35%, 중복·가정형 없음, 특정 경험 전제는 레벨 3 이상만, 35자 이하, 신호형은 신호 방향 필수, 가이드 점검 통과 — 못 미치면 두 번 눌러야 추가</li>
+        <li><b>출고 기준</b>: 예측 ≥ 평균−5%p, 80% 하한 ≥ 35%, 중복·가정형 없음, 특정 경험 전제는 레벨 3 이상만, 35자 이하, 신호형은 신호 방향 필수, 가이드 점검 통과: 못 미치면 두 번 눌러야 추가</li>
         <li><b>재학습</b>: 매달 통계로 λ·φ·계수를 다시 맞추고 검증 결과를 갱신</li></ul></div>
     </div>
     <h3 style="margin:6px 0 0;font-size:.9rem">예측식</h3>
     <div class="eqf">logit(답변율) = ${k.const.toFixed(2)} ${t.map(x => `${x.beta >= 0 ? '+' : '−'} ${Math.abs(x.beta).toFixed(2)}·[${esc(x.name)}]`).join(' ')}</div>
-    <p class="note" style="margin:0">[ ]는 그 특성이 있으면 1, 없으면 0(문구 길이는 로그 글자 수, 표는 두 배당 효과). 답변율 = 1 / (1 + e<sup>−logit</sup>). 기준은 ${esc(m.ref)}이에요. 구간은 문항 부트스트랩 200회예요.</p>
+    <p class="note" style="margin:0">[ ]는 그 특성이 있으면 1, 없으면 0(문구 길이는 로그 글자 수, 표는 두 배당 효과). 답변율 = 1 / (1 + e<sup>−logit</sup>). 기준은 ${esc(m.ref)}임. 구간은 문항 부트스트랩 200회임.</p>
     <table class="coef"><thead><tr><th>특성</th><th>계수(β)</th><th>오즈비 (95% CI)</th><th>평균에서 %p</th><th>p</th></tr></thead><tbody>${t.map(x => `<tr><td>${esc(x.name)} <span class="g">${esc(x.group)}</span></td><td>${x.beta >= 0 ? '+' : ''}${x.beta.toFixed(2)}</td><td>${x.or_.toFixed(2)} (${x.or_lo.toFixed(2)}~${x.or_hi.toFixed(2)})</td><td style="font-weight:${x.p < 0.05 ? 800 : 400}">${pp(x.pp)}</td><td>${x.p < 0.001 ? '<0.001' : x.p.toFixed(3)}</td></tr>`).join('')}</tbody></table>`;
 }
 function dgInit() {
@@ -2036,7 +2036,7 @@ function dgGate() {
     const r = modelPred(tags, form, $('#dgCat').value, text.length, $('#dgLv').value);
     const f = gate({ text, p: r?.p, lo: r?.lo, level: $('#dgLv').value, tags, sim: similarTo('', text), g: ['dgG0', 'dgG1', 'dgG2'].map(id => $('#' + id).value), pt: $('#dgPt').value, sig: $('#dgSig').value });
     if ($('#dgPt').value === 's' && !$('#dgAx').value)
-        f.unshift('신호형은 축을 골라야 해요');
+        f.unshift('신호형은 축을 골라야 함');
     $('#dgGate').innerHTML = gateUI(f);
     return f;
 }
@@ -2046,28 +2046,28 @@ function dgUI() {
     $('#dgTags').innerHTML = TAGDEF.map(([k, n, opts]) => `<div class="dgtag"><b>${n}${k in DG.manual ? '' : ' <span class="note">자동</span>'}</b><div class="opts2">${opts.map(([v, l]) => `<button type="button" data-tk="${k}" data-tv="${v}" aria-pressed="${tags[k] === v}">${l}</button>`).join('')}</div></div>`).join('')
         + `<div class="dgtag"><b>형식</b><span>${esc(FORMN[form])}${$('#dgForm').value === 'auto' ? ' <span class="note">자동</span>' : ''}</span></div>`;
     if (!text) {
-        $('#dgOut').innerHTML = '<p class="note">문구를 넣어 보세요.</p>';
+        $('#dgOut').innerHTML = '<p class="note">문구 입력 시 진단.</p>';
         return;
     }
     const r = modelPred(tags, form, cat, text.length, $('#dgLv')?.value || 2), avg = INS?.model?.base;
     if (!r) {
-        $('#dgOut').innerHTML = '<p class="note">모델을 불러오는 중이에요.</p>';
+        $('#dgOut').innerHTML = '<p class="note">모델을 불러오는 중임.</p>';
         return;
     }
     const max = Math.max(0.05, ...r.parts.map(x => Math.abs(x.pp))), sim = similarTo('', text), w = lint(text);
     const tips = [];
     if (tags.P > 0)
-        tips.push("'~한 적 있다면' 같은 경험 전제를 빼면 누구나 답할 수 있어요.");
+        tips.push("'~한 적 있다면' 같은 경험 전제를 빼면 누구나 답할 수 있음.");
     if (tags.E !== 1)
-        tips.push('바로 답할 수 있게 선택지를 주거나(양자택일) 대상을 좁혀 보세요.');
+        tips.push('바로 답할 수 있게 선택지를 주거나(양자택일) 대상을 좁히기 권장.');
     if (tags.C === 1)
-        tips.push('은유를 걷어내고 구체적으로 물어보세요.');
+        tips.push('은유를 걷어내고 구체적으로 묻기 권장.');
     if (form === 'h')
-        tips.push('가정형보다 지금의 나를 바로 묻는 문장이 좋아요.');
+        tips.push('가정형보다 지금의 나를 바로 묻는 문장이 좋음.');
     if (form === 'o')
-        tips.push('예/아니오 질문은 선호·양자택일로 바꿔요.');
+        tips.push('예/아니오 질문은 선호·양자택일로 바꿈.');
     $('#dgOut').innerHTML = `<div class="dgbig"><span class="v">${P(r.p)}</span><span class="note">예상 답변율 · 80% 범위 ${P(r.lo)}~${P(r.hi)} · 평균 ${P(avg)} 대비 ${pp(r.p - avg)}</span></div>
-    <div class="contrib">${r.parts.sort((a, b) => a.pp - b.pp).map(x => `<div class="cb"><span>${esc(x.n)}</span><span class="bar2"><span class="mid"></span><i style="${x.pp < 0 ? `right:50%;width:${Math.abs(x.pp) / max * 50}%;background:var(--low)` : `left:50%;width:${x.pp / max * 50}%;background:var(--high)`}"></i></span><span class="n">${pp(x.pp)}</span></div>`).join('') || '<span class="note">기준 질문과 같아요.</span>'}</div>
+    <div class="contrib">${r.parts.sort((a, b) => a.pp - b.pp).map(x => `<div class="cb"><span>${esc(x.n)}</span><span class="bar2"><span class="mid"></span><i style="${x.pp < 0 ? `right:50%;width:${Math.abs(x.pp) / max * 50}%;background:var(--low)` : `left:50%;width:${x.pp / max * 50}%;background:var(--high)`}"></i></span><span class="n">${pp(x.pp)}</span></div>`).join('') || '<span class="note">기준 질문과 같음.</span>'}</div>
     <span class="note" style="margin:0">막대 = 다른 조건은 그대로 두고 그 특성만 없앴을 때와의 차이</span>
     ${sim ? `<span class="w" style="font-size:.8rem;color:var(--mod);font-weight:700">비슷한 질문: Q.${esc(sim.r.key)} "${esc(sim.r.text)}" (${Math.round(sim.v * 100)}%)</span>` : ''}
     ${w.length ? `<span style="font-size:.8rem;color:var(--mod);font-weight:700">${esc(w.join(' '))}</span>` : ''}
@@ -2091,14 +2091,14 @@ JSON만: {"T":0,"P":0,"E":1,"W":1,"S":1,"C":0,"F":"c"}`, { modelTier: 'quick', c
         if (FORMN[o?.F])
             $('#dgForm').value = o.F;
         dgUI();
-        toast('AI가 태그를 붙였어요.');
+        toast('AI가 태그를 붙였음.');
     }
     catch (e) {
         if (e?.code === 'not_granted') {
             sample = null;
             b.hidden = true;
         }
-        toast('태그를 붙이지 못했어요.');
+        toast('태그를 붙이지 못했음.');
     }
     finally {
         b.disabled = false;
@@ -2116,10 +2116,10 @@ function lvUI() {
     <span class="rate"><i style="width:${(x.rate || 0) * 100}%"></i>${avg != null ? `<b style="left:${avg * 100}%"></b>` : ''}</span>
     <span class="m">${x.n}문항 · 지금 레벨 1에서 ${x.from_cur['1'] || 0} · 레벨 2에서 ${x.from_cur['2'] || 0}</span></div>`).join('');
     $('#lvJourney').innerHTML = L.journey.map(j => `<div class="jr"><span><b>${esc(j.stage)}</b></span><span class="bar">${Object.entries(j.mix).map(([l, w]) => `<i style="width:${w}%;background:var(--lv${l});color:var(--lvt${l})" title="레벨 ${l} ${w}%">L${l} ${w}%</i>`).join('')}</span><span class="e">${P(j.expect)}</span></div>`).join('')
-        + `<p class="note" style="margin:6px 0 0">오른쪽은 그 시기의 기대 답변율(레벨별 실제 답변율 × 비율)이에요. 깊어질수록 답변율은 내려가지만, 기록이 쌓인 사용자일수록 깊은 질문을 감당할 수 있다는 가정이에요 — 적용 후 시기별 답변율로 비율을 조정해요.</p>`;
+        + `<p class="note" style="margin:6px 0 0">오른쪽은 그 시기의 기대 답변율(레벨별 실제 답변율 × 비율)임. 깊어질수록 답변율은 내려가지만, 기록이 쌓인 사용자일수록 깊은 질문을 감당할 수 있다는 가정임: 적용 후 시기별 답변율로 비율을 조정함.</p>`;
     const cats = Object.values(CAT);
     $('#lvCat').innerHTML = `<table class="coef"><thead><tr><th>관심사</th>${L.levels.map(x => `<th>L${x.level}</th>`).join('')}</tr></thead><tbody>${cats.map(c => `<tr><td>${c}</td>${L.levels.map(x => `<td>${x.by_cat[c] || 0}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
-    $('#lvUntag').textContent = `태그가 없는 ${L.untagged}개(페이지에서 만든 질문 등)는 레벨을 따로 정해야 해요.`;
+    $('#lvUntag').textContent = `태그가 없는 ${L.untagged}개(페이지에서 만든 질문 등)는 레벨을 따로 정해야 함.`;
 }
 let BRK = 'form', advOpened = false, GM = 'fill';
 function breakdown() {
@@ -2159,11 +2159,11 @@ function dataUI() {
     distUI();
     const s = latest(), p = prevSnap();
     if (!s) {
-        $('#dataAt').textContent = '아직 받아온 통계가 없어요.';
+        $('#dataAt').textContent = '아직 받아온 통계가 없음.';
         return;
     }
     const avg = avgRate(s), pavg = avgRate(p);
-    $('#dataAt').textContent = `마지막 수집 ${s.date} · 매달 1일 통계 사이트에서 받아와요`;
+    $('#dataAt').textContent = `마지막 수집 ${s.date} · 매달 1일 통계 사이트에서 받아옴`;
     $('#kRate').textContent = P(avg);
     $('#kRateD').textContent = p ? `지난 수집 ${p.date} 대비 ${((avg - pavg) * 100 >= 0 ? '+' : '')}${((avg - pavg) * 100).toFixed(1)}%p` : '';
     const rr = pct(s.totals.rep, s.totals.exp), prr = p ? pct(p.totals.rep, p.totals.exp) : null;
@@ -2185,7 +2185,7 @@ function dataUI() {
     const labels = pts.map((p, i) => (i === 0 || i === pts.length - 1) ? `<text x="${x(i)}" y="${H - 6}" text-anchor="${i === 0 && pts.length > 1 ? 'start' : 'end'}" font-size="11" fill="var(--muted)">${p.d.slice(5)}</text>` : '').join('');
     const dots = pts.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.r)}" r="${i === pts.length - 1 ? 5 : 3.5}" fill="var(--chart)" stroke="var(--soft)" stroke-width="2"/>`).join('');
     const hits = pts.map((p, i) => `<rect x="${x(i) - 14}" y="${T}" width="28" height="${H - T - B}" fill="transparent" data-i="${i}"/>`).join('');
-    $('#trend').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="전체 답변율 추이: ${pts.map(p => p.d + ' ' + P(p.r)).join(', ')}">${grid}<path d="${line}" fill="none" stroke="var(--chart)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dots}${labels}<text x="${x(pts.length - 1)}" y="${y(pts[pts.length - 1].r) - 10}" text-anchor="end" font-size="12" font-weight="800" fill="var(--ink)">${P(pts[pts.length - 1].r)}</text>${hits}</svg><div class="tip" hidden></div>${pts.length < 3 ? '<div class="note" style="margin-top:4px">수집이 쌓일수록 추이가 그려져요.</div>' : ''}`;
+    $('#trend').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="전체 답변율 추이: ${pts.map(p => p.d + ' ' + P(p.r)).join(', ')}">${grid}<path d="${line}" fill="none" stroke="var(--chart)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dots}${labels}<text x="${x(pts.length - 1)}" y="${y(pts[pts.length - 1].r) - 10}" text-anchor="end" font-size="12" font-weight="800" fill="var(--ink)">${P(pts[pts.length - 1].r)}</text>${hits}</svg><div class="tip" hidden></div>${pts.length < 3 ? '<div class="note" style="margin-top:4px">수집이 쌓일수록 추이가 그려짐.</div>' : ''}`;
     const box = $('#trend'), tip = box.querySelector('.tip');
     box.querySelectorAll('rect[data-i]').forEach(el => {
         const show = () => {
@@ -2199,7 +2199,7 @@ function dataUI() {
         el.addEventListener('mouseleave', () => tip.hidden = true);
     });
     const top = live.map(r => ({ r, q: qstat(r.key) })).filter(x => x.q && x.q.rep).sort((a, b) => b.q.rep - a.q.rep || a.q.rate - b.q.rate).slice(0, 5);
-    $('#top5').innerHTML = top.map(({ r, q }) => `<button type="button" data-jump="${esc(r.key)}"><span class="t">${esc(r.text)}</span><span class="n">교체 ${q.rep} · 답변율 ${P(q.rate)}</span><span class="rate" aria-hidden="true"><i style="width:${Math.max(2, Math.round((q.rate || 0) * 100))}%"></i><b style="left:${Math.round(avg * 100)}%"></b></span></button>`).join('') + `<div class="note">막대는 답변율, 세로선은 전체 평균이에요. 누르면 그 질문을 열어요.</div>`;
+    $('#top5').innerHTML = top.map(({ r, q }) => `<button type="button" data-jump="${esc(r.key)}"><span class="t">${esc(r.text)}</span><span class="n">교체 ${q.rep} · 답변율 ${P(q.rate)}</span><span class="rate" aria-hidden="true"><i style="width:${Math.max(2, Math.round((q.rate || 0) * 100))}%"></i><b style="left:${Math.round(avg * 100)}%"></b></span></button>`).join('') + `<div class="note">막대는 답변율, 세로선은 전체 평균임. 누르면 그 질문을 엶.</div>`;
 }
 function evalSec(r) {
     const e = EV(r.key);
@@ -2209,10 +2209,10 @@ function evalSec(r) {
     const sc = v => `${Math.min(100, Math.max(0, (v - 0.2) / 0.6 * 100))}%`;
     return `<div class="sec"><h3>평가 <span class="chip g${g}">${g} ${GRADE_L[g]}</span>${rank ? ` <span class="chip low">처방 ${rank}위</span>` : ''}</h3><div class="box evx">
     <div class="evr"><b>진단</b><span>${esc(dx)}</span></div>
-    <div class="evr"><b>실적 추정</b><span>${n ? `${P(est)} <span class="note">(80% 범위 ${P(lo)}~${P(hi)} · 결론 ${n}회)</span>` : '<span class="note">결론이 아직 없어요 — 설계 예측만 있어요</span>'}
+    <div class="evr"><b>실적 추정</b><span>${n ? `${P(est)} <span class="note">(80% 범위 ${P(lo)}~${P(hi)} · 결론 ${n}회)</span>` : '<span class="note">결론이 아직 없음: 설계 예측만 있음</span>'}
       <span class="evbar" role="img" aria-label="실적 추정 ${P(est)}, 설계 예측 ${P(mu)}, 평균 ${P(base)}"><span class="ci" style="left:${sc(lo)};width:calc(${sc(hi)} - ${sc(lo)})"></span><span class="mu" style="left:${sc(mu)}" title="설계 예측 ${P(mu)}"></span><span class="av" style="left:${sc(base)}" title="평균 ${P(base)}"></span><span class="pt" style="left:${sc(est)}"></span></span>
       <span class="note" style="margin:0">점 = 실적 추정 · 파란 선 = 설계 예측 · 회색 선 = 평균 ${P(base)} (축 20~80%)</span></span></div>
-    <div class="evr"><b>설계 예측</b><span>${P(mu)} — 문구 특성만으로 본 기대 답변율${muNew != null ? ` · 바뀐 문구 ${P(muNew)} (${pp(muNew - mu)})` : ''}</span></div>
+    <div class="evr"><b>설계 예측</b><span>${P(mu)}: 문구 특성만으로 본 기대 답변율${muNew != null ? ` · 바뀐 문구 ${P(muNew)} (${pp(muNew - mu)})` : ''}</span></div>
     ${rx.length ? `<div class="evr"><b>처방</b><ol>${rx.map(([l, d]) => `<li>${esc(l)} <b style="color:var(--high)">${pp(d)}</b></li>`).join('')}</ol></div>` : ''}
   </div></div>`;
 }
@@ -2222,19 +2222,19 @@ function evSysUI() {
         return;
     const c = E.count, tot = Object.values(c).reduce((a, b) => a + b, 0) || 1;
     const L = H?.loss;
-    $('#evSys').innerHTML = `<p class="note" style="margin:0">질문 하나를 다섯 층으로 평가해요. 아래 층의 결과가 위 층의 입력이 돼요. 각 층은 무엇을 보장하고 무엇을 보장하지 않는지가 분명해요.</p>
+    $('#evSys').innerHTML = `<p class="note" style="margin:0">질문 하나를 다섯 층으로 평가함. 아래 층의 결과가 위 층의 입력이 됨.</p>
     <div class="layers">
-      <div><b>① 측정</b><span><b>결론 = 답변 + 교체</b>만 써요. 미응답은 빼요 — 결론에 이르는 비율의 문항 간 차이가 이항 잡음 수준(표준편차 0.093 vs 우연 0.091)이라, 질문이 좌우하는 건 '답하느냐 바꾸느냐'뿐이에요.</span></div>
-      <div><b>② 설계 예측 μ</b><span>문구 특성(시점·경험 전제·인지 노력·감정·자기노출·은유·형식·관심사·길이·레벨) → 릿지 베타-이항 회귀. 질문을 내보내기 전에도 계산돼요(생성기·진단기와 같은 식). 관심사×형식 상호작용은 교차검증 이득 ${m.inter_gain ?? '–'}로 기준(1.0) 미달이라 넣지 않았어요.</span></div>
-      <div><b>③ 실적 추정 θ</b><span>θ ~ Beta(a + φμ, n − a + φ(1 − μ)), φ=${Math.round(m.phi)}. 결론이 적으면 설계 예측 쪽으로, 많으면 실제 비율 쪽으로 가요. 80% 범위와 '평균보다 10%p 낮을/높을 확률'을 같이 내요.</span></div>
-      <div><b>④ 등급 · 진단</b><span><b>D</b> P(θ &lt; 평균−10%p) ≥ 0.8 · <b>A</b> P(θ &gt; 평균+10%p) ≥ 0.8 · <b>C</b> P(θ &lt; 평균−5%p) ≥ 0.7 이거나 설계상 낮고 처방 있음 · <b>B</b> 나머지 · <b>보류</b> 결론 ${E.min_res}회 미만.<br>진단은 θ와 μ를 비교해요 — 설계 문제(μ가 낮음) / 소재·표현 문제(μ는 괜찮은데 θ가 낮음) / 숨은 강자(θ가 μ보다 높음) / 예측대로. 문구를 바꾼 질문은 '수정안 대기'로 지금 문구를 평가하고 바뀐 문구의 μ를 함께 보여요.</span></div>
-      <div><b>⑤ 처방 · 우선순위</b><span>특성 하나를 바꾼 반사실 문구의 μ를 다시 계산해 효과(+%p) 순으로 처방을 내요. 우선순위 = 기대 이득(처방 후 μ 또는 평균까지 올라갈 몫) × 상대 노출 — 많이 보이는 질문의 큰 개선부터. '고쳐야 할 것' 탭이 이 순서예요.</span></div>
+      <div><b>① 측정</b><span><b>결론 = 답변 + 교체</b>만 씀. 미응답은 뺌: 결론에 이르는 비율의 문항 간 차이가 이항 잡음 수준(표준편차 0.093 vs 우연 0.091)이라, 질문이 좌우하는 건 '답하느냐 바꾸느냐'뿐임.</span></div>
+      <div><b>② 설계 예측 μ</b><span>문구 특성(시점·경험 전제·인지 노력·감정·자기노출·은유·형식·관심사·길이·레벨) → 릿지 베타-이항 회귀. 질문을 내보내기 전에도 계산됨(생성기·진단기와 같은 식). 관심사×형식 상호작용은 교차검증 이득 ${m.inter_gain ?? '–'}로 기준(1.0) 미달이라 넣지 않았음.</span></div>
+      <div><b>③ 실적 추정 θ</b><span>θ ~ Beta(a + φμ, n − a + φ(1 − μ)), φ=${Math.round(m.phi)}. 결론이 적으면 설계 예측 쪽으로, 많으면 실제 비율 쪽으로 감. 80% 범위와 '평균보다 10%p 낮을/높을 확률'을 같이 냄.</span></div>
+      <div><b>④ 등급 · 진단</b><span><b>D</b> P(θ &lt; 평균−10%p) ≥ 0.8 · <b>A</b> P(θ &gt; 평균+10%p) ≥ 0.8 · <b>C</b> P(θ &lt; 평균−5%p) ≥ 0.7 이거나 설계상 낮고 처방 있음 · <b>B</b> 나머지 · <b>보류</b> 결론 ${E.min_res}회 미만.<br>진단은 θ와 μ를 비교함: 설계 문제(μ가 낮음) / 소재·표현 문제(μ는 괜찮은데 θ가 낮음) / 숨은 강자(θ가 μ보다 높음) / 예측대로. 문구를 바꾼 질문은 '수정안 대기'로 지금 문구를 평가하고 바뀐 문구의 μ를 함께 보임.</span></div>
+      <div><b>⑤ 처방 · 우선순위</b><span>특성 하나를 바꾼 반사실 문구의 μ를 다시 계산해 효과(+%p) 순으로 처방을 냄. 우선순위 = 기대 이득(처방 후 μ 또는 평균까지 올라갈 몫) × 상대 노출: 많이 보이는 질문의 큰 개선부터. '고쳐야 할 것' 탭이 이 순서임.</span></div>
     </div>
     <div class="kpis">${Object.entries(GRADE_L).map(([g, l]) => `<div class="kpi"><span class="l">${g} ${l}</span><span class="v">${(c[g] || 0).toLocaleString()}</span><span class="d">활성 질문의 ${Math.round((c[g] || 0) / tot * 100)}%${g === 'N' ? ' · 결론이 쌓이면 판정' : ''}</span></div>`).join('')}</div>
     ${L ? `<div class="gbox"><h3>시간 외 검증 (${esc(H.train)} 통계로 학습 → ${esc(H.test)}까지 새로 쌓인 결론 ${H.n_res}회 예측, 문항 ${H.n_q}개)</h3>
       <span>결론당 로그 손실(낮을수록 좋음): 전체 평균 ${L.mean.toFixed(4)} · 문항별 관측 비율 ${L.raw.toFixed(4)} · <b>평가 모델 ${L.model.toFixed(4)}</b></span>
-      <span class="note" style="margin:0">문항별 관측 비율을 그대로 믿으면 평균보다도 못해요(표본이 작아서). 모델처럼 설계 예측 쪽으로 당겨야 미래를 더 잘 맞혀요. 기간이 6일뿐이라 차이는 작아요 — 매달 다시 재요.</span></div>` : ''}
-    <p class="note" style="margin:0">한계: 관찰 데이터라 처방 효과는 '같은 특성을 가진 다른 질문들에서 본 차이'예요. 실제 효과는 수정 후 Revision 비교(수정 효과 측정)로 확인해요.</p>`;
+      <span class="note" style="margin:0">문항별 관측 비율을 그대로 믿으면 평균보다도 못함(표본이 작아서). 설계 예측 쪽으로 당긴 추정이 미래를 더 잘 맞힘. 기간이 6일뿐이라 차이는 작음: 매달 다시 측정.</span></div>` : ''}
+    <p class="note" style="margin:0">한계: 관찰 데이터라 처방 효과는 '같은 특성을 가진 다른 질문들에서 본 차이'임. 실제 효과는 수정 후 Revision 비교(수정 효과 측정)로 확인함.</p>`;
 }
 const zq = q => {
     const t = 1 - q, a = [2.50662823884, -18.61500062529, 41.39119773534, -25.44106049637], b = [-8.47351093090, 23.08336743743, -21.06224101826, 3.13082909833];
@@ -2263,29 +2263,29 @@ function xUI() {
     const T = X.traffic || { res: 0, mod_res: 0, exp: 0, days: 0, n_mod: 0 }, M = X.metrics, all = rows(), live = all.filter(r => !r.deleted);
     const sigOK = INS.axes.filter(a => live.filter(r => r.ax === a.key && r.pt === 's').length >= SIG_TARGET).length;
     const lv = INS.levels?.levels || [], deep = lv.filter(x => x.level >= 3).reduce((a, x) => a + x.n, 0), lvAll = lv.reduce((a, x) => a + x.n, 0) || 1;
-    $('#xMetric').innerHTML = `<table class="spec"><thead><tr><th>층</th><th>지표</th><th>지금</th><th>왜 이 자리인가</th></tr></thead><tbody>
-    <tr><td><b>최상위</b></td><td>7일 재기록률 · 주간 기록 사용자 비율</td><td><span class="note">사용자 로그 필요</span></td><td>질문 개선의 목적은 다시 쓰게 만드는 것이에요. 질문 통계만으로는 잴 수 없어서 아래 로그 명세가 필요해요.</td></tr>
-    <tr><td><b>주요</b></td><td>노출 대비 답변율 (답변 ÷ 노출, 무응답 포함)</td><td><b>${P(M.ans_exp)}</b></td><td>사용자가 실제로 겪는 결과예요. 리포트·목표는 이 숫자로 말해요.</td></tr>
-    <tr><td><b>질문 평가</b></td><td>답변 ÷ (답변 + 교체)</td><td>${P(M.ans_res)}</td><td>질문 비교에는 이걸 써요. 무응답(${P(M.nor_exp)}, ${M.nor}회)은 질문마다의 차이가 우연 수준이라 질문 순위를 바꾸지 않고 잡음만 더해요. 그래서 두 지표의 질문 순위는 거의 같아요.</td></tr>
-    <tr><td><b>보조</b></td><td>교체율 · 답변까지 걸린 시간 · 답변 길이(중앙값)</td><td>교체 ${P(M.rep_exp)} · <span class="note">시간·길이는 로그 필요</span></td><td>답했어도 짧게 대충 썼다면 좋은 질문이 아니에요.</td></tr>
-    <tr><td><b>가드레일</b></td><td>축별 신호 커버리지 · 레벨 3~4 비중</td><td>목표 채운 축 ${sigOK}/${INS.axes.length} · 깊은 질문 ${Math.round(deep / lvAll * 100)}%</td><td>답변율만 쫓으면 질문이 가벼워져요(레벨 3~4 답변율은 40% 안팎). 깊이와 자아분석 신호가 줄면 개선이 아니에요.</td></tr>
+    $('#xMetric').innerHTML = `<table class="spec"><thead><tr><th>층</th><th>지표</th><th>지금</th><th>근거</th></tr></thead><tbody>
+    <tr><td><b>최상위</b></td><td>7일 재기록률 · 주간 기록 사용자 비율</td><td><span class="note">사용자 로그 필요</span></td><td>질문 개선의 목적은 다시 쓰게 만드는 것임. 질문 통계만으로는 잴 수 없어서 아래 로그 명세가 필요함.</td></tr>
+    <tr><td><b>주요</b></td><td>노출 대비 답변율 (답변 ÷ 노출, 무응답 포함)</td><td><b>${P(M.ans_exp)}</b></td><td>사용자가 실제로 겪는 결과임. 리포트·목표는 이 숫자로 말함.</td></tr>
+    <tr><td><b>질문 평가</b></td><td>답변 ÷ (답변 + 교체)</td><td>${P(M.ans_res)}</td><td>질문 비교에는 이걸 씀. 무응답(${P(M.nor_exp)}, ${M.nor}회)은 질문마다의 차이가 우연 수준이라 질문 순위를 바꾸지 않고 잡음만 더함. 두 지표의 질문 순위는 거의 같음.</td></tr>
+    <tr><td><b>보조</b></td><td>교체율 · 답변까지 걸린 시간 · 답변 길이(중앙값)</td><td>교체 ${P(M.rep_exp)} · <span class="note">시간·길이는 로그 필요</span></td><td>답했어도 짧게 대충 썼다면 좋은 질문이 아님.</td></tr>
+    <tr><td><b>가드레일</b></td><td>축별 신호 커버리지 · 레벨 3~4 비중</td><td>목표 채운 축 ${sigOK}/${INS.axes.length} · 깊은 질문 ${Math.round(deep / lvAll * 100)}%</td><td>답변율만 쫓으면 질문이 가벼워짐(레벨 3~4 답변율은 40% 안팎). 깊이와 자아분석 신호가 줄면 개선이 아님.</td></tr>
   </tbody></table>`;
     const tc = todoCounts(all), R = INS.revision || { n: 0, pooled: null }, decided = EDITS.size + KEEPS.size;
     const notes = [...EDITS.values()].filter(e => e.hyp);
     const byRx = {};
     notes.forEach(e => (e.hyp.rx || ['기타']).forEach(t => byRx[t] = (byRx[t] || 0) + 1));
     $('#xFlow').innerHTML = `<div class="funnel">
-      <div><span>① 처방·검토 대기</span><b>${(tc.rx + tc.pick).toLocaleString()}</b><span>처방 ${tc.rx} · 골라 주세요 ${tc.pick}</span></div>
+      <div><span>① 처방·검토 대기</span><b>${(tc.rx + tc.pick).toLocaleString()}</b><span>처방 ${tc.rx} · 수정안 선택 ${tc.pick}</span></div>
       <div><span>② 결정함</span><b>${decided.toLocaleString()}</b><span>고친 것 ${EDITS.size} · 그대로 ${KEEPS.size}</span></div>
       <div><span>③ 앱에 반영됨</span><b>${R.n.toLocaleString()}</b><span>통계에서 Revision이 바뀐 질문</span></div>
       <div><span>④ 측정 끝남</span><b>${(R.pooled?.n || 0).toLocaleString()}</b><span>전·후 각각 결론 20회 이상</span></div></div>
-    <p class="note" style="margin:0"><b>실험 노트</b> — 카드에서 문구를 고쳐 저장하면 가설이 자동으로 남아요: 고치기 전·후 설계 예측, 기대 효과, 처방 유형(경험 전제 제거·시점 제거·양자택일 전환·단축·은유 제거). 앱에 반영되고 측정이 끝나면 예측이 맞았는지(적중/빗나감)를 붙여 '처방 적중률'을 쌓아요.
-    지금 가설이 남은 수정 ${notes.length}개${notes.length ? ` — ${Object.entries(byRx).map(([k, v]) => `${esc(k)} ${v}`).join(' · ')}` : ''}.</p>`;
+    <p class="note" style="margin:0"><b>실험 노트</b>: 카드에서 문구를 고쳐 저장하면 가설이 자동으로 남음: 고치기 전·후 설계 예측, 기대 효과, 처방 유형(경험 전제 제거·시점 제거·양자택일 전환·단축·은유 제거). 앱에 반영되고 측정이 끝나면 예측이 맞았는지(적중/빗나감)를 붙여 '처방 적중률'을 쌓음.
+    지금 가설이 남은 수정 ${notes.length}개${notes.length ? `: ${Object.entries(byRx).map(([k, v]) => `${esc(k)} ${v}`).join(' · ')}` : ''}.</p>`;
     const v = id => Number($('#' + id)?.value);
     const prev = { p0: v('xpP0') || Math.round(m.base * 100), d: v('xpD') || 10, a: $('#xpA')?.value || '0.05', w: $('#xpW')?.value || '0.8', tr: v('xpTr') || T.mod_res, sp: v('xpSp') || 50 };
     const n = nPerGroup(prev.p0 / 100, prev.d / 100, Number(prev.a), Number(prev.w)), perDay = prev.tr * Math.min(prev.sp, 100 - prev.sp) / 100;
     const days = perDay > 0 ? Math.ceil(n / perDay) : Infinity, m28 = mdeAt(prev.p0 / 100, Math.max(1, perDay * 28), Number(prev.a), Number(prev.w));
-    $('#xPower').innerHTML = `<p class="note" style="margin:0"><b>설계</b> — 수정한 질문을 무작위로 두 묶음으로 나눠, A 묶음만 먼저 바꾸고 B 묶음은 원문으로 둬요. 같은 기간에 비교하니 계절·사용자 구성 변화가 상쇄돼요. 끝나면 B도 바꿔 한 번 더 확인해요(단계적 배포). 질문마다 결론이 몇 회뿐이라 질문 하나하나가 아니라 <b>처방 유형별 묶음</b>으로 효과를 추정해요.</p>
+    $('#xPower').innerHTML = `<p class="note" style="margin:0"><b>설계</b>: 수정한 질문을 무작위로 두 묶음으로 나눠, A 묶음만 먼저 바꾸고 B 묶음은 원문으로 둠. 같은 기간에 비교하니 계절·사용자 구성 변화가 상쇄됨. 끝나면 B도 바꿔 한 번 더 확인함(단계적 배포). 질문마다 결론이 몇 회뿐이라 질문 하나하나가 아니라 <b>처방 유형별 묶음</b>으로 효과를 추정함.</p>
     <div class="calc">
       <label>기준 답변율(%)<input id="xpP0" type="number" min="5" max="95" value="${prev.p0}"></label>
       <label>잡고 싶은 효과(%p)<input id="xpD" type="number" min="1" max="30" value="${prev.d}"></label>
@@ -2297,37 +2297,37 @@ function xUI() {
     <div class="kpis">
       <div class="kpi"><span class="l">묶음마다 필요한 결론</span><span class="v">${n.toLocaleString()}</span><span class="d">두 비율 차이 검정(정규 근사)</span></div>
       <div class="kpi"><span class="l">필요한 기간</span><span class="v">${Number.isFinite(days) ? days + '일' : '–'}</span><span class="d">작은 묶음 기준 하루 ${perDay.toFixed(1)}회</span></div>
-      <div class="kpi"><span class="l">4주로 잡을 수 있는 최소 효과</span><span class="v">±${(m28 * 100).toFixed(1)}%p</span><span class="d">이보다 작은 효과는 4주로는 판정이 어려워요</span></div>
+      <div class="kpi"><span class="l">4주로 잡을 수 있는 최소 효과</span><span class="v">±${(m28 * 100).toFixed(1)}%p</span><span class="d">이보다 작은 효과는 4주로는 판정이 어려움</span></div>
     </div>
-    <p class="note" style="margin:0">지금 숫자(${esc(X.snapshots.at(-2) || '')}~${esc(X.snapshots.at(-1) || '')}, ${T.days}일): 전체 결론 하루 ${T.res}회, 수정한 질문 ${T.n_mod}개에 가는 결론 하루 ${T.mod_res}회(${Math.round(T.mod_res / Math.max(1, T.res) * 100)}%). 반씩 나누면 +10%p 검출에 약 ${Math.ceil(nPerGroup(m.base, 0.1, 0.05, 0.8) / (T.mod_res / 2))}일이 걸려요 — 4주로는 ±${(mdeAt(m.base, Math.max(1, T.mod_res / 2 * 28), 0.05, 0.8) * 100).toFixed(0)}%p 정도만 판정돼요.
+    <p class="note" style="margin:0">지금 숫자(${esc(X.snapshots.at(-2) || '')}~${esc(X.snapshots.at(-1) || '')}, ${T.days}일): 전체 결론 하루 ${T.res}회, 수정한 질문 ${T.n_mod}개에 가는 결론 하루 ${T.mod_res}회(${Math.round(T.mod_res / Math.max(1, T.res) * 100)}%). 반씩 나누면 +10%p 검출에 약 ${Math.ceil(nPerGroup(m.base, 0.1, 0.05, 0.8) / (T.mod_res / 2))}일이 걸림: 4주로는 ±${(mdeAt(m.base, Math.max(1, T.mod_res / 2 * 28), 0.05, 0.8) * 100).toFixed(0)}%p 정도만 판정됨.
     기간을 줄이는 방법: ① 실험 질문의 노출 비중을 올리기 ② 같은 질문의 원문·수정본을 사용자별로 무작위 노출(질문 차이가 상쇄돼 가장 효율적, 앱 협조 필요) ③ 효과가 클 것으로 예측되는 처방 유형부터 실험.</p>`;
     const H = INS.holdout, gain = H ? H.loss.mean - H.loss.model : null;
-    $('#xCeil').innerHTML = `<p class="note" style="margin:0">로그 손실이 평균만 쓴 것보다 0.4%만 낮아 약해 보이지만, 비교 기준은 <b>도달 가능한 최대치</b>여야 해요. 문항 간 진짜 답변율 차이는 표준편차 ${P(X.sd_theta)} 정도라(φ=${Math.round(m.phi)}), 각 질문의 진짜 답변율을 정확히 아는 예측자도 결론당 로그 손실을 <b>${X.ceiling.toFixed(4)}</b>밖에 줄이지 못해요.</p>
+    $('#xCeil').innerHTML = `<p class="note" style="margin:0">평균 대비 로그 손실 개선은 도달 가능한 최대치와 비교해야 함. 문항 간 진짜 답변율 차이는 표준편차 ${P(X.sd_theta)} 정도라(φ=${Math.round(m.phi)}), 각 질문의 진짜 답변율을 정확히 아는 예측자도 결론당 로그 손실을 <b>${X.ceiling.toFixed(4)}</b>밖에 줄이지 못함.</p>
     <div class="kpis">
       <div class="kpi"><span class="l">도달 가능한 최대 개선</span><span class="v">${X.ceiling.toFixed(4)}</span><span class="d">결론당 로그 손실(진짜 답변율을 아는 경우)</span></div>
       <div class="kpi"><span class="l">지금 모델 개선(시간 외 검증)</span><span class="v">${gain != null ? gain.toFixed(4) : '–'}</span><span class="d">${H ? `${esc(H.train)} 학습 → ${esc(H.test)} 예측, 결론 ${H.n_res}회` : ''}</span></div>
-      <div class="kpi"><span class="l">천장 대비</span><span class="v">${gain != null ? Math.round(gain / X.ceiling * 100) + '%' : '–'}</span><span class="d">설명 가능한 차이 중 모델이 잡은 몫 — 검증 기간이 6일이라 흔들려요</span></div>
+      <div class="kpi"><span class="l">천장 대비</span><span class="v">${gain != null ? Math.round(gain / X.ceiling * 100) + '%' : '–'}</span><span class="d">설명 가능한 차이 중 모델이 잡은 몫: 검증 기간이 6일이라 흔들림</span></div>
     </div>
-    <p class="note" style="margin:0">다음 단계: 스냅숏이 쌓이면 시간순 교차검증(rolling origin)으로 바꾸고, 로그 손실과 함께 Brier 점수, '예측 상위 20% 질문의 실제 답변율'을 매달 기록해요. 문장 임베딩은 같은 방식으로 비교해서 이길 때만 넣어요(글자 n-gram은 교차검증에서 과적합이었어요).</p>`;
-    $('#xKappa').innerHTML = `<p class="note" style="margin:0">태그가 틀리면 계수가 흔들려요. 기준 태그(질문 ${X.n_tag}개, 평가자 1명)와 문구 규칙 자동 태그(새 질문·고친 문구의 예측에 쓰는 것)의 일치도예요. κ(코헨 카파)는 우연히 맞을 확률을 뺀 일치도로, 0.6 이상이면 쓸 만하다고 봐요.</p>
-    <table class="spec"><thead><tr><th>특성</th><th>κ</th><th>단순 일치</th><th>판단</th></tr></thead><tbody>${X.kappa.map(k => `<tr><td>${esc(k.name)}</td><td><b>${k.kappa.toFixed(2)}</b></td><td>${P(k.agree)}</td><td>${k.kappa >= 0.6 ? '자동 태그로 충분' : k.kappa >= 0.4 ? '보통 — 생성기 AI 태그·사람 확인 권장' : '자동 태그 믿기 어려움 — AI 태그 또는 사람이 붙이기'}</td></tr>`).join('')}</tbody></table>
-    <p class="note" style="margin:0">할 일: 질문 100개를 두 사람과 AI가 따로 태깅해 사람 간 κ를 재요. 사람끼리도 0.6이 안 되는 특성은 정의를 다시 쓰거나 모델에서 빼요. 그 전까지 진단기·카드 예측은 인지 노력·감정 무게·자기노출이 자동 추정이면 참고로만 봐요.</p>`;
+    <p class="note" style="margin:0">다음 단계: 스냅숏이 쌓이면 시간순 교차검증(rolling origin)으로 바꾸고, 로그 손실과 함께 Brier 점수, '예측 상위 20% 질문의 실제 답변율'을 매달 기록함. 문장 임베딩은 같은 방식으로 비교해서 이길 때만 넣음(글자 n-gram은 교차검증에서 과적합이었음).</p>`;
+    $('#xKappa').innerHTML = `<p class="note" style="margin:0">태그가 틀리면 계수가 흔들림. 기준 태그(질문 ${X.n_tag}개, 평가자 1명)와 문구 규칙 자동 태그(새 질문·고친 문구의 예측에 쓰는 것)의 일치도임. κ(코헨 카파)는 우연히 맞을 확률을 뺀 일치도로, 0.6 이상이면 쓸 만하다고 봄.</p>
+    <table class="spec"><thead><tr><th>특성</th><th>κ</th><th>단순 일치</th><th>판단</th></tr></thead><tbody>${X.kappa.map(k => `<tr><td>${esc(k.name)}</td><td><b>${k.kappa.toFixed(2)}</b></td><td>${P(k.agree)}</td><td>${k.kappa >= 0.6 ? '자동 태그로 충분' : k.kappa >= 0.4 ? '보통: 생성기 AI 태그·사람 확인 권장' : '자동 태그 믿기 어려움: AI 태그 또는 사람이 붙이기'}</td></tr>`).join('')}</tbody></table>
+    <p class="note" style="margin:0">할 일: 질문 100개를 두 사람과 AI가 따로 태깅해 사람 간 κ를 측정. 사람끼리도 0.6이 안 되는 특성은 정의를 다시 쓰거나 모델에서 뺌. 그 전까지 진단기·카드 예측은 인지 노력·감정 무게·자기노출이 자동 추정이면 참고로만 봄.</p>`;
     const ex = v('xbS') || 10, hz = v('xbH') || 30, nNew = X.n_new, budget = T.res * ex / 100 * hz;
-    $('#xBandit').innerHTML = `<p class="note" style="margin:0">새 질문 ${nNew}개는 실적이 없어요. 전체 노출의 일부를 탐색에 떼어 주고, 설계 예측 μ를 사전분포 Beta(φμ, φ(1−μ))로 삼아 <b>톰슨 샘플링</b>으로 배분해요 — 매번 각 질문의 사후분포에서 값을 하나 뽑아 가장 높은 질문을 내보내요. 잘 될 질문에 노출이 몰리고, 안 될 질문은 빨리 걸러져요.</p>
+    $('#xBandit').innerHTML = `<p class="note" style="margin:0">새 질문 ${nNew}개는 실적이 없음. 전체 노출의 일부를 탐색에 떼어 주고, 설계 예측 μ를 사전분포 Beta(φμ, φ(1−μ))로 삼아 <b>톰슨 샘플링</b>으로 배분함: 매번 각 질문의 사후분포에서 값을 하나 뽑아 가장 높은 질문을 내보냄. 잘 될 질문에 노출이 몰리고, 안 될 질문은 빨리 걸러짐.</p>
     <div class="calc"><label>탐색 비중(%)<input id="xbS" type="number" min="1" max="50" value="${ex}"></label><label>기간(일)<input id="xbH" type="number" min="7" max="120" value="${hz}"></label></div>
     <div class="kpis">
       <div class="kpi"><span class="l">탐색에 쓰는 결론</span><span class="v">${Math.round(budget).toLocaleString()}</span><span class="d">하루 ${T.res}회 × ${ex}% × ${hz}일</span></div>
       <div class="kpi"><span class="l">판정 가능한 새 질문(결론 5회)</span><span class="v">${Math.min(nNew, Math.floor(budget / 5))}</span><span class="d">등급을 매길 수 있는 수</span></div>
       <div class="kpi"><span class="l">확정 가능한 새 질문(결론 20회)</span><span class="v">${Math.min(nNew, Math.floor(budget / 20))}</span><span class="d">운영 규칙의 탐색 종료 기준</span></div>
     </div>
-    <p class="note" style="margin:0">고르게 나누면 새 질문 하나가 결론 5회에 닿는 데 약 ${Math.ceil(5 * nNew / Math.max(0.01, T.res * ex / 100))}일이 걸려요. 그래서 고르게가 아니라 톰슨 샘플링으로 유망한 질문부터 판정해요. 앱 쪽에 '질문 선택 시 탐색 슬롯' 기능이 필요해요.</p>`;
-    $('#xLog').innerHTML = `<p class="note" style="margin:0">질문 단위 누적 합계로는 '레벨 1이라서 답했는지, 처음 쓰는 사용자라서 답했는지'를 나눌 수 없어요. 아래 두 이벤트가 있으면 사용자를 무작위 효과로 넣는 혼합효과 모델로 바꿀 수 있어요.</p>
+    <p class="note" style="margin:0">고르게 나누면 새 질문 하나가 결론 5회에 닿는 데 약 ${Math.ceil(5 * nNew / Math.max(0.01, T.res * ex / 100))}일이 걸림. 톰슨 샘플링으로 유망한 질문부터 판정. 앱 쪽에 '질문 선택 시 탐색 슬롯' 기능이 필요함.</p>`;
+    $('#xLog').innerHTML = `<p class="note" style="margin:0">질문 단위 누적 합계로는 '레벨 1이라서 답했는지, 처음 쓰는 사용자라서 답했는지'를 나눌 수 없음. 아래 두 이벤트가 있으면 사용자를 무작위 효과로 넣는 혼합효과 모델로 바꿀 수 있음.</p>
     <table class="spec"><thead><tr><th>이벤트</th><th>필드</th><th>쓰임</th></tr></thead><tbody>
       <tr><td><code>question_impression</code></td><td><code>impression_id, user_id, question_id, question_revision, shown_at, user_record_count, slot(오늘 몇 번째), level, choice_order(선택지 순서), arm(실험 묶음)</code></td><td>노출 맥락 통제, 레벨·신규 사용자 효과 분리, 실험 배정 기록, 선택지 순서 효과</td></tr>
       <tr><td><code>question_action</code></td><td><code>impression_id, action(answer | replace | none), latency_ms, answer_len</code></td><td>무응답 포함 답변율, 답변까지 시간, 답변 길이(보조 지표)</td></tr>
       <tr><td><code>session_return</code></td><td><code>user_id, date, recorded(bool)</code></td><td>7일 재기록률(최상위 지표)과 질문 노출의 연결</td></tr>
     </tbody></table>
-    <p class="note" style="margin:0"><b>자아분석 축 검증</b> — 사용자 단위 답이 쌓이면 축마다 내적 일관성(크론바흐 알파)과 문항-총점 상관을 봐요. 같은 성향을 재지 않는 문항은 축에서 빼요. 첫 선택지가 한쪽 극에 몰린 축은 <code>choice_order</code>를 무작위로 바꿔 순서 효과의 크기를 직접 재요.</p>`;
+    <p class="note" style="margin:0"><b>자아분석 축 검증</b>: 사용자 단위 답이 쌓이면 축마다 내적 일관성(크론바흐 알파)과 문항-총점 상관을 봄. 같은 성향을 재지 않는 문항은 축에서 뺌. 첫 선택지가 한쪽 극에 몰린 축은 <code>choice_order</code>를 무작위로 바꿔 순서 효과의 크기를 직접 잼.</p>`;
 }
 let IDS = null, IDSL = '';
 function shipChecks() {
@@ -2338,13 +2338,13 @@ function shipChecks() {
     const dupT = [...byText.values()].filter(v => v.length > 1).flat();
     const touched = live.filter(r => r.newId || r.edited || (r.orig && r.text !== r.orig[1]));
     const C = [
-        ['bad', '빈 문구', live.filter(r => !r.text.trim()).map(r => r.key), 'DB에 빈 질문이 들어가요'],
-        ['bad', '가이드 빈 칸', live.filter(r => r.g.some(x => !String(x || '').trim())).map(r => r.key), '앱에서 가이드 칸이 비어 보여요'],
-        ['bad', '문구가 완전히 같은 질문', dupT, '같은 질문이 두 번 나가요 — 하나를 비활성화'],
+        ['bad', '빈 문구', live.filter(r => !r.text.trim()).map(r => r.key), 'DB에 빈 질문이 들어감'],
+        ['bad', '가이드 빈 칸', live.filter(r => r.g.some(x => !String(x || '').trim())).map(r => r.key), '앱에서 가이드 칸이 비어 보임'],
+        ['bad', '문구가 완전히 같은 질문', dupT, '같은 질문이 두 번 나감: 하나를 비활성화'],
         ['bad', '관심사·레벨 값 오류', live.filter(r => !CAT[r.interest_id] || ![1, 2].includes(Number(r.level))).map(r => r.key), 'interest_id 1~6, question_level 1~2만 허용'],
-        ['warn', '60자 넘는 문구(바뀐 것)', touched.filter(r => r.text.length > 60).map(r => r.key), '앱 화면에서 줄바꿈이 많아요'],
-        ['warn', '가이드 점검 미통과(바뀐 것)', touched.filter(r => guideLint(...r.g).length).map(r => r.key), '힌트 예시·길이·물음표 — 카드 편집 칸에 이유가 보여요'],
-        ['warn', '남은 결정', [], `처방 ${tc.rx} · 중복 ${tc.dup} · 골라 주세요 ${tc.pick} · 재배정 ${tc.recat} — 남아 있어도 내려받을 수 있어요. 결정 전 질문은 지금 문구로 나가요`, tc.total],
+        ['warn', '60자 넘는 문구(바뀐 것)', touched.filter(r => r.text.length > 60).map(r => r.key), '앱 화면에서 줄바꿈이 많음'],
+        ['warn', '가이드 점검 미통과(바뀐 것)', touched.filter(r => guideLint(...r.g).length).map(r => r.key), '힌트 예시·길이·물음표: 카드 편집 칸에 이유가 보임'],
+        ['warn', '남은 결정', [], `처방 ${tc.rx} · 중복 ${tc.dup} · 수정안 선택 ${tc.pick} · 재배정 ${tc.recat}: 남아 있어도 내려받을 수 있음. 결정 전 질문은 지금 문구로 나감`, tc.total],
     ];
     return { C, changed, tc };
 }
@@ -2355,12 +2355,12 @@ function shipUI() {
     const bad = C.filter(([lv, , ks, , n]) => lv === 'bad' && (n ?? ks.length)).length, warn = C.filter(([lv, , ks, , n]) => lv === 'warn' && (n ?? ks.length)).length;
     const kinds = {};
     changed.forEach(r => modFlags(r).split(' · ').forEach(f => kinds[f] = (kinds[f] || 0) + 1));
-    $('#ship').innerHTML = `<div class="ship ${bad ? 'bad' : warn ? 'warn' : 'ok'}">${bad ? `내려받기 전에 고칠 것 ${bad}가지가 있어요` : warn ? `내려받을 수 있어요 · 확인할 것 ${warn}가지` : '내려받을 준비가 됐어요 ✓'}</div>
+    $('#ship').innerHTML = `<div class="ship ${bad ? 'bad' : warn ? 'warn' : 'ok'}">${bad ? `내려받기 전에 고칠 것 ${bad}가지가 있음` : warn ? `내려받을 수 있음 · 확인할 것 ${warn}가지` : '내려받을 준비가 됐음'}</div>
     <div class="chk">${C.map(([lv, t, ks, d, n]) => {
         const c = n ?? ks.length, st = c ? lv : 'ok';
         return `<div class="ci ${st}"><span class="ic" aria-hidden="true">${st === 'ok' ? '✓' : st === 'bad' ? '✕' : '!'}</span><span><b>${esc(t)}</b> ${c ? `${c.toLocaleString()}개` : '없음'}<small>${esc(d)}</small></span>${c && ks.length ? `<button class="btn" type="button" data-shipgo="${esc(t)}">보기</button>` : c && n != null ? '<button class="btn" type="button" data-go2="rev">할 일로</button>' : '<span></span>'}</div>`;
     }).join('')}</div>
-    <p class="note" style="margin:0"><b>원본 DB 대비 바뀌는 행 ${changed.length.toLocaleString()}개</b> — ${Object.entries(kinds).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)} ${v}`).join(' · ') || '없음'}. 다운로드 CSV의 '변경 내용' 열과 같아요.</p>`;
+    <p class="note" style="margin:0"><b>원본 DB 대비 바뀌는 행 ${changed.length.toLocaleString()}개</b>: ${Object.entries(kinds).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)} ${v}`).join(' · ') || '없음'}. 다운로드 CSV의 '변경 내용' 열과 같음.</p>`;
 }
 const RCSRC = { both: '사람·모델 둘 다', manual: '사람 분류', model: '문구 모델' };
 function recatItems() {
@@ -2370,14 +2370,14 @@ function recatItems() {
 const recatDone = x => RECATOK.has(x.key) || x.r.cat !== x.cur;
 function recatUI() {
     if (!INS?.recat) {
-        $('#rcList').innerHTML = '<div class="empty">분석 결과를 불러오는 중이에요.</div>';
+        $('#rcList').innerHTML = '<div class="empty">분석 결과를 불러오는 중임.</div>';
         return;
     }
     const its = recatItems(), op = its.filter(x => !recatDone(x)), src = $('#rcSrc').value, showDone = $('#rcDone').checked;
     $('#rcBoth').textContent = op.filter(x => x.src === 'both').length;
     $('#rcMan').textContent = op.filter(x => x.src === 'manual').length;
     $('#rcMod').textContent = op.filter(x => x.src === 'model').length;
-    $('#rcNote').textContent = `관심사가 질문 내용과 맞지 않아 보이는 질문이에요. 문구 분류기(글자 n-gram, 처음 보는 문항 정확도 ${P(INS.recat.acc)})와 사람 분류를 함께 봐요. 사람(친구·가족·동료·남의 시선)이 중심인 질문은 가치관보다 관계, 연애가 중심이면 사랑이 우선이에요. 옮기면 다운로드 CSV의 interest_id가 바뀌어요.`;
+    $('#rcNote').textContent = `관심사가 질문 내용과 맞지 않아 보이는 질문임. 문구 분류기(글자 n-gram, 처음 보는 문항 정확도 ${P(INS.recat.acc)})와 사람 분류를 함께 봄. 사람(친구·가족·동료·남의 시선)이 중심인 질문은 가치관보다 관계, 연애가 중심이면 사랑이 우선임. 옮기면 다운로드 CSV의 interest_id가 바뀜.`;
     const vis = its.filter(x => (showDone || !recatDone(x)) && (src === 'all' || x.src === src));
     $('#rcList').innerHTML = vis.length ? vis.map(x => {
         const done = recatDone(x);
@@ -2388,7 +2388,7 @@ function recatUI() {
         <button class="btn primary" type="button" data-rcmove ${db && canWrite ? '' : 'disabled'}>관심사 옮기기</button>
         <button class="btn" type="button" data-rckeep ${db && canWrite ? '' : 'disabled'}>${RECATOK.has(x.key) ? '다시 후보로' : '지금 관심사 그대로'}</button>
         <button class="btn" type="button" data-rcopen>카드 열기</button></div></div>`;
-    }).join('') : '<div class="empty">처리할 후보가 없어요.</div>';
+    }).join('') : '<div class="empty">처리할 후보가 없음.</div>';
 }
 function jumpCard(k) {
     resetFilters();
@@ -2407,7 +2407,7 @@ function card(r) {
         d ? `<span class="chip d-${d}">${DIFF_LABEL[d]}</span>` : '',
         r.edited ? `<span class="chip blue">페이지에서 고침</span>` : '',
         r.deleted ? `<span class="chip d-gone">${r.newId ? '삭제 · 파일에서 빠짐' : '비활성화'}</span>` : '',
-        isPick(r) ? (pickKind(r) === 'month' ? `<span class="chip low">${esc(pickOf(r).month)} 점검 · 골라 주세요</span>` : `<span class="chip d-mod">골라 주세요</span>`)
+        isPick(r) ? (pickKind(r) === 'month' ? `<span class="chip low">${esc(pickOf(r).month)} 점검 · 수정안 선택</span>` : `<span class="chip d-mod">수정안 선택</span>`)
             : KEEPS.has(r.key) ? `<span class="chip mint">그대로 두기로 함</span>` : ['chosen', 'applied'].includes(r.decided) && !r.edited ? `<span class="chip mint">검토에서 고름</span>` : '',
         isFix(r) ? `<span class="chip low">고쳐야 할 것 · AI 제안 받기</span>` : '',
         `<span class="chip">${esc(r.change)}</span>`,
@@ -2419,7 +2419,7 @@ function card(r) {
         r.axis ? `<span class="chip mint" title="${esc(r.axisNote)}${r.sig ? ' · ' + esc(sigLabel(r.ax, r.sig)) : ''}">${esc(r.axis)}${r.sig ? ` · ${esc(r.sig === 'A' ? AX2[r.ax]?.a : AX2[r.ax]?.b)} 먼저` : ''}</span>` : '',
         r.sub ? `<span class="chip">${esc(r.sub)}</span>` : '',
         r.recat && r.cat !== r.recat && !RECATOK.has(r.key) ? `<span class="chip d-mod" title="관심사 재배정 후보">${esc(r.recat)} 쪽?</span>` : '',
-        (e => e ? `<span class="chip g${e[0]}" title="평가 등급 — ${esc(e[1])}">${e[0]} ${GRADE_L[e[0]]}${isFix(r) ? ` · 처방 ${fixRank(r.key)}위` : ''}</span>` : '')(EV(r.key)),
+        (e => e ? `<span class="chip g${e[0]}" title="평가 등급: ${esc(e[1])}">${e[0]} ${GRADE_L[e[0]]}${isFix(r) ? ` · 처방 ${fixRank(r.key)}위` : ''}</span>` : '')(EV(r.key)),
         rateChip(r.key),
     ].join('');
     const op = open.has(r.key);
@@ -2428,7 +2428,7 @@ function card(r) {
     return `<details class="q" data-key="${esc(r.key)}"${op ? ' open' : ''}>
     <summary><span class="qno">Q.${esc(r.key)}${r.newId ? `<span class="nid">${esc(r.newId)}</span>` : ''}</span>
       <span class="qt${r.deleted ? ' gone' : ''}">${esc(r.text)}${PAGE === 'pick' || PAGE === 'rx' ? was : ''}</span><span class="chips">${chips}</span>
-      ${quick ? `<span class="qa"><button class="btn primary" type="button" data-keep="${esc(r.key)}">${PAGE === 'rx' ? '그대로 둘게요' : '이 문구로 확정'}</button><span class="note" style="margin:0;align-self:center">다른 안·직접 고치기는 펼쳐서</span></span>` : ''}</summary>
+      ${quick ? `<span class="qa"><button class="btn primary" type="button" data-keep="${esc(r.key)}">${PAGE === 'rx' ? '그대로 두기' : '이 문구로 확정'}</button><span class="note" style="margin:0;align-self:center">다른 안·직접 고치기는 펼쳐서</span></span>` : ''}</summary>
     ${op ? detail(r) : ''}
   </details>`;
 }
@@ -2441,7 +2441,7 @@ function metaForm(r) {
     <select data-m="ax" aria-label="축"><option value="">축 없음</option>${axs.map(a => `<option value="${a.key}"${a.key === r.ax ? ' selected' : ''}>${a.cat !== r.cat ? esc(a.cat) + ' · ' : ''}${esc(a.name)}</option>`).join('')}</select>
     <select data-m="sig" aria-label="신호 방향"${A ? '' : ' hidden'}><option value="">신호 방향 없음</option>${A ? `<option value="A"${r.sig === 'A' ? ' selected' : ''}>첫 선택지 = ${esc(A.a)}</option><option value="B"${r.sig === 'B' ? ' selected' : ''}>첫 선택지 = ${esc(A.b)}</option>` : ''}</select>
     <select data-m="subN" aria-label="소주제"><option value="0">소주제 없음</option>${(SUBS[r.cat] || []).map((n, i) => `<option value="${i + 1}"${r.subN === i + 1 && !r.recat ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select>
-    <button class="btn" type="button" data-metasave="${k}" ${db && canWrite ? '' : 'disabled'}>분류 저장</button>${r.metaEdited ? '<span class="note">페이지에서 바꾼 분류예요</span>' : ''}</div>`;
+    <button class="btn" type="button" data-metasave="${k}" ${db && canWrite ? '' : 'disabled'}>분류 저장</button>${r.metaEdited ? '<span class="note">페이지에서 바꾼 분류임</span>' : ''}</div>`;
 }
 function optionsOf(r) {
     const o = (r.alts || []).map(([label, text], i) => ({ key: 'a' + i, label, text }));
@@ -2460,8 +2460,8 @@ function detail(r) {
     const e = r.edited, k = esc(r.key), opts = optionsOf(r), b = busy.has(r.key);
     const tab = CTAB[r.key] || (EV(r.key) && PAGE === 'rx' ? 'ev' : 'fix');
     return `<div class="body" data-tab="${tab}">
-    ${pickKind(r) === 'month' && isPick(r) ? `<div class="why-up"><b>${esc(pickOf(r).month)} 점검에서 올라왔어요.</b> ${esc(pickOf(r).reason || '')} (${esc(pickOf(r).stats?.date || '')} 기준)</div>` : ''}
-    ${d === 'mod' ? `<div class="diff"><b>지난 다운로드 이후 바뀌었어요.</b> 문구·가이드·레벨·관심사·비활성 중 하나 이상이 달라졌어요.</div>` : ''}
+    ${pickKind(r) === 'month' && isPick(r) ? `<div class="why-up"><b>${esc(pickOf(r).month)} 점검에서 올라왔음.</b> ${esc(pickOf(r).reason || '')} (${esc(pickOf(r).stats?.date || '')} 기준)</div>` : ''}
+    ${d === 'mod' ? `<div class="diff"><b>지난 다운로드 이후 바뀌었음.</b> 문구·가이드·레벨·관심사·비활성 중 하나 이상이 달라졌음.</div>` : ''}
     <div class="ctabs" role="tablist" aria-label="카드 보기">${[['fix', '고치기'], ['ev', '평가·근거'], ['info', '목적·분류']].map(([v, l]) => `<button type="button" role="tab" data-ctab="${v}" aria-selected="${tab === v}">${l}</button>`).join('')}</div>
     <div class="tp tp-ev">
     ${evalSec(r)}
@@ -2469,7 +2469,7 @@ function detail(r) {
     </div>
     <div class="tp tp-info">
     <div class="sec"><h3>이 질문의 목적</h3>
-      <div class="box"><div>${esc(r.purpose)}</div>${r.pt ? `<div><b>목적 유형</b> ${PT[r.pt]} — ${esc(PT_DESC[r.pt])}${r.sub ? ` · <b>소주제</b> ${esc(r.sub)}` : ''}</div>` : ''}${r.axis ? `<div><b>자아분석</b> ${esc(AX2[r.ax]?.cat || '')} '${esc(r.axis)}' — ${esc(r.axisNote)}${r.sig ? ` · ${esc(sigLabel(r.ax, r.sig))}` : ''}</div>` : ''}
+      <div class="box"><div>${esc(r.purpose)}</div>${r.pt ? `<div><b>목적 유형</b> ${PT[r.pt]}: ${esc(PT_DESC[r.pt])}${r.sub ? ` · <b>소주제</b> ${esc(r.sub)}` : ''}</div>` : ''}${r.axis ? `<div><b>자아분석</b> ${esc(AX2[r.ax]?.cat || '')} '${esc(r.axis)}': ${esc(r.axisNote)}${r.sig ? ` · ${esc(sigLabel(r.ax, r.sig))}` : ''}</div>` : ''}
         ${metaForm(r)}${r.why ? `<div><b>바뀐 이유</b> ${esc(r.why)}</div>` : ''}${r.source ? `<div><b>출처</b> ${esc(r.source)}${/^https?:/.test(r.srcUrl) ? ` · <a href="${esc(r.srcUrl)}" target="_blank" rel="noopener">원문 보기</a>` : ''}</div>` : ''}</div>
     </div>
     <div class="grid2">
@@ -2479,19 +2479,19 @@ function detail(r) {
     </div>
     <div class="tp tp-fix">
     <div class="sec optsec"><h3>추천 수정안</h3>
-      <span class="hint">눌러서 고르면 아래 문구에 채워져요</span>
+      <span class="hint">눌러서 고르면 아래 문구에 채워짐</span>
       <div class="opts" role="radiogroup" aria-label="추천 수정안">
-        ${opts.concat([{ key: 'own', label: '아래 칸에 원하는 문구를 직접 써요', text: '✏️ 직접 입력하기' }]).map(o => `<label class="opt" for="o-${k}-${o.key}"><input type="radio" name="s-${k}" id="o-${k}-${o.key}" value="${o.key}" ${o.text === r.text ? 'checked' : ''}><span class="ck" aria-hidden="true"></span><span><span class="t">${esc(o.text)}</span><span class="s">${esc(o.label)}${o.why ? ' · ' + esc(o.why) : ''}${o.text === r.text ? ' · 지금 문구' : ''}</span>${o.g ? `<span class="g" style="display:block">가이드 · ${esc(o.g.filter(Boolean).join(' / '))}</span>` : ''}</span></label>`).join('')}
+        ${opts.concat([{ key: 'own', label: '아래 칸에 원하는 문구를 직접 씀', text: '직접 입력하기' }]).map(o => `<label class="opt" for="o-${k}-${o.key}"><input type="radio" name="s-${k}" id="o-${k}-${o.key}" value="${o.key}" ${o.text === r.text ? 'checked' : ''}><span class="ck" aria-hidden="true"></span><span><span class="t">${esc(o.text)}</span><span class="s">${esc(o.label)}${o.why ? ' · ' + esc(o.why) : ''}${o.text === r.text ? ' · 지금 문구' : ''}</span>${o.g ? `<span class="g" style="display:block">가이드 · ${esc(o.g.filter(Boolean).join(' / '))}</span>` : ''}</span></label>`).join('')}
       </div>
       <div class="row">
         <input type="search" id="h-${k}" placeholder="AI에게 바라는 점 (예: 더 가볍게, 10대도 답하기 쉽게)" aria-label="AI 요청" ${sample ? '' : 'hidden'}>
         <button class="btn mint" type="button" data-ai="${k}" ${sample && !b ? '' : 'disabled'} ${sample ? '' : 'hidden'}>${b ? 'AI가 쓰는 중…' : 'AI 추천 받기'}</button>
-        ${isPick(r) ? `<button class="btn" type="button" data-keep="${k}" ${db && canWrite ? '' : 'disabled'}>지금 문구 그대로 둘게요</button>` : KEEPS.has(r.key) ? `<button class="btn" type="button" data-unkeep="${k}" ${db && canWrite ? '' : 'disabled'}>다시 고르기</button>` : ''}
+        ${isPick(r) ? `<button class="btn" type="button" data-keep="${k}" ${db && canWrite ? '' : 'disabled'}>지금 문구 유지</button>` : KEEPS.has(r.key) ? `<button class="btn" type="button" data-unkeep="${k}" ${db && canWrite ? '' : 'disabled'}>다시 고르기</button>` : ''}
       </div>
     </div>
     <form class="form" data-form="${k}">
       <h3 style="margin:0">직접 고쳐 쓰기</h3>
-      <div><div class="lbl">질문 문구 · 자유롭게 고쳐 쓰고 저장하면 돼요</div><textarea id="t-${k}" name="text" rows="2">${esc(r.text)}</textarea><div class="warn" id="w-${k}">${esc(lint(r.text).join(' '))}</div><div class="simwarn" id="sw-${k}"></div><div class="cardpred" id="pr-${k}">${cardPred(r.text, r.cat, r.level, r.made)}</div></div>
+      <div><div class="lbl">질문 문구 · 자유롭게 고쳐 쓰고 저장하면 됨</div><textarea id="t-${k}" name="text" rows="2">${esc(r.text)}</textarea><div class="warn" id="w-${k}">${esc(lint(r.text).join(' '))}</div><div class="simwarn" id="sw-${k}"></div><div class="cardpred" id="pr-${k}">${cardPred(r.text, r.cat, r.level, r.made)}</div></div>
       <div><div class="lbl">공감 가이드 · empathy_guide</div><textarea id="g0-${k}" name="g0" rows="2">${esc(r.g[0])}</textarea></div>
       <div><div class="lbl">힌트 가이드 · hint_guide</div><textarea id="g1-${k}" name="g1" rows="2">${esc(r.g[1])}</textarea></div>
       <div><div class="lbl">유도 질문 · leading_question_guide</div><textarea id="g2-${k}" name="g2" rows="2">${esc(r.g[2])}</textarea></div>
@@ -2505,7 +2505,7 @@ function detail(r) {
         <button class="btn mint" type="button" data-guide="${k}" ${sample ? '' : 'hidden'}>이 문구로 가이드 채우기</button>
         ${e ? `<button class="btn mint" type="button" data-revert="${k}" ${db && canWrite ? '' : 'disabled'}>개선본으로 되돌리기</button>` : ''}
         <button class="btn ${r.deleted ? 'mint' : 'danger'}" type="button" data-off="${k}" data-to="${r.deleted ? 0 : 1}" ${db && canWrite ? '' : 'disabled'}>${r.deleted ? (r.newId ? '다시 넣기' : '다시 활성화') : (r.newId ? '이 신규 질문 삭제' : '이 질문 비활성화')}</button>
-        <span class="note">${db ? (canWrite ? '저장하면 모두에게 바로 보이고 다음 다운로드에 들어가요.' : '이 화면에서는 저장 권한이 없어요.') : '저장 기능을 쓸 수 없는 화면이에요.'}</span>
+        <span class="note">${db ? (canWrite ? '저장하면 모두에게 바로 보이고 다음 다운로드에 들어감.' : '이 화면에서는 저장 권한이 없음.') : '저장 기능을 쓸 수 없는 화면임.'}</span>
       </div>
     </form>
     </div>
@@ -2540,7 +2540,7 @@ async function render() {
         }
     }
     $('#count').textContent = `${vis.length.toLocaleString()}개${act.length ? ` · 필터: ${act.join(', ')}` : ''}`;
-    $('#list').innerHTML = shown.length ? shown.map(card).join('') : PAGE === 'rx' ? `<div class="empty">지금 처방할 질문이 없어요. 실적이 낮은 질문은 이미 수정안이 있거나(골라 주세요), 중복 정리가 먼저예요. 매달 통계가 쌓이면 다시 채워져요.</div>` : `<div class="empty">조건에 맞는 질문이 없어요.${act.length && PAGE !== 'pick' ? `<br>걸려 있는 필터: ${esc(act.join(', '))} <button class="btn" type="button" data-reset>필터 풀기</button>` : ''}</div>`;
+    $('#list').innerHTML = shown.length ? shown.map(card).join('') : PAGE === 'rx' ? `<div class="empty">지금 처방할 질문이 없음. 실적이 낮은 질문은 이미 수정안이 있거나(수정안 선택), 중복 정리가 먼저임. 매달 통계가 쌓이면 다시 채워짐.</div>` : `<div class="empty">조건에 맞는 질문이 없음.${act.length && PAGE !== 'pick' ? `<br>걸려 있는 필터: ${esc(act.join(', '))} <button class="btn" type="button" data-reset>필터 풀기</button>` : ''}</div>`;
     $('#more').hidden = vis.length <= limit;
     $('#more').textContent = `더 보기 (${(vis.length - limit).toLocaleString()}개 남음)`;
     const whoIds = [...document.querySelectorAll('[data-who]')].map(el => el.dataset.who).filter(Boolean);
@@ -2621,17 +2621,17 @@ JSON만 출력: {"options":[{"text":"질문","empathy":"","hint":"","leading":""
             }
             catch { }
         }
-        toast('AI 추천 3개를 추가했어요.');
+        toast('AI 추천 3개를 추가했음.');
     }
     catch (e) {
         if (e?.code === 'not_granted') {
             sample = null;
-            toast('AI 추천을 쓸 수 없는 화면이에요.');
+            toast('AI 추천을 쓸 수 없는 화면임.');
         }
         else if (e?.code === 'rate_limited')
-            toast('요청이 많아요. 잠시 후 다시 시도하세요.');
+            toast('요청이 많음. 잠시 후 다시 시도.');
         else
-            toast('AI 추천을 만들지 못했어요.');
+            toast('AI 추천을 만들지 못했음.');
     }
     finally {
         busy.delete(k);
@@ -2643,7 +2643,7 @@ async function fillGuides(k, btn) {
         return;
     const r = rows().find(x => x.key === k), text = (document.getElementById('t-' + k)?.value || '').trim();
     if (!r || !text)
-        return toast('문구를 먼저 써 주세요.');
+        return toast('문구 먼저 입력.');
     btn.disabled = true;
     btn.textContent = 'AI가 쓰는 중…';
     const prompt = `셀프 저널링 앱 '나답'의 데일리 질문에 붙일 가이드 3종을 쓰세요. 기존 DB 말투를 따르세요.
@@ -2658,15 +2658,15 @@ JSON만 출력: {"empathy":"","hint":"","leading":""}`;
         const o = await sample.json(prompt, { modelTier: 'quick', cache: false });
         [['g0', o?.empathy], ['g1', o?.hint], ['g2', o?.leading]].forEach(([n, v]) => { if (typeof v === 'string' && v.trim())
             document.getElementById(n + '-' + k).value = v.trim(); });
-        toast('가이드를 채웠어요. 확인하고 저장해 주세요.');
+        toast('가이드를 채웠음. 확인 후 저장.');
     }
     catch (e) {
         if (e?.code === 'not_granted') {
             sample = null;
-            toast('AI를 쓸 수 없는 화면이에요.');
+            toast('AI를 쓸 수 없는 화면임.');
         }
         else
-            toast('가이드를 만들지 못했어요.');
+            toast('가이드를 만들지 못했음.');
     }
     finally {
         btn.disabled = false;
@@ -2705,7 +2705,7 @@ async function download(kind) {
     const sent = r => DLS.some(d => d.h && d.h[r.key] !== undefined);
     const pick = (kind === 'diff' ? all.filter(r => diffOf(r)) : all).filter(r => !(r.newId && r.deleted && !sent(r)));
     if (!pick.length)
-        return toast('비교 기준 이후 바뀐 질문이 없어요.');
+        return toast('비교 기준 이후 바뀐 질문이 없음.');
     const now = new Date();
     const out = r => (r.deleted && r.orig && !r.orig[6]) ? { ...r, interest_id: r.orig[0], text: r.orig[1], level: r.orig[2], g: r.orig.slice(3, 6) } : r;
     const lines = [COLS.join(',')].concat(pick.map(out).map(r => [r.id, r.interest_id, r.text, r.level, r.g[0], r.g[1], r.g[2], r.created_at,
@@ -2718,10 +2718,10 @@ async function download(kind) {
         if (e?.code === 'declined')
             return;
         if (e?.code === 'rate_limited')
-            return toast('저장 창이 이미 열려 있어요.');
-        return toast('파일을 저장하지 못했어요.');
+            return toast('저장 창이 이미 열려 있음.');
+        return toast('파일을 저장하지 못했음.');
     }
-    toast('저장했어요.');
+    toast('저장했음.');
     if (!db)
         return;
     const h = {};
@@ -2735,7 +2735,7 @@ async function download(kind) {
     }
     catch {
         jumpToLatest = false;
-        toast('다운로드 기록을 남기지 못했어요. 다음 비교는 이전 기록 기준이에요.');
+        toast('다운로드 기록을 남기지 못했음. 다음 비교는 이전 기록 기준임.');
     }
 }
 const list = $('#list');
@@ -2767,7 +2767,7 @@ list.addEventListener('change', e => {
     if (radio.value === 'own') {
         ta.focus();
         ta.select();
-        toast('문구를 직접 써 주세요. 가이드도 함께 고칠 수 있어요.');
+        toast('문구를 직접 입력. 가이드도 함께 고칠 수 있음.');
         return;
     }
     const o = optionsOf(r).find(x => x.key === radio.value);
@@ -2782,14 +2782,14 @@ list.addEventListener('change', e => {
     {
         const sw = document.getElementById('sw-' + k), m = similarTo(k, o.text);
         if (sw)
-            sw.textContent = m ? `비슷한 질문이 있어요: Q.${m.r.key} "${m.r.text}" (${Math.round(m.v * 100)}%)` : '';
+            sw.textContent = m ? `비슷한 질문이 있음: Q.${m.r.key} "${m.r.text}" (${Math.round(m.v * 100)}%)` : '';
     }
     document.getElementById('w-' + k).textContent = lint(o.text).join(' ');
     if (o.g)
         ['g0', 'g1', 'g2'].forEach((n, i) => { if (o.g[i])
             document.getElementById(n + '-' + k).value = o.g[i]; });
     else if (o.text !== r.text)
-        toast('문구를 바꿨어요. 가이드도 새 문구에 맞는지 확인해 주세요.');
+        toast('문구를 바꿨음. 가이드도 새 문구에 맞는지 확인 필요.');
 });
 list.addEventListener('input', e => {
     if (['g0', 'g1', 'g2'].includes(e.target.name)) {
@@ -2809,7 +2809,7 @@ list.addEventListener('input', e => {
         }
         const sw = document.getElementById('sw-' + k), m = similarTo(k, e.target.value);
         if (sw)
-            sw.textContent = m ? `비슷한 질문이 있어요: Q.${m.r.key} "${m.r.text}" (${Math.round(m.v * 100)}%)` : '';
+            sw.textContent = m ? `비슷한 질문이 있음: Q.${m.r.key} "${m.r.text}" (${Math.round(m.v * 100)}%)` : '';
     }
 });
 function hypothesis(r, v) {
@@ -2839,7 +2839,7 @@ list.addEventListener('submit', async (e) => {
     const f = e.target, k = f.dataset.form, r = BASE.find(x => x.key === k);
     const v = { text: f.text.value.trim(), g0: f.g0.value.trim(), g1: f.g1.value.trim(), g2: f.g2.value.trim(), level: Number(f.level.value), interest_id: Number(f.interest_id.value) };
     if (!v.text)
-        return toast('문구가 비어 있어요.');
+        return toast('문구가 비어 있음.');
     const ex = EDITS.get(k);
     if (ex && typeof ex.deleted === 'boolean' && ex.deleted !== r.deleted)
         v.deleted = ex.deleted;
@@ -2853,24 +2853,24 @@ list.addEventListener('submit', async (e) => {
                 await db.doc('edits/' + k).delete();
             if (wasPick || KEEPS.has(k)) {
                 await db.doc('keeps/' + k).set({ by: me?.id || null, at: new Date().toISOString() });
-                toast('이 문구로 확정했어요.');
+                toast('이 문구로 확정했음.');
             }
             else
-                toast('개선본과 같아서 수정 기록을 지웠어요.');
+                toast('개선본과 같아서 수정 기록을 지웠음.');
         }
         else {
             await db.doc('edits/' + k).set({ ...v, hyp: hypothesis(r, v), by: me?.id || null, at: new Date().toISOString() });
-            toast('저장했어요.');
+            toast('저장했음.');
         }
     }
     catch (err) {
         if (err?.code === 'invalid_argument') {
             canWrite = false;
-            toast('이 화면에서는 저장 권한이 없어요.');
+            toast('이 화면에서는 저장 권한이 없음.');
             render();
         }
         else
-            toast('저장하지 못했어요. 잠시 후 다시 시도하세요.');
+            toast('저장하지 못했음. 잠시 후 다시 시도.');
     }
     finally {
         btn.disabled = false;
@@ -2896,7 +2896,7 @@ list.addEventListener('click', async (e) => {
         if (toOff && !off.classList.contains('armed')) {
             const isNew = !!BASE.find(x => x.key === k)?.newId, label = off.textContent;
             off.classList.add('armed');
-            off.textContent = isNew ? '한 번 더 누르면 삭제돼요' : '한 번 더 누르면 비활성화돼요';
+            off.textContent = isNew ? '한 번 더 누르면 삭제됨' : '한 번 더 누르면 비활성화됨';
             setTimeout(() => { if (off.isConnected) {
                 off.classList.remove('armed');
                 off.textContent = label;
@@ -2915,10 +2915,10 @@ list.addEventListener('click', async (e) => {
             else
                 await db.doc('edits/' + k).set({ ...ex, ...(toOff === base.deleted ? {} : { deleted: toOff }), by: me?.id || null, at: new Date().toISOString() });
             const nw = !!base.newId;
-            toast(toOff ? (nw ? '삭제했어요. 신규 질문이라 다운로드 파일에서 빠져요.' : '비활성화했어요. 다음 다운로드에 deleted_at이 채워져요.') : (nw ? '다시 넣었어요.' : '다시 활성화했어요.'));
+            toast(toOff ? (nw ? '삭제했음. 신규 질문이라 다운로드 파일에서 빠짐.' : '비활성화했음. 다음 다운로드에 deleted_at이 채워짐.') : (nw ? '다시 넣었음.' : '다시 활성화했음.'));
         }
         catch {
-            toast('저장하지 못했어요.');
+            toast('저장하지 못했음.');
             off.disabled = false;
         }
         return;
@@ -2932,15 +2932,15 @@ list.addEventListener('click', async (e) => {
         try {
             if (kp.dataset.keep) {
                 await db.doc('keeps/' + k).set({ by: me?.id || null, at: new Date().toISOString() });
-                toast('지금 문구 그대로 두기로 했어요.');
+                toast('지금 문구 그대로 두기로 했음.');
             }
             else {
                 await db.doc('keeps/' + k).delete();
-                toast('다시 골라 주세요에 올렸어요.');
+                toast('다시 수정안 선택에 올렸음.');
             }
         }
         catch {
-            toast('저장하지 못했어요.');
+            toast('저장하지 못했음.');
             kp.disabled = false;
         }
         return;
@@ -2951,10 +2951,10 @@ list.addEventListener('click', async (e) => {
     rv.disabled = true;
     try {
         await db.doc('edits/' + rv.dataset.revert).delete();
-        toast('개선본으로 되돌렸어요.');
+        toast('개선본으로 되돌렸음.');
     }
     catch {
-        toast('되돌리지 못했어요.');
+        toast('되돌리지 못했음.');
         rv.disabled = false;
     }
 });
@@ -2975,22 +2975,22 @@ list.addEventListener('click', async (e) => {
     const k = b.dataset.metasave, box = b.closest('.metaf'), v = n => box.querySelector(`[data-m="${n}"]`).value;
     const m = { pt: v('pt'), ax: v('ax'), sig: v('ax') ? v('sig') : '', subN: Number(v('subN')) };
     if (m.pt === 's' && !m.ax)
-        return toast('신호형은 축을 골라야 해요.');
+        return toast('신호형은 축을 골라야 함.');
     const base = BASE.find(x => x.key === k);
     b.disabled = true;
     try {
         if (base && m.pt === base.pt && m.ax === base.ax && m.sig === base.sig && m.subN === base.subN) {
             if (META.has(k))
                 await db.doc('meta/' + k).delete();
-            toast('원래 분류와 같아요.');
+            toast('원래 분류와 같음.');
         }
         else {
             await db.doc('meta/' + k).set({ ...m, by: me?.id || null, at: new Date().toISOString() });
-            toast('분류를 저장했어요.');
+            toast('분류를 저장했음.');
         }
     }
     catch {
-        toast('저장하지 못했어요.');
+        toast('저장하지 못했음.');
     }
     finally {
         b.disabled = false;
@@ -3015,19 +3015,19 @@ $('#rcList').addEventListener('click', async (e) => {
         if (mv) {
             const to = it.querySelector('[data-rcto]').value, ex = EDITS.get(k) || {};
             await db.doc('edits/' + k).set({ ...ex, interest_id: catId(to), by: me?.id || null, at: new Date().toISOString() });
-            toast(`${to}(으)로 옮겼어요. 다운로드에 관심사 수정으로 들어가요.`);
+            toast(`${to}(으)로 옮겼음. 다운로드에 관심사 수정으로 들어감.`);
         }
         else if (RECATOK.has(k)) {
             await db.doc('recatok/' + k).delete();
-            toast('다시 후보로 올렸어요.');
+            toast('다시 후보로 올렸음.');
         }
         else {
             await db.doc('recatok/' + k).set({ by: me?.id || null, at: new Date().toISOString() });
-            toast('지금 관심사 그대로 두기로 했어요.');
+            toast('지금 관심사 그대로 두기로 했음.');
         }
     }
     catch {
-        toast('저장하지 못했어요.');
+        toast('저장하지 못했음.');
         (mv || kp).disabled = false;
     }
 });
@@ -3114,7 +3114,7 @@ $('#dgText').addEventListener('input', dgAddState);
 $('#dgGuide').addEventListener('click', async () => {
     const text = ($('#dgText').value || '').trim();
     if (!sample || !text)
-        return toast('문구를 먼저 써 주세요.');
+        return toast('문구 먼저 입력.');
     const b = $('#dgGuide');
     b.disabled = true;
     b.textContent = 'AI가 쓰는 중…';
@@ -3128,7 +3128,7 @@ JSON만: {"empathy":"","hint":"","leading":""}`, { modelTier: 'quick', cache: fa
             $('#' + id).value = v.trim(); });
     }
     catch {
-        toast('가이드를 만들지 못했어요.');
+        toast('가이드를 만들지 못했음.');
     }
     finally {
         b.disabled = false;
@@ -3141,16 +3141,16 @@ $('#dgAdd').addEventListener('click', async () => {
         return;
     const g = ['dgG0', 'dgG1', 'dgG2'].map(id => ($('#' + id).value || '').trim());
     if (g.some(x => !x))
-        return toast('가이드 3종을 채워 주세요. AI로 채울 수도 있어요.');
+        return toast('가이드 3종을 채우기 필요. AI로 채울 수도 있음.');
     const form = $('#dgForm').value === 'auto' ? guessForm(text) : $('#dgForm').value, cat = $('#dgCat').value;
     const r = modelPred({ ...guessTags(text, form), ...DG.manual }, form, cat, text.length, $('#dgLv').value);
     const ids = BASE.map(x => Number(x.key)).concat([...ADDED.values()].map(a => Number(a.id))).filter(Number.isFinite), id = Math.max(...ids) + 1;
     const btn = $('#dgAdd'), fails = dgGate();
     if (fails.length && !btn.dataset.armed) {
         btn.dataset.armed = '1';
-        btn.textContent = '기준 미달 — 그래도 추가';
+        btn.textContent = '기준 미달: 그래도 추가';
         btn.classList.add('danger');
-        return toast(`출고 기준 미달 ${fails.length}개예요. 고치거나, 한 번 더 누르면 그래도 추가해요.`);
+        return toast(`출고 기준 미달 ${fails.length}개임. 고치거나, 한 번 더 누르면 그래도 추가함.`);
     }
     btn.disabled = true;
     try {
@@ -3158,13 +3158,13 @@ $('#dgAdd').addEventListener('click', async () => {
             text, g0: g[0], g1: g[1], g2: g[2], level: Number($('#dgLv').value),
             form: FORMN[form] || '', formCode: form, tags: { ...guessTags(text, form), ...DG.manual }, pred: r ? { p: r.p, lo: r.lo, hi: r.hi } : null,
             why: ['직접 작성', r && '예상 답변율 ' + P(r.p)].filter(Boolean).join(' · '), by: me?.id || null, at: new Date().toISOString() });
-        toast(`Q.${id}로 추가했어요. 다운로드에 신규로 들어가요.`);
+        toast(`Q.${id}로 추가했음. 다운로드에 신규로 들어감.`);
         ['dgText', 'dgG0', 'dgG1', 'dgG2'].forEach(x => $('#' + x).value = '');
         DG.manual = {};
         dgUI();
     }
     catch {
-        toast('추가하지 못했어요.');
+        toast('추가하지 못했음.');
     }
     finally {
         btn.dataset.armed = '';
@@ -3279,7 +3279,7 @@ $('#dups').addEventListener('click', async (e) => {
     if (off && !off.classList.contains('armed')) {
         const label = off.textContent, nw = !!BASE.find(x => x.key === off.dataset.dupoff)?.newId;
         off.classList.add('armed');
-        off.textContent = nw ? '한 번 더 누르면 삭제돼요' : '한 번 더 누르면 비활성화돼요';
+        off.textContent = nw ? '한 번 더 누르면 삭제됨' : '한 번 더 누르면 비활성화됨';
         setTimeout(() => { if (off.isConnected) {
             off.classList.remove('armed');
             off.textContent = label;
@@ -3297,19 +3297,19 @@ $('#dups').addEventListener('click', async (e) => {
                 await db.doc('edits/' + k).delete();
             else
                 await db.doc('edits/' + k).set({ ...ex, ...(base.deleted ? {} : { deleted: true }), by: me?.id || null, at: new Date().toISOString() });
-            toast(base.newId ? `Q.${k}를 삭제했어요. 다운로드 파일에서 빠져요.` : `Q.${k}를 비활성화했어요.`);
+            toast(base.newId ? `Q.${k}를 삭제했음. 다운로드 파일에서 빠짐.` : `Q.${k}를 비활성화했음.`);
         }
         else if (ok) {
             await db.doc('dupok/' + ok.dataset.dupok).set({ by: me?.id || null, at: new Date().toISOString() });
-            toast('중복 아님으로 표시했어요.');
+            toast('중복 아님으로 표시했음.');
         }
         else {
             await db.doc('dupok/' + un.dataset.dupundo).delete();
-            toast('다시 검토 목록에 올렸어요.');
+            toast('다시 검토 목록에 올렸음.');
         }
     }
     catch {
-        toast('저장하지 못했어요.');
+        toast('저장하지 못했음.');
         b.disabled = false;
     }
 });
@@ -3333,10 +3333,10 @@ $('#upFile').addEventListener('change', async (e) => {
         return;
     try {
         const t = parseCSV(await readCSVFile(f));
-        upPending = t.length ? { name: f.name, ...checkUpload(t) } : { name: f.name, errors: ['빈 파일이에요.'] };
+        upPending = t.length ? { name: f.name, ...checkUpload(t) } : { name: f.name, errors: ['빈 파일임.'] };
     }
     catch {
-        upPending = { name: f.name, errors: ['파일을 읽지 못했어요.'] };
+        upPending = { name: f.name, errors: ['파일을 읽지 못했음.'] };
     }
     upPending.errors = upPending.errors || [];
     upPreviewUI();
@@ -3355,16 +3355,16 @@ $('#upClear').addEventListener('click', async (e) => {
     const b = e.currentTarget;
     if (!b.classList.contains('armed')) {
         b.classList.add('armed');
-        b.textContent = '한 번 더 누르면 개선본 기준으로 돌아가요';
+        b.textContent = '한 번 더 누르면 개선본 기준으로 돌아감';
         setTimeout(() => { b.classList.remove('armed'); b.textContent = '올린 최신본 해제'; }, 4000);
         return;
     }
     try {
         await db.doc('upmeta/current').set({ id: null, at: new Date().toISOString(), by: me?.id || null });
-        toast('개선본 기준으로 돌아갔어요.');
+        toast('개선본 기준으로 돌아갔음.');
     }
     catch {
-        toast('바꾸지 못했어요.');
+        toast('바꾸지 못했음.');
     }
 });
 $('#upHist').addEventListener('click', async (e) => {
@@ -3377,10 +3377,10 @@ $('#upHist').addEventListener('click', async (e) => {
     b.disabled = true;
     try {
         await db.doc('upmeta/current').set({ ...m, at: new Date().toISOString() });
-        toast(`${m.name}을 최신본으로 되돌렸어요.`);
+        toast(`${m.name}을 최신본으로 되돌렸음.`);
     }
     catch {
-        toast('바꾸지 못했어요.');
+        toast('바꾸지 못했음.');
         b.disabled = false;
     }
 });
@@ -3398,10 +3398,10 @@ $('#upHist').addEventListener('click', async (e) => {
         $('#built').textContent = `개선본 ${j.builtAt} 기준 · 전체 ${BASE.length.toLocaleString()}행`;
         filters();
         render();
-        fetch('data/insights.json').then(r => r.json()).then(j => { INS = j; insUI(); heatUI(); genAll(); flowUI(); eqUI(); lvUI(); dgInit(); dgUI(); render(); }).catch(() => { $('#insMeta').textContent = '분석 결과를 불러오지 못했어요.'; });
+        fetch('data/insights.json').then(r => r.json()).then(j => { INS = j; insUI(); heatUI(); genAll(); flowUI(); eqUI(); lvUI(); dgInit(); dgUI(); render(); }).catch(() => { $('#insMeta').textContent = '분석 결과를 불러오지 못했음.'; });
     }
     catch {
-        $('#list').innerHTML = '<div class="empty">질문 데이터를 불러오지 못했어요. 새로고침해 주세요.</div>';
+        $('#list').innerHTML = '<div class="empty">질문 데이터를 불러오지 못했음. 새로고침 필요.</div>';
         return;
     }
     cuse('downloads').then(d => { downloads = d; $('#dlAll').disabled = $('#dlDiff').disabled = !d; });
@@ -3421,7 +3421,7 @@ $('#upHist').addEventListener('click', async (e) => {
     if (!db) {
         baseId = 'orig';
         historyUI();
-        $('#baseInfo').textContent = '이 화면에서는 다운로드 기록과 수정 저장을 쓸 수 없어요. 파일 받기는 돼요.';
+        $('#baseInfo').textContent = '이 화면에서는 다운로드 기록과 수정 저장을 쓸 수 없음. 파일 받기는 됨.';
         render();
         return;
     }

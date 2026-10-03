@@ -207,6 +207,9 @@ def main():
                 orig_db.loc[r["id"], "empathy_guide"], orig_db.loc[r["id"], "hint_guide"], orig_db.loc[r["id"], "leading_question_guide"],
                 orig_db.loc[r["id"], "deleted_at"] != ""],
         })
+    from tone import convert       # 화면 문구는 보고서체로
+    for x in rows:
+        x["purpose"], x["why"] = convert(x["purpose"]), convert(x["why"])
     dups = duplicate_pairs(rows)
     built = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M")
     out = ROOT / "board" / "data" / "questions.json"
