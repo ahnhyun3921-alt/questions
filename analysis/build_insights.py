@@ -546,6 +546,49 @@ def holdout(mdl):
                 loss=dict(mean=round(ll(np.full(len(a0), g)), 4), raw=round(ll(raw), 4), model=round(ll(post), 4)))
 
 
+def experiment(mdl, ev):
+    """실험·측정 보기용 숫자: 트래픽(스냅숏 사이 일평균), 지표 체계 현재값, 예측력 천장, 태깅 신뢰도(κ), 신규 질문 수."""
+    from sklearn.metrics import cohen_kappa_score
+    from import_page_added import guess_form, guess_tags
+    snaps = sorted((ROOT / "output" / "board_stats").glob("20*.json"))
+    S = [json.loads(x.read_text()) for x in snaps]
+    last = S[-1]
+    rows = json.loads((ROOT / "board" / "data" / "questions.json").read_text())["rows"]
+    mod = {r["key"] for r in rows if not r["deleted"] and r["orig"] and r["text"] != r["orig"][1]}
+    traffic = None
+    if len(S) >= 2:
+        a, b = S[-2]["q"], S[-1]["q"]
+        days = max(1, (pd.Timestamp(S[-1]["date"]) - pd.Timestamp(S[-2]["date"])).days)
+        dn = {k: (b[k][1] + b[k][2]) - (a.get(k, [0, 0, 0])[1] + a.get(k, [0, 0, 0])[2]) for k in b}
+        de = sum(b[k][0] - a.get(k, [0])[0] for k in b)
+        traffic = dict(days=days, exp=round(de / days, 1), res=round(sum(dn.values()) / days, 1),
+                       mod_res=round(sum(v for k, v in dn.items() if k in mod) / days, 1), n_mod=len(mod))
+    t = last["totals"]
+    metrics = dict(ans_exp=round(t["ans"] / t["exp"], 4), ans_res=round(t["ans"] / (t["ans"] + t["rep"]), 4),
+                   rep_exp=round(t["rep"] / t["exp"], 4), nor_exp=round(t["nor"] / t["exp"], 4), exp=t["exp"], nor=t["nor"])
+    # 예측력 천장: 문항 진짜 답변율의 분산이 φ로 정해지므로, 진짜 θ를 다 아는 예측자도 결론당 이만큼만 줄일 수 있다
+    base, phi = mdl["base"], mdl["phi"]
+    var = base * (1 - base) / (phi + 1)
+    ceiling = var / (2 * base * (1 - base))
+    # 태깅 신뢰도: 기준 태그(question_tags.csv, 평가자 1명) vs 문구 규칙 자동 태그
+    tg = pd.read_csv(Path(__file__).parent / "question_tags.csv")
+    db = latest_db().astype({"id": str}).set_index("id")
+    H, A = [], []
+    for _, r in tg.iterrows():
+        k = str(stats_to_db(int(r["id"])))
+        if k not in db.index:
+            continue
+        txt = str(db.loc[k, "question_text"]); f = guess_form(txt); g = guess_tags(txt, f)
+        H.append({**{c: str(int(r[c])) for c in "TPEWSC"}, "F": str(r["F"])}); A.append({**{c: str(g[c]) for c in "TPEWSC"}, "F": f})
+    H, A = pd.DataFrame(H), pd.DataFrame(A)
+    NAME = dict(T="시점 고정", P="경험 전제", E="인지 노력", W="감정 무게", S="자기노출", C="은유·모호", F="형식")
+    kappa = [dict(k=c, name=NAME[c], kappa=round(float(cohen_kappa_score(H[c], A[c])), 3), agree=round(float((H[c] == A[c]).mean()), 3)) for c in "TPEWSCF"]
+    lv = ev and json.loads(json.dumps(ev))
+    return dict(traffic=traffic, metrics=metrics, n_tag=len(H), kappa=kappa,
+                ceiling=round(ceiling, 5), sd_theta=round(var ** 0.5, 4),
+                n_new=sum(1 for r in rows if not r["deleted"] and r["newId"]), snapshots=[x.stem for x in snaps])
+
+
 def revision_effect():
     """수정 효과: 통계의 Revision이 1보다 큰 질문(앱 DB에서 문구가 바뀐 질문)의 수정 전(전체 − 현재 Revision)과 수정 후(현재 Revision) 답변율.
     pooled = 전·후 각각 결론 20회 이상인 질문들을 합친 차이(정규 근사 95% CI)."""
@@ -631,7 +674,7 @@ def levels(d, mdl):
 def main():
     date, d = load()
     uni, mdl, ln, ax, st = univariate(d), model(d), length_bins(d), axes(d), structure(d)
-    out = dict(snapshot=date, uni=uni, model=mdl, length=ln, axes=ax, structure=st, recat=recat_queue(), revision=revision_effect(), evals=evaluate(mdl), holdout=holdout(mdl), levels=levels(d, mdl),
+    out = dict(snapshot=date, uni=uni, model=mdl, length=ln, axes=ax, structure=st, recat=recat_queue(), revision=revision_effect(), evals=evaluate(mdl), holdout=holdout(mdl), levels=levels(d, mdl), experiment=experiment(mdl, None),
                findings=findings(uni, mdl, ln, ax, st))
     f = ROOT / "board" / "data" / "insights.json"
     f.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":"), allow_nan=False))

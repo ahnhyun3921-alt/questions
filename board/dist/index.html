@@ -292,6 +292,18 @@ summary.note{cursor:pointer;font-weight:700}
 .ship{font-size:1.05rem;font-weight:800;border-radius:14px;padding:12px 14px}
 .ship.ok{background:var(--mint-soft);color:var(--mint-ink)} .ship.warn{background:var(--mod-soft);color:var(--mod)} .ship.bad{background:var(--low-soft);color:var(--low)}
 .tile{cursor:pointer}
+.calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.calc label{display:grid;gap:4px;font-size:.78rem;font-weight:800;color:var(--ink-2)}
+.calc input,.calc select{font-size:.9rem;font-family:inherit;border:0;background:var(--soft);color:var(--ink);border-radius:999px;padding:9px 14px;min-width:0}
+.big2{font-size:1.4rem;font-weight:800;font-variant-numeric:tabular-nums}
+.funnel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.funnel>div{background:var(--soft);border-radius:14px;padding:10px 12px;display:grid;gap:2px}
+.funnel b{font-size:1.4rem;font-variant-numeric:tabular-nums}
+.funnel span{font-size:.76rem;color:var(--ink-2)}
+@media (max-width:720px){.funnel{grid-template-columns:repeat(2,minmax(0,1fr))}}
+table.spec{width:100%;border-collapse:collapse;font-size:.8rem}
+table.spec th,table.spec td{text-align:left;padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
+table.spec code{font-size:.78rem}
 #pg-ana > section[hidden]{display:none}
 .chip.gA{background:var(--high-soft);color:var(--high)} .chip.gC{background:var(--mod-soft);color:var(--mod)} .chip.gD{background:var(--low-soft);color:var(--low)} .chip.gN{background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)}
 .evx{display:grid;gap:8px}
@@ -546,7 +558,7 @@ a{color:var(--blue)}
   </div>
   <div class="pg" id="pg-ana" role="tabpanel" data-page="ins" hidden>
   <div class="seg2 revseg" id="anaNav" role="group" aria-label="분석 보기">
-    <button type="button" data-ana="now" aria-pressed="true">현황 · 인사이트</button><button type="button" data-ana="str" aria-pressed="false">질문 구조 · 축 · 레벨</button><button type="button" data-ana="model" aria-pressed="false">평가 모델 · 방법</button>
+    <button type="button" data-ana="now" aria-pressed="true">현황 · 인사이트</button><button type="button" data-ana="str" aria-pressed="false">질문 구조 · 축 · 레벨</button><button type="button" data-ana="model" aria-pressed="false">평가 모델 · 방법</button><button type="button" data-ana="exp" aria-pressed="false">실험 · 측정</button>
   </div>
   <section class="panel" aria-labelledby="dth" data-ana="now">
     <div class="data-head"><h2 id="dth">데이터로 보는 지금</h2><span class="note" id="dataAt">통계를 불러오는 중이에요.</span></div>
@@ -629,9 +641,37 @@ a{color:var(--blue)}
     <p class="note" style="margin:0"><b>신호형</b>은 답이 축의 한쪽 극을 가리켜 리포트에서 "○○ 쪽"으로 읽고, <b>성찰형</b>은 생각과 이유를 꺼내고, <b>기록형</b>은 취향·일상을 모아 "나의 목록"이 돼요. 모든 질문은 셋 중 하나의 목적을 가져요.</p>
     <div id="strOut"></div>
   </section>
-  <section class="panel" aria-labelledby="revh" data-ana="now">
+  <section class="panel" aria-labelledby="xmh" data-ana="exp">
+    <h2 id="xmh">지표 체계 — 무엇을 올리고, 무엇을 지키나</h2>
+    <div id="xMetric"></div>
+  </section>
+  <section class="panel" aria-labelledby="xfh" data-ana="exp">
+    <h2 id="xfh">운영 흐름 — 처방에서 측정까지</h2>
+    <div id="xFlow"></div>
+  </section>
+  <section class="panel" aria-labelledby="xph" data-ana="exp">
+    <h2 id="xph">실험 설계 · 검정력 계산</h2>
+    <div id="xPower"></div>
+  </section>
+  <section class="panel" aria-labelledby="revh" data-ana="exp">
     <h2 id="revh">수정 효과 측정</h2>
     <div id="revOut"></div>
+  </section>
+  <section class="panel" aria-labelledby="xch" data-ana="exp">
+    <h2 id="xch">모델 예측력 — 얼마나 잘하고, 어디까지 가능한가</h2>
+    <div id="xCeil"></div>
+  </section>
+  <section class="panel" aria-labelledby="xkh" data-ana="exp">
+    <h2 id="xkh">태깅 신뢰도</h2>
+    <div id="xKappa"></div>
+  </section>
+  <section class="panel" aria-labelledby="xbh" data-ana="exp">
+    <h2 id="xbh">신규 질문 노출 배분 (탐색)</h2>
+    <div id="xBandit"></div>
+  </section>
+  <section class="panel" aria-labelledby="xlh" data-ana="exp">
+    <h2 id="xlh">필요한 데이터 — 이벤트 로그 명세와 측정 계획</h2>
+    <div id="xLog"></div>
   </section>
   <section class="panel" aria-labelledby="disth" data-ana="str">
     <h2 id="disth">카테고리(관심사) 분포</h2>
@@ -1396,6 +1436,7 @@ function insUI() {
     revUI();
     recatUI();
     evSysUI();
+    xUI();
     filters();
     $('#method').innerHTML = [
         `<div><b>데이터</b> 통계 사이트의 문항별 '현재 Revision' 실적(${INS.snapshot}). 답변율 = 답변 ÷ (답변 + 교체). 미응답은 결론이 나지 않은 노출이라 뺐어요.</div>`,
@@ -2195,6 +2236,99 @@ function evSysUI() {
       <span class="note" style="margin:0">문항별 관측 비율을 그대로 믿으면 평균보다도 못해요(표본이 작아서). 모델처럼 설계 예측 쪽으로 당겨야 미래를 더 잘 맞혀요. 기간이 6일뿐이라 차이는 작아요 — 매달 다시 재요.</span></div>` : ''}
     <p class="note" style="margin:0">한계: 관찰 데이터라 처방 효과는 '같은 특성을 가진 다른 질문들에서 본 차이'예요. 실제 효과는 수정 후 Revision 비교(수정 효과 측정)로 확인해요.</p>`;
 }
+const zq = q => {
+    const t = 1 - q, a = [2.50662823884, -18.61500062529, 41.39119773534, -25.44106049637], b = [-8.47351093090, 23.08336743743, -21.06224101826, 3.13082909833];
+    const c = [0.3374754822726147, 0.9761690190917186, 0.1607979714918209, 0.0276438810333863, 0.0038405729373609, 0.0003951896511919, 0.0000321767881768, 0.0000002888167364, 0.0000003960315187];
+    const y = q - 0.5;
+    if (Math.abs(y) < 0.42) {
+        const r = y * y;
+        return y * (((a[3] * r + a[2]) * r + a[1]) * r + a[0]) / ((((b[3] * r + b[2]) * r + b[1]) * r + b[0]) * r + 1);
+    }
+    let r = q;
+    if (y > 0)
+        r = t;
+    r = Math.log(-Math.log(r));
+    let x = c[0] + r * (c[1] + r * (c[2] + r * (c[3] + r * (c[4] + r * (c[5] + r * (c[6] + r * (c[7] + r * c[8])))))));
+    return y < 0 ? -x : x;
+};
+function nPerGroup(p0, d, alpha, power) {
+    const p1 = p0 + d, pb = (p0 + p1) / 2, za = zq(1 - alpha / 2), zb = zq(power);
+    return Math.ceil(((za * Math.sqrt(2 * pb * (1 - pb)) + zb * Math.sqrt(p0 * (1 - p0) + p1 * (1 - p1))) / d) ** 2);
+}
+const mdeAt = (p0, n, alpha, power) => (zq(1 - alpha / 2) + zq(power)) * Math.sqrt(2 * p0 * (1 - p0) / n);
+function xUI() {
+    const X = INS?.experiment, m = INS?.model;
+    if (!X || !m)
+        return;
+    const T = X.traffic || { res: 0, mod_res: 0, exp: 0, days: 0, n_mod: 0 }, M = X.metrics, all = rows(), live = all.filter(r => !r.deleted);
+    const sigOK = INS.axes.filter(a => live.filter(r => r.ax === a.key && r.pt === 's').length >= SIG_TARGET).length;
+    const lv = INS.levels?.levels || [], deep = lv.filter(x => x.level >= 3).reduce((a, x) => a + x.n, 0), lvAll = lv.reduce((a, x) => a + x.n, 0) || 1;
+    $('#xMetric').innerHTML = `<table class="spec"><thead><tr><th>층</th><th>지표</th><th>지금</th><th>왜 이 자리인가</th></tr></thead><tbody>
+    <tr><td><b>최상위</b></td><td>7일 재기록률 · 주간 기록 사용자 비율</td><td><span class="note">사용자 로그 필요</span></td><td>질문 개선의 목적은 다시 쓰게 만드는 것이에요. 질문 통계만으로는 잴 수 없어서 아래 로그 명세가 필요해요.</td></tr>
+    <tr><td><b>주요</b></td><td>노출 대비 답변율 (답변 ÷ 노출, 무응답 포함)</td><td><b>${P(M.ans_exp)}</b></td><td>사용자가 실제로 겪는 결과예요. 리포트·목표는 이 숫자로 말해요.</td></tr>
+    <tr><td><b>질문 평가</b></td><td>답변 ÷ (답변 + 교체)</td><td>${P(M.ans_res)}</td><td>질문 비교에는 이걸 써요. 무응답(${P(M.nor_exp)}, ${M.nor}회)은 질문마다의 차이가 우연 수준이라 질문 순위를 바꾸지 않고 잡음만 더해요. 그래서 두 지표의 질문 순위는 거의 같아요.</td></tr>
+    <tr><td><b>보조</b></td><td>교체율 · 답변까지 걸린 시간 · 답변 길이(중앙값)</td><td>교체 ${P(M.rep_exp)} · <span class="note">시간·길이는 로그 필요</span></td><td>답했어도 짧게 대충 썼다면 좋은 질문이 아니에요.</td></tr>
+    <tr><td><b>가드레일</b></td><td>축별 신호 커버리지 · 레벨 3~4 비중</td><td>목표 채운 축 ${sigOK}/${INS.axes.length} · 깊은 질문 ${Math.round(deep / lvAll * 100)}%</td><td>답변율만 쫓으면 질문이 가벼워져요(레벨 3~4 답변율은 40% 안팎). 깊이와 자아분석 신호가 줄면 개선이 아니에요.</td></tr>
+  </tbody></table>`;
+    const tc = todoCounts(all), R = INS.revision || { n: 0, pooled: null }, decided = EDITS.size + KEEPS.size;
+    const notes = [...EDITS.values()].filter(e => e.hyp);
+    const byRx = {};
+    notes.forEach(e => (e.hyp.rx || ['기타']).forEach(t => byRx[t] = (byRx[t] || 0) + 1));
+    $('#xFlow').innerHTML = `<div class="funnel">
+      <div><span>① 처방·검토 대기</span><b>${(tc.rx + tc.pick).toLocaleString()}</b><span>처방 ${tc.rx} · 골라 주세요 ${tc.pick}</span></div>
+      <div><span>② 결정함</span><b>${decided.toLocaleString()}</b><span>고친 것 ${EDITS.size} · 그대로 ${KEEPS.size}</span></div>
+      <div><span>③ 앱에 반영됨</span><b>${R.n.toLocaleString()}</b><span>통계에서 Revision이 바뀐 질문</span></div>
+      <div><span>④ 측정 끝남</span><b>${(R.pooled?.n || 0).toLocaleString()}</b><span>전·후 각각 결론 20회 이상</span></div></div>
+    <p class="note" style="margin:0"><b>실험 노트</b> — 카드에서 문구를 고쳐 저장하면 가설이 자동으로 남아요: 고치기 전·후 설계 예측, 기대 효과, 처방 유형(경험 전제 제거·시점 제거·양자택일 전환·단축·은유 제거). 앱에 반영되고 측정이 끝나면 예측이 맞았는지(적중/빗나감)를 붙여 '처방 적중률'을 쌓아요.
+    지금 가설이 남은 수정 ${notes.length}개${notes.length ? ` — ${Object.entries(byRx).map(([k, v]) => `${esc(k)} ${v}`).join(' · ')}` : ''}.</p>`;
+    const v = id => Number($('#' + id)?.value);
+    const prev = { p0: v('xpP0') || Math.round(m.base * 100), d: v('xpD') || 10, a: $('#xpA')?.value || '0.05', w: $('#xpW')?.value || '0.8', tr: v('xpTr') || T.mod_res, sp: v('xpSp') || 50 };
+    const n = nPerGroup(prev.p0 / 100, prev.d / 100, Number(prev.a), Number(prev.w)), perDay = prev.tr * Math.min(prev.sp, 100 - prev.sp) / 100;
+    const days = perDay > 0 ? Math.ceil(n / perDay) : Infinity, m28 = mdeAt(prev.p0 / 100, Math.max(1, perDay * 28), Number(prev.a), Number(prev.w));
+    $('#xPower').innerHTML = `<p class="note" style="margin:0"><b>설계</b> — 수정한 질문을 무작위로 두 묶음으로 나눠, A 묶음만 먼저 바꾸고 B 묶음은 원문으로 둬요. 같은 기간에 비교하니 계절·사용자 구성 변화가 상쇄돼요. 끝나면 B도 바꿔 한 번 더 확인해요(단계적 배포). 질문마다 결론이 몇 회뿐이라 질문 하나하나가 아니라 <b>처방 유형별 묶음</b>으로 효과를 추정해요.</p>
+    <div class="calc">
+      <label>기준 답변율(%)<input id="xpP0" type="number" min="5" max="95" value="${prev.p0}"></label>
+      <label>잡고 싶은 효과(%p)<input id="xpD" type="number" min="1" max="30" value="${prev.d}"></label>
+      <label>유의수준<select id="xpA">${['0.05', '0.1'].map(x => `<option${x === prev.a ? ' selected' : ''}>${x}</option>`).join('')}</select></label>
+      <label>검정력<select id="xpW">${['0.8', '0.9'].map(x => `<option${x === prev.w ? ' selected' : ''}>${x}</option>`).join('')}</select></label>
+      <label>실험 질문의 하루 결론 수<input id="xpTr" type="number" min="1" step="0.1" value="${prev.tr}"></label>
+      <label>A 묶음 비율(%)<input id="xpSp" type="number" min="10" max="90" value="${prev.sp}"></label>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><span class="l">묶음마다 필요한 결론</span><span class="v">${n.toLocaleString()}</span><span class="d">두 비율 차이 검정(정규 근사)</span></div>
+      <div class="kpi"><span class="l">필요한 기간</span><span class="v">${Number.isFinite(days) ? days + '일' : '–'}</span><span class="d">작은 묶음 기준 하루 ${perDay.toFixed(1)}회</span></div>
+      <div class="kpi"><span class="l">4주로 잡을 수 있는 최소 효과</span><span class="v">±${(m28 * 100).toFixed(1)}%p</span><span class="d">이보다 작은 효과는 4주로는 판정이 어려워요</span></div>
+    </div>
+    <p class="note" style="margin:0">지금 숫자(${esc(X.snapshots.at(-2) || '')}~${esc(X.snapshots.at(-1) || '')}, ${T.days}일): 전체 결론 하루 ${T.res}회, 수정한 질문 ${T.n_mod}개에 가는 결론 하루 ${T.mod_res}회(${Math.round(T.mod_res / Math.max(1, T.res) * 100)}%). 반씩 나누면 +10%p 검출에 약 ${Math.ceil(nPerGroup(m.base, 0.1, 0.05, 0.8) / (T.mod_res / 2))}일이 걸려요 — 4주로는 ±${(mdeAt(m.base, Math.max(1, T.mod_res / 2 * 28), 0.05, 0.8) * 100).toFixed(0)}%p 정도만 판정돼요.
+    기간을 줄이는 방법: ① 실험 질문의 노출 비중을 올리기 ② 같은 질문의 원문·수정본을 사용자별로 무작위 노출(질문 차이가 상쇄돼 가장 효율적, 앱 협조 필요) ③ 효과가 클 것으로 예측되는 처방 유형부터 실험.</p>`;
+    const H = INS.holdout, gain = H ? H.loss.mean - H.loss.model : null;
+    $('#xCeil').innerHTML = `<p class="note" style="margin:0">로그 손실이 평균만 쓴 것보다 0.4%만 낮아 약해 보이지만, 비교 기준은 <b>도달 가능한 최대치</b>여야 해요. 문항 간 진짜 답변율 차이는 표준편차 ${P(X.sd_theta)} 정도라(φ=${Math.round(m.phi)}), 각 질문의 진짜 답변율을 정확히 아는 예측자도 결론당 로그 손실을 <b>${X.ceiling.toFixed(4)}</b>밖에 줄이지 못해요.</p>
+    <div class="kpis">
+      <div class="kpi"><span class="l">도달 가능한 최대 개선</span><span class="v">${X.ceiling.toFixed(4)}</span><span class="d">결론당 로그 손실(진짜 답변율을 아는 경우)</span></div>
+      <div class="kpi"><span class="l">지금 모델 개선(시간 외 검증)</span><span class="v">${gain != null ? gain.toFixed(4) : '–'}</span><span class="d">${H ? `${esc(H.train)} 학습 → ${esc(H.test)} 예측, 결론 ${H.n_res}회` : ''}</span></div>
+      <div class="kpi"><span class="l">천장 대비</span><span class="v">${gain != null ? Math.round(gain / X.ceiling * 100) + '%' : '–'}</span><span class="d">설명 가능한 차이 중 모델이 잡은 몫 — 검증 기간이 6일이라 흔들려요</span></div>
+    </div>
+    <p class="note" style="margin:0">다음 단계: 스냅숏이 쌓이면 시간순 교차검증(rolling origin)으로 바꾸고, 로그 손실과 함께 Brier 점수, '예측 상위 20% 질문의 실제 답변율'을 매달 기록해요. 문장 임베딩은 같은 방식으로 비교해서 이길 때만 넣어요(글자 n-gram은 교차검증에서 과적합이었어요).</p>`;
+    $('#xKappa').innerHTML = `<p class="note" style="margin:0">태그가 틀리면 계수가 흔들려요. 기준 태그(질문 ${X.n_tag}개, 평가자 1명)와 문구 규칙 자동 태그(새 질문·고친 문구의 예측에 쓰는 것)의 일치도예요. κ(코헨 카파)는 우연히 맞을 확률을 뺀 일치도로, 0.6 이상이면 쓸 만하다고 봐요.</p>
+    <table class="spec"><thead><tr><th>특성</th><th>κ</th><th>단순 일치</th><th>판단</th></tr></thead><tbody>${X.kappa.map(k => `<tr><td>${esc(k.name)}</td><td><b>${k.kappa.toFixed(2)}</b></td><td>${P(k.agree)}</td><td>${k.kappa >= 0.6 ? '자동 태그로 충분' : k.kappa >= 0.4 ? '보통 — 생성기 AI 태그·사람 확인 권장' : '자동 태그 믿기 어려움 — AI 태그 또는 사람이 붙이기'}</td></tr>`).join('')}</tbody></table>
+    <p class="note" style="margin:0">할 일: 질문 100개를 두 사람과 AI가 따로 태깅해 사람 간 κ를 재요. 사람끼리도 0.6이 안 되는 특성은 정의를 다시 쓰거나 모델에서 빼요. 그 전까지 진단기·카드 예측은 인지 노력·감정 무게·자기노출이 자동 추정이면 참고로만 봐요.</p>`;
+    const ex = v('xbS') || 10, hz = v('xbH') || 30, nNew = X.n_new, budget = T.res * ex / 100 * hz;
+    $('#xBandit').innerHTML = `<p class="note" style="margin:0">새 질문 ${nNew}개는 실적이 없어요. 전체 노출의 일부를 탐색에 떼어 주고, 설계 예측 μ를 사전분포 Beta(φμ, φ(1−μ))로 삼아 <b>톰슨 샘플링</b>으로 배분해요 — 매번 각 질문의 사후분포에서 값을 하나 뽑아 가장 높은 질문을 내보내요. 잘 될 질문에 노출이 몰리고, 안 될 질문은 빨리 걸러져요.</p>
+    <div class="calc"><label>탐색 비중(%)<input id="xbS" type="number" min="1" max="50" value="${ex}"></label><label>기간(일)<input id="xbH" type="number" min="7" max="120" value="${hz}"></label></div>
+    <div class="kpis">
+      <div class="kpi"><span class="l">탐색에 쓰는 결론</span><span class="v">${Math.round(budget).toLocaleString()}</span><span class="d">하루 ${T.res}회 × ${ex}% × ${hz}일</span></div>
+      <div class="kpi"><span class="l">판정 가능한 새 질문(결론 5회)</span><span class="v">${Math.min(nNew, Math.floor(budget / 5))}</span><span class="d">등급을 매길 수 있는 수</span></div>
+      <div class="kpi"><span class="l">확정 가능한 새 질문(결론 20회)</span><span class="v">${Math.min(nNew, Math.floor(budget / 20))}</span><span class="d">운영 규칙의 탐색 종료 기준</span></div>
+    </div>
+    <p class="note" style="margin:0">고르게 나누면 새 질문 하나가 결론 5회에 닿는 데 약 ${Math.ceil(5 * nNew / Math.max(0.01, T.res * ex / 100))}일이 걸려요. 그래서 고르게가 아니라 톰슨 샘플링으로 유망한 질문부터 판정해요. 앱 쪽에 '질문 선택 시 탐색 슬롯' 기능이 필요해요.</p>`;
+    $('#xLog').innerHTML = `<p class="note" style="margin:0">질문 단위 누적 합계로는 '레벨 1이라서 답했는지, 처음 쓰는 사용자라서 답했는지'를 나눌 수 없어요. 아래 두 이벤트가 있으면 사용자를 무작위 효과로 넣는 혼합효과 모델로 바꿀 수 있어요.</p>
+    <table class="spec"><thead><tr><th>이벤트</th><th>필드</th><th>쓰임</th></tr></thead><tbody>
+      <tr><td><code>question_impression</code></td><td><code>impression_id, user_id, question_id, question_revision, shown_at, user_record_count, slot(오늘 몇 번째), level, choice_order(선택지 순서), arm(실험 묶음)</code></td><td>노출 맥락 통제, 레벨·신규 사용자 효과 분리, 실험 배정 기록, 선택지 순서 효과</td></tr>
+      <tr><td><code>question_action</code></td><td><code>impression_id, action(answer | replace | none), latency_ms, answer_len</code></td><td>무응답 포함 답변율, 답변까지 시간, 답변 길이(보조 지표)</td></tr>
+      <tr><td><code>session_return</code></td><td><code>user_id, date, recorded(bool)</code></td><td>7일 재기록률(최상위 지표)과 질문 노출의 연결</td></tr>
+    </tbody></table>
+    <p class="note" style="margin:0"><b>자아분석 축 검증</b> — 사용자 단위 답이 쌓이면 축마다 내적 일관성(크론바흐 알파)과 문항-총점 상관을 봐요. 같은 성향을 재지 않는 문항은 축에서 빼요. 첫 선택지가 한쪽 극에 몰린 축은 <code>choice_order</code>를 무작위로 바꿔 순서 효과의 크기를 직접 재요.</p>`;
+}
 let IDS = null, IDSL = '';
 function shipChecks() {
     const all = rows(), live = all.filter(r => !r.deleted), tc = todoCounts(all);
@@ -2678,6 +2812,26 @@ list.addEventListener('input', e => {
             sw.textContent = m ? `비슷한 질문이 있어요: Q.${m.r.key} "${m.r.text}" (${Math.round(m.v * 100)}%)` : '';
     }
 });
+function hypothesis(r, v) {
+    if (!INS?.model || v.text === r.text)
+        return null;
+    const before = r.oldText && r.oldText !== r.text ? r.oldText : r.text, fb = guessForm(before), fa = guessForm(v.text), tb = guessTags(before, fb), ta = guessTags(v.text, fa);
+    const cat = CAT[v.interest_id] || r.cat, pb = modelPred(tb, fb, cat, before.length, v.level), pa = modelPred(ta, fa, cat, v.text.length, v.level);
+    const rx = [];
+    if (ta.P < tb.P)
+        rx.push('경험 전제 제거');
+    if (ta.T < tb.T)
+        rx.push('시점 제거');
+    if (ta.C < tb.C)
+        rx.push('은유 제거');
+    if (fa === 'c' && fb !== 'c')
+        rx.push('양자택일 전환');
+    if (v.text.length < before.length * 0.8)
+        rx.push('단축');
+    if (!rx.length)
+        rx.push('표현·소재 변경');
+    return { before, predBefore: pb ? +pb.p.toFixed(4) : null, predAfter: pa ? +pa.p.toFixed(4) : null, expect: pb && pa ? +(pa.p - pb.p).toFixed(4) : null, rx, deployedAt: null, result: null };
+}
 list.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!db)
@@ -2705,7 +2859,7 @@ list.addEventListener('submit', async (e) => {
                 toast('개선본과 같아서 수정 기록을 지웠어요.');
         }
         else {
-            await db.doc('edits/' + k).set({ ...v, by: me?.id || null, at: new Date().toISOString() });
+            await db.doc('edits/' + k).set({ ...v, hyp: hypothesis(r, v), by: me?.id || null, at: new Date().toISOString() });
             toast('저장했어요.');
         }
     }
@@ -2947,10 +3101,14 @@ function anaShow(v) {
         axUI();
         structUI();
     }
+    if (INS && v === 'exp')
+        xUI();
 }
 anaShow(ANA);
 $('#anaNav').addEventListener('click', e => { const b = e.target.closest('[data-ana]'); if (b)
     anaShow(b.dataset.ana); });
+['#xPower', '#xBandit'].forEach(id => $(id).addEventListener('change', () => { const f = document.activeElement?.id; xUI(); if (f)
+    document.getElementById(f)?.focus(); }));
 const dgAddState = () => { $('#dgAdd').disabled = !(db && canWrite && ($('#dgText').value || '').trim()); };
 $('#dgText').addEventListener('input', dgAddState);
 $('#dgGuide').addEventListener('click', async () => {
